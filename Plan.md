@@ -69,63 +69,6 @@ src/
 prisma/ schema.prisma, seed.ts
 ```
 
-## 6. API Contracts
-
-All responses use `{ ok: true, data }` or `{ ok: false, error: { code, message } }`. `locale` query param (`vi|en`), default `vi`.
-
-| Method & Path | Auth | Purpose |
-|---|---|---|
-| `GET /api/tours` | — | Published tours, localized |
-| `GET /api/tours/[slug]` | — | Tour + ordered checkpoints (id, slug, name, order, summary, thumbnail) |
-| `GET /api/tours/[slug]/progress` | session | `TourProgressView` (below); creates session lazily |
-| `GET /api/checkpoints/[slug]` | — | Full checkpoint: translations, guide sections, images, visit info |
-| `POST /api/checkins` | session | GPS check-in — server-validated (§7) |
-| `GET /api/checkins/me` | session | My check-ins |
-| `POST /api/share/checkin` | session | `{ checkInId }` → `{ url }` (owner verified) |
-
-**POST /api/checkins** — request `{ checkpointId, latitude, longitude, accuracy }` (Zod-validated; accuracy optional). Server decides everything; response variants:
-
-- `ok` → `{ checkIn, progress: TourProgressView }`
-- `TOO_FAR` (422) → `{ distanceMeters, radiusMeters }`
-- `POOR_ACCURACY` (422) → `{ accuracy, maxAccuracy }`
-- `LOCKED` (422) → checkpoint is not the current one in tour order
-- `ALREADY_CHECKED_IN` (409)
-- `NOT_FOUND` (404), `RATE_LIMITED` (429)
-
-```ts
-interface TourProgressView {
-  tourSlug: string;
-  completedCount: number;
-  totalCount: number;
-  percent: number;
-  isCompleted: boolean;
-  currentCheckpointId?: string;
-  checkpoints: { checkpointId: string; order: number; status: "completed" | "current" | "locked" }[];
-}
-```
-
-## 7. Session & Security
-
-- **Session:** `ctm_session` httpOnly cookie (random 32-byte hex = `User.sessionToken`), `secure` in prod, `sameSite=lax`, 365 days. Created lazily by `getOrCreateSessionUser()` in identity-needing routes — never a popup or login gate.
-- **Check-in validation (server-only, spec §12/§30):** Zod parse → rate limit → resolve session → load checkpoint + tour ordering → sequential lock check → Haversine distance ≤ `radiusMeters` → `accuracy ≤ MAX_GPS_ACCURACY_METERS` → insert `CheckIn` (DB unique constraint blocks dupes) → upsert `TourProgress`, set `completedAt` when last checkpoint done.
-- **Constants** (`src/config/constants.ts`): `DEFAULT_RADIUS_METERS = 100`, `MAX_GPS_ACCURACY_METERS = 100`, `CHECKIN_RATE_LIMIT = 10/min per IP` (in-memory limiter — documented serverless limitation, Upstash as future swap).
-- Never trust client-sent distance/status/progress — all computed server-side.
-
-## 8. Check-in Flow (UX)
-
-1. User taps **Check In** (map bottom sheet or guide page).
-2. If location permission missing → explainer dialog (spec §28: why we need location) → browser prompt on continue.
-3. `getCurrentPosition({ enableHighAccuracy: true, timeout: 10_000 })` → `POST /api/checkins`.
-4. Outcomes mapped to UI: **success modal** (framer-motion spring check mark, progress bar fill, count-up "3 / 8", subtle confetti built with framer-motion — no extra lib), **too-far dialog** ("You are 850 m away…"), **poor accuracy** message, **already checked in** → friendly notice, **locked** → "Complete the previous checkpoint first".
-5. Success modal CTAs: **Continue Tour** (→ map, next checkpoint) · **Share** (creates share link, opens share sheet).
-
-## 9. i18n Architecture (VN + EN)
-
-- next-intl: `locales = ["vi", "en"]`, `defaultLocale = "vi"`, `localePrefix = "always"`; `/` redirects to `/vi`.
-- UI strings: `src/messages/vi.json`, `en.json` (nav, buttons, dialogs, statuses, success/share copy).
-- Content (names, summaries, guides, addresses): DB translation tables, fetched by locale with vi fallback; API accepts `?locale=`.
-- SEO per locale: `generateMetadata({ params })`, canonical + `hreflang` alternates (`/vi/...` ↔ `/en/...`), `<html lang>` set in `[locale]/layout.tsx`.
-
 ## 5. Database Schema (Prisma)
 
 ```prisma
@@ -261,6 +204,63 @@ model ShareLink {
 ```
 
 11 tables = spec §23 set minus `checkpoint_audio`, `badges`, `user_badges` (Phase 2). i18n content lives in `*Translation` / `GuideSection` tables keyed by locale with **vi fallback** at the service layer.
+
+## 6. API Contracts
+
+All responses use `{ ok: true, data }` or `{ ok: false, error: { code, message } }`. `locale` query param (`vi|en`), default `vi`.
+
+| Method & Path | Auth | Purpose |
+|---|---|---|
+| `GET /api/tours` | — | Published tours, localized |
+| `GET /api/tours/[slug]` | — | Tour + ordered checkpoints (id, slug, name, order, summary, thumbnail) |
+| `GET /api/tours/[slug]/progress` | session | `TourProgressView` (below); creates session lazily |
+| `GET /api/checkpoints/[slug]` | — | Full checkpoint: translations, guide sections, images, visit info |
+| `POST /api/checkins` | session | GPS check-in — server-validated (§7) |
+| `GET /api/checkins/me` | session | My check-ins |
+| `POST /api/share/checkin` | session | `{ checkInId }` → `{ url }` (owner verified) |
+
+**POST /api/checkins** — request `{ checkpointId, latitude, longitude, accuracy }` (Zod-validated; accuracy optional). Server decides everything; response variants:
+
+- `ok` → `{ checkIn, progress: TourProgressView }`
+- `TOO_FAR` (422) → `{ distanceMeters, radiusMeters }`
+- `POOR_ACCURACY` (422) → `{ accuracy, maxAccuracy }`
+- `LOCKED` (422) → checkpoint is not the current one in tour order
+- `ALREADY_CHECKED_IN` (409)
+- `NOT_FOUND` (404), `RATE_LIMITED` (429)
+
+```ts
+interface TourProgressView {
+  tourSlug: string;
+  completedCount: number;
+  totalCount: number;
+  percent: number;
+  isCompleted: boolean;
+  currentCheckpointId?: string;
+  checkpoints: { checkpointId: string; order: number; status: "completed" | "current" | "locked" }[];
+}
+```
+
+## 7. Session & Security
+
+- **Session:** `ctm_session` httpOnly cookie (random 32-byte hex = `User.sessionToken`), `secure` in prod, `sameSite=lax`, 365 days. Created lazily by `getOrCreateSessionUser()` in identity-needing routes — never a popup or login gate.
+- **Check-in validation (server-only, spec §12/§30):** Zod parse → rate limit → resolve session → load checkpoint + tour ordering → sequential lock check → Haversine distance ≤ `radiusMeters` → `accuracy ≤ MAX_GPS_ACCURACY_METERS` → insert `CheckIn` (DB unique constraint blocks dupes) → upsert `TourProgress`, set `completedAt` when last checkpoint done.
+- **Constants** (`src/config/constants.ts`): `DEFAULT_RADIUS_METERS = 100`, `MAX_GPS_ACCURACY_METERS = 100`, `CHECKIN_RATE_LIMIT = 10/min per IP` (in-memory limiter — documented serverless limitation, Upstash as future swap).
+- Never trust client-sent distance/status/progress — all computed server-side.
+
+## 8. Check-in Flow (UX)
+
+1. User taps **Check In** (map bottom sheet or guide page).
+2. If location permission missing → explainer dialog (spec §28: why we need location) → browser prompt on continue.
+3. `getCurrentPosition({ enableHighAccuracy: true, timeout: 10_000 })` → `POST /api/checkins`.
+4. Outcomes mapped to UI: **success modal** (framer-motion spring check mark, progress bar fill, count-up "3 / 8", subtle confetti built with framer-motion — no extra lib), **too-far dialog** ("You are 850 m away…"), **poor accuracy** message, **already checked in** → friendly notice, **locked** → "Complete the previous checkpoint first".
+5. Success modal CTAs: **Continue Tour** (→ map, next checkpoint) · **Share** (creates share link, opens share sheet).
+
+## 9. i18n Architecture (VN + EN)
+
+- next-intl: `locales = ["vi", "en"]`, `defaultLocale = "vi"`, `localePrefix = "always"`; `/` redirects to `/vi`.
+- UI strings: `src/messages/vi.json`, `en.json` (nav, buttons, dialogs, statuses, success/share copy).
+- Content (names, summaries, guides, addresses): DB translation tables, fetched by locale with vi fallback; API accepts `?locale=`.
+- SEO per locale: `generateMetadata({ params })`, canonical + `hreflang` alternates (`/vi/...` ↔ `/en/...`), `<html lang>` set in `[locale]/layout.tsx`.
 
 ## 10. Map & Markers
 
