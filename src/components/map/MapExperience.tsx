@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CheckInFlow } from "@/components/checkin/CheckInFlow";
 import { CheckpointStatusIcon } from "@/components/tour/CheckpointStatusIcon";
 import { TourProgress } from "@/components/tour/TourProgress";
@@ -82,13 +82,13 @@ export function MapExperience({
     }));
   }, [tourQuery.data, progressQuery.data]);
 
-  const selected = checkpoints.find((cp) => cp.id === selectedId) ?? null;
   const current = checkpoints.find((cp) => cp.status === "current") ?? null;
 
   // Preselect the current checkpoint so the sheet answers "where next?".
-  useEffect(() => {
-    if (!selectedId && current) setSelectedId(current.id);
-  }, [current, selectedId]);
+  // Derived (not an effect) to avoid cascading renders.
+  const effectiveSelectedId = selectedId ?? current?.id ?? null;
+  const selected =
+    checkpoints.find((cp) => cp.id === effectiveSelectedId) ?? null;
 
   const directionsTarget = navigating ? (selected ?? current) : null;
   const distanceToTarget =
@@ -267,7 +267,6 @@ export function MapExperience({
               {selected.status === "current" && (
                 <CheckInFlow
                   checkpointId={selected.id}
-                  checkpointName={selected.name}
                   locale={locale}
                   onChecked={() => progressQuery.refetch()}
                 />

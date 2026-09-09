@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { apiError, apiOk, handleApiError } from "@/lib/api";
+import { apiOk, handleApiError } from "@/lib/api";
 import { localeQuerySchema } from "@/lib/validations";
 import { listTours } from "@/services/tours.service";
 

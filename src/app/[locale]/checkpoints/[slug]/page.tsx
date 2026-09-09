@@ -177,7 +177,6 @@ export default async function CheckpointPage({ params }: Props) {
             <div className="flex flex-wrap items-center gap-2">
               <CheckInFlow
                 checkpointId={checkpoint.id}
-                checkpointName={checkpoint.name}
                 locale={locale}
                 checkedIn={checkedIn}
               />

@@ -8,7 +8,7 @@ import {
   useMap,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { CheckpointMarkers } from "@/components/map/CheckpointMarkers";
 import type { MapCheckpoint } from "@/components/map/types";
 import { cn } from "@/lib/utils";
@@ -30,36 +30,11 @@ function DirectionsLayer({
 }) {
   const map = useMap();
   const routesLibrary = useMapsLibrary("routes");
-  const [result, setResult] =
-    useState<google.maps.DirectionsResult | null>(null);
 
-  useEffect(() => {
-    if (!routesLibrary || !map || !target || !userPosition) {
-      setResult(null);
-      return;
-    }
-    const service = new routesLibrary.DirectionsService();
-    let cancelled = false;
-    service
-      .route({
-        origin: { lat: userPosition.latitude, lng: userPosition.longitude },
-        destination: { lat: target.latitude, lng: target.longitude },
-        travelMode: travelMode as google.maps.TravelMode,
-      })
-      .then((directions) => {
-        if (!cancelled) setResult(directions);
-      })
-      .catch(() => {
-        if (!cancelled) setResult(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [routesLibrary, map, target, userPosition, travelMode]);
-
-  // 1.10 removed the <DirectionsRenderer> wrapper — use the imperative API.
+  // Imperative renderer per effect run — no React state, no cascading renders.
   useEffect(() => {
     if (!routesLibrary || !map) return;
+
     const renderer = new routesLibrary.DirectionsRenderer({
       map,
       suppressMarkers: true,
@@ -69,11 +44,33 @@ function DirectionsLayer({
         strokeWeight: 5,
       },
     });
-    if (result) renderer.setDirections(result);
+
+    if (!target || !userPosition) {
+      return () => {
+        renderer.setMap(null);
+      };
+    }
+
+    const service = new routesLibrary.DirectionsService();
+    let cancelled = false;
+    service
+      .route({
+        origin: { lat: userPosition.latitude, lng: userPosition.longitude },
+        destination: { lat: target.latitude, lng: target.longitude },
+        travelMode: travelMode as google.maps.TravelMode,
+      })
+      .then((directions) => {
+        if (!cancelled) renderer.setDirections(directions);
+      })
+      .catch(() => {
+        /* no route available — leave the map clean */
+      });
+
     return () => {
+      cancelled = true;
       renderer.setMap(null);
     };
-  }, [routesLibrary, map, result]);
+  }, [routesLibrary, map, target, userPosition, travelMode]);
 
   return null;
 }

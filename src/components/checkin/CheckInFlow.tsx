@@ -31,14 +31,12 @@ interface ApiEnvelope {
  */
 export function CheckInFlow({
   checkpointId,
-  checkpointName,
   locale,
   checkedIn = false,
   disabled = false,
   onChecked,
 }: {
   checkpointId: string;
-  checkpointName: string;
   locale: string;
   checkedIn?: boolean;
   disabled?: boolean;
