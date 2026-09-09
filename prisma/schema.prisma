@@ -1,0 +1,147 @@
+// Chàm Trên Map — Phase 1 schema (see Plan.md §5)
+// NOTE: `checkpoint_audio`, `badges`, `user_badges` are intentionally deferred to Phase 2.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TourStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Tour {
+  id           String            @id @default(cuid())
+  slug         String            @unique
+  status       TourStatus        @default(DRAFT)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  translations TourTranslation[]
+  checkpoints  TourCheckpoint[]
+  progress     TourProgress[]
+}
+
+model TourTranslation {
+  id            String  @id @default(cuid())
+  tourId        String
+  tour          Tour    @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  locale        String // "vi" | "en"
+  name          String
+  tagline       String
+  description   String
+  coverImageUrl String
+
+  @@unique([tourId, locale])
+}
+
+model Checkpoint {
+  id                    String                  @id @default(cuid())
+  slug                  String                  @unique
+  latitude              Float
+  longitude             Float
+  radiusMeters          Int                     @default(100) // admin-configurable check-in radius
+  estimatedVisitMinutes Int                     @default(30)
+  sortOrderHint         Int                     @default(0)
+  translations          CheckpointTranslation[]
+  images                CheckpointImage[]
+  guides                GuideSection[]
+  tourLinks             TourCheckpoint[]
+  checkIns              CheckIn[]
+}
+
+model CheckpointTranslation {
+  id              String     @id @default(cuid())
+  checkpointId    String
+  checkpoint      Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  locale          String
+  name            String
+  summary         String // short card / preview text
+  address         String // localized address
+  openingHours    String?
+  bestTimeToVisit String?
+
+  @@unique([checkpointId, locale])
+}
+
+model GuideSection {
+  id           String     @id @default(cuid())
+  checkpointId String
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  locale       String
+  sectionKey   String // "introduction" | "history" | "culture" | "interesting_facts" | "travel_tips"
+  title        String
+  content      String // markdown
+  sortOrder    Int
+
+  @@unique([checkpointId, locale, sectionKey])
+}
+
+model CheckpointImage {
+  id           String     @id @default(cuid())
+  checkpointId String
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  url          String
+  alt          String?
+  sortOrder    Int        @default(0)
+  isThumbnail  Boolean    @default(false)
+}
+
+model TourCheckpoint {
+  id           String     @id @default(cuid())
+  tourId       String
+  tour         Tour       @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  checkpointId String
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  order        Int
+
+  @@unique([tourId, checkpointId])
+  @@unique([tourId, order])
+}
+
+model User {
+  id           String         @id @default(cuid())
+  sessionToken String         @unique // random 32-byte hex; the httpOnly cookie value
+  createdAt    DateTime       @default(now())
+  checkIns     CheckIn[]
+  progress     TourProgress[]
+}
+
+model TourProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tourId      String
+  tour        Tour      @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@unique([userId, tourId])
+}
+
+model CheckIn {
+  id                     String     @id @default(cuid())
+  userId                 String
+  user                   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkpointId           String
+  checkpoint             Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  latitude               Float
+  longitude              Float
+  accuracy               Float
+  distanceFromCheckpoint Float
+  checkedInAt            DateTime   @default(now())
+  shareLink              ShareLink?
+
+  @@unique([userId, checkpointId]) // duplicate check-ins impossible at DB level
+}
+
+model ShareLink {
+  id        String   @id // nanoid(10) — used in /share/checkin/{id}
+  checkInId String   @unique
+  checkIn   CheckIn  @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}

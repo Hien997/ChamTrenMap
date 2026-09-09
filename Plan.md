@@ -296,19 +296,19 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000                 # canonical origin for
 
 ## 13. Implementation Tasks (each = one commit)
 
-- [ ] **Task 0 — Scaffold:** `git init`, `create-next-app@latest` (App Router, TS, Tailwind 4, ESLint), tsconfig strict, shadcn init, install deps, verify `next dev`; initial commit.
-- [ ] **Task 1 — Prisma + Neon:** `schema.prisma` (§5), `prisma db push`, `lib/prisma.ts`, README DB section.
-- [ ] **Task 2 — Seed:** `prisma/seed.ts` per §11 → `prisma db seed`.
-- [ ] **Task 3 — Core libs:** `config/constants.ts`, `lib/geo.ts` (haversine + pure `evaluateCheckIn()` decision fn), `lib/session.ts`, `lib/rate-limit.ts`, `lib/api.ts` error envelope, `lib/validations/*`, domain types.
-- [ ] **Task 4 — Services + unit tests:** tours/checkpoints/checkins/progress/share services; **vitest** tests: haversine vs known distances, `evaluateCheckIn` all branches, status derivation (`completed/current/locked`). All green.
-- [ ] **Task 5 — API routes:** all §6 endpoints with Zod + session + rate limit; verified via curl.
-- [ ] **Task 6 — i18n:** next-intl routing/middleware/request config, vi+en message catalogs, `[locale]` layout, `/` → `/vi` redirect.
-- [ ] **Task 7 — UI shell + tours pages:** shadcn components, QueryProvider, landing, `/tours`, `/tours/[slug]` with live status via progress API.
-- [ ] **Task 8 — Map experience:** `/map/[tourSlug]` fullscreen, status markers, polyline, user location, bottom sheet (progress header, next checkpoint, preview card, Navigate w/ mode toggle), permission explainer.
-- [ ] **Task 9 — Guide page:** `/checkpoints/[slug]` SSR, guide sections, gallery, visit info, metadata (OG/Twitter/JSON-LD TouristAttraction/hreflang).
-- [ ] **Task 10 — Check-in UX:** `CheckInFlow` + `SuccessModal` + failure dialogs wired to API from map & guide pages.
-- [ ] **Task 11 — Share:** POST share API, `ShareButtons`, `/share/checkin/[shareId]` page + OG tags, share CTA from success modal.
-- [ ] **Task 12 — SEO sweep:** sitemap, robots, per-route metadata.
+- [x] **Task 0 — Scaffold:** `git init`, `create-next-app@latest` (App Router, TS, Tailwind 4, ESLint), tsconfig strict, shadcn init, install deps, verify `next dev`; initial commit.
+- [x] **Task 1 — Prisma + Neon:** `schema.prisma` (§5), `prisma db push`, `lib/prisma.ts`, README DB section.
+- [x] **Task 2 — Seed:** `prisma/seed.ts` per §11 → `prisma db seed`.
+- [x] **Task 3 — Core libs:** `config/constants.ts`, `lib/geo.ts` (haversine + pure `evaluateCheckIn()` decision fn), `lib/session.ts`, `lib/rate-limit.ts`, `lib/api.ts` error envelope, `lib/validations/*`, domain types.
+- [x] **Task 4 — Services + unit tests:** tours/checkpoints/checkins/progress/share services; **vitest** tests: haversine vs known distances, `evaluateCheckIn` all branches, status derivation (`completed/current/locked`). All green.
+- [x] **Task 5 — API routes:** all §6 endpoints with Zod + session + rate limit; verified via curl.
+- [x] **Task 6 — i18n:** next-intl routing/middleware/request config, vi+en message catalogs, `[locale]` layout, `/` → `/vi` redirect.
+- [x] **Task 7 — UI shell + tours pages:** shadcn components, QueryProvider, landing, `/tours`, `/tours/[slug]` with live status via progress API.
+- [x] **Task 8 — Map experience:** `/map/[tourSlug]` fullscreen, status markers, polyline, user location, bottom sheet (progress header, next checkpoint, preview card, Navigate w/ mode toggle), permission explainer.
+- [x] **Task 9 — Guide page:** `/checkpoints/[slug]` SSR, guide sections, gallery, visit info, metadata (OG/Twitter/JSON-LD TouristAttraction/hreflang).
+- [x] **Task 10 — Check-in UX:** `CheckInFlow` + `SuccessModal` + failure dialogs wired to API from map & guide pages.
+- [x] **Task 11 — Share:** POST share API, `ShareButtons`, `/share/checkin/[shareId]` page + OG tags, share CTA from success modal.
+- [x] **Task 12 — SEO sweep:** sitemap, robots, per-route metadata.
 - [ ] **Task 13 — Polish & docs:** loading/error states, `.env.example`, README (Maps API setup, Neon, Vercel deploy), mobile QA checklist.
 
 ## 14. Testing Strategy
