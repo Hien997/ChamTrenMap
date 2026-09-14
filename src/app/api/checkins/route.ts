@@ -42,6 +42,12 @@ export async function POST(request: NextRequest) {
         return apiError("ALREADY_CHECKED_IN", "Already checked in", 409, {
           progress: result.progress,
         });
+      case "no_tour_link":
+        return apiError(
+          "NO_TOUR_LINK",
+          "Checkpoint is not part of a tour",
+          422,
+        );
       case "locked":
         return apiError("LOCKED", "Checkpoint is locked", 422);
       case "too_far":

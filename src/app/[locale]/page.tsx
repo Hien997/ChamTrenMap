@@ -1,9 +1,11 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { HomeMap } from "@/components/map/HomeMap";
 import { buttonVariants } from "@/components/ui/button";
 import { TourCard } from "@/components/tour/TourCard";
 import type { Locale } from "@/config/constants";
 import { Link } from "@/i18n/navigation";
+import { listCheckpoints } from "@/services/checkpoints.service";
 import { listTours } from "@/services/tours.service";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +18,15 @@ export default async function HomePage({ params }: Props) {
 
   const t = await getTranslations("Home");
   const tours = await listTours(locale as Locale);
+  const checkpoints = await listCheckpoints(locale as Locale);
+  const mapLocations = checkpoints.map((checkpoint) => ({
+    id: checkpoint.id,
+    slug: checkpoint.slug,
+    latitude: checkpoint.latitude,
+    longitude: checkpoint.longitude,
+    name: checkpoint.name,
+    description: checkpoint.summary || undefined,
+  }));
 
   const steps = [
     { title: t("step1Title"), desc: t("step1Desc") },
@@ -30,40 +41,80 @@ export default async function HomePage({ params }: Props) {
       <SiteHeader />
 
       <main className="flex-1">
-        {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-primary/15 via-primary/5 to-background">
-          <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-4 py-20 text-center md:py-28">
-            <span className="rounded-full border bg-background/60 px-4 py-1 text-sm text-muted-foreground">
-              {t("heroBadge")}
-            </span>
-            <h1 className="max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
-              {t("heroTitle")}
-            </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground">
-              {t("heroSubtitle")}
-            </p>
-            <Link
-              href="/tours"
-              className={buttonVariants({ size: "lg", className: "text-base" })}
-            >
-              {t("ctaStartTour")}
-            </Link>
+        {/* Hero — the headline, then the map itself as the hero object. */}
+        <section className="border-b bg-background">
+          <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-12 md:pt-16">
+            <div className="max-w-3xl">
+              <h1 className="text-balance text-4xl font-bold tracking-tight md:text-5xl">
+                {t("heroTitle")}
+              </h1>
+              <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
+                {t("heroSubtitle")}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  href="/tours"
+                  className={buttonVariants({
+                    size: "lg",
+                    className: "text-base",
+                  })}
+                >
+                  {t("ctaStartTour")}
+                </Link>
+                <Link
+                  href="/tours"
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "lg",
+                    className: "text-base sm:hidden",
+                  })}
+                >
+                  {t("viewAllTours")}
+                </Link>
+              </div>
+            </div>
           </div>
+
+          {mapLocations.length > 0 && (
+            <div className="mx-auto w-full max-w-6xl px-4 pb-12">
+              <div className="relative overflow-hidden rounded-3xl border">
+                <HomeMap
+                  locations={mapLocations}
+                  className="h-[420px] md:h-[560px]"
+                />
+                {/* The passport stamp — the one deliberate flourish. */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute right-4 top-4 rotate-6 rounded-full border-2 border-dashed border-primary/60 bg-background/70 px-5 py-3 text-center text-xs font-semibold leading-tight text-primary/90 backdrop-blur-sm md:right-8 md:top-8 md:px-6 md:py-4 md:text-sm"
+                >
+                  {t("heroBadge")}
+                </span>
+              </div>
+            </div>
+          )}
         </section>
 
-        {/* How it works */}
+        {/* How it works — stops along a dashed route, not cards. */}
         <section className="mx-auto w-full max-w-6xl px-4 py-14">
           <h2 className="text-2xl font-semibold tracking-tight">
             {t("howItWorks")}
           </h2>
-          <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <ol className="relative mt-8 flex flex-col gap-7 lg:flex-row lg:gap-5">
+            <div
+              aria-hidden
+              className="absolute bottom-3 left-[15px] top-3 border-l-2 border-dashed border-primary/30 lg:bottom-auto lg:left-7 lg:right-7 lg:top-[15px] lg:border-l-0 lg:border-t-2"
+            />
             {steps.map((step, index) => (
-              <li key={step.title} className="rounded-xl border bg-card p-5 shadow-sm">
-                <div className="text-sm font-medium text-muted-foreground">
-                  {String(index + 1).padStart(2, "0")}
+              <li key={step.title} className="relative flex gap-4 lg:flex-col">
+                <span className="z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-primary/50 bg-background text-sm font-bold tabular-nums text-primary">
+                  {index + 1}
+                </span>
+                <div className="lg:mt-3">
+                  <div className="font-semibold">{step.title}</div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {step.desc}
+                  </p>
                 </div>
-                <div className="mt-2 font-semibold">{step.title}</div>
-                <p className="mt-1 text-sm text-muted-foreground">{step.desc}</p>
               </li>
             ))}
           </ol>
@@ -99,8 +150,9 @@ export default async function HomePage({ params }: Props) {
       </main>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        🧭 Chàm Trên Map — Hà Tiên, Kiên Giang
+        Chắm Trên Map — Hà Tiên, Kiên Giang
       </footer>
     </div>
   );
 }
+  

@@ -12,8 +12,8 @@ import {
 import type { AppLocale } from "@/i18n/routing";
 
 const OPTIONS: { value: AppLocale; label: string }[] = [
-  { value: "vi", label: "🇻🇳 Tiếng Việt" },
-  { value: "en", label: "🇬🇧 English" },
+  { value: "vi", label: "Tiếng Việt" },
+  { value: "en", label: "English" },
 ];
 
 /** Locale switcher — swaps the /{locale} segment, preserving the current path. */

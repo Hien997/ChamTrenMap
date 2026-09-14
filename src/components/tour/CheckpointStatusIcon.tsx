@@ -1,9 +1,16 @@
+import { CircleCheckIcon, LockIcon, MapPinIcon } from "lucide-react";
 import type { CheckpointStatus } from "@/types";
 
-const ICONS: Record<CheckpointStatus, string> = {
-  completed: "✅",
-  current: "⭐",
-  locked: "🔒",
+const ICONS: Record<CheckpointStatus, typeof CircleCheckIcon> = {
+  completed: CircleCheckIcon,
+  current: MapPinIcon,
+  locked: LockIcon,
+};
+
+const TONES: Record<CheckpointStatus, string> = {
+  completed: "text-status-completed-ink dark:text-status-completed",
+  current: "text-status-current-ink dark:text-status-current",
+  locked: "text-status-locked-ink dark:text-status-locked",
 };
 
 const LABELS: Record<CheckpointStatus, string> = {
@@ -12,7 +19,10 @@ const LABELS: Record<CheckpointStatus, string> = {
   locked: "Locked",
 };
 
-/** Sequential tour status icon: ✅ completed · ⭐ current · 🔒 locked. */
+/**
+ * Sequential tour status mark: sea-glass check (done), coral pin (next stop),
+ * limestone lock (not yet reached). Scales with the caller's font size.
+ */
 export function CheckpointStatusIcon({
   status,
   className,
@@ -21,14 +31,15 @@ export function CheckpointStatusIcon({
   className?: string;
 }) {
   if (!status) return null;
+  const Icon = ICONS[status];
   return (
     <span
       role="img"
       aria-label={LABELS[status]}
-      className={className}
       title={LABELS[status]}
+      className={`inline-flex shrink-0 items-center justify-center ${TONES[status]} ${className ?? ""}`}
     >
-      {ICONS[status]}
+      <Icon aria-hidden className="size-[1em]" />
     </span>
   );
 }

@@ -1,4 +1,4 @@
-import { redirect } from "next/headers";
+import { redirect } from "next/navigation";
 import bcrypt from "bcrypt";
 import { getSessionUser } from "@/lib/session";
 

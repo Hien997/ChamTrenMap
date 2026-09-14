@@ -42,7 +42,7 @@ export function sanitizeHtml(raw: string): string {
       if (!ALLOWED_TAGS.has(tag.toLowerCase())) return match;
       const safeAttrs = attrs
         .split(/\s+/)
-        .filter((attr) => {
+        .filter((attr: string) => {
           const name = attr.split("=")[0].toLowerCase();
           return ALLOWED_ATTRS.has(name);
         })

@@ -49,6 +49,7 @@ export interface GuideSectionView {
   sectionKey: GuideSectionKey;
   title: string;
   content: string;
+  contentType: "TEXT" | "HTML";
 }
 
 export interface CheckpointDetailView {
@@ -58,6 +59,9 @@ export interface CheckpointDetailView {
   longitude: number;
   radiusMeters: number;
   estimatedVisitMinutes: number;
+  /** Entrance-ticket or food budget per person, VND; null = free. */
+  priceVnd: number | null;
+  priceKind: "ticket" | "food";
   name: string;
   summary: string;
   address: string;

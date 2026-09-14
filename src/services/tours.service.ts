@@ -1,7 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { pickLocalized } from "@/services/localize";
+import type { TourTranslation } from "@prisma/client";
 import { deriveStatuses } from "@/services/progress-status";
-import type { CheckpointStatus, TourDetailView, TourSummaryView, TourCheckpointView } from "@/types";
+import type {
+  CheckpointStatus,
+  TourDetailView,
+  TourSummaryView,
+  TourCheckpointView,
+} from "@/types";
 import type { Locale } from "@/config/constants";
 
 /** Published tours with localized metadata (Plan.md §6: GET /api/tours). */
@@ -14,33 +20,49 @@ export async function listTours(locale: Locale): Promise<TourSummaryView[]> {
       checkpoints: {
         orderBy: { order: "asc" },
         include: {
-          checkpoint: { include: { translations: true } },
+          // Only the visit duration feeds the summary — skip unused translations.
+          checkpoint: {
+            select: { estimatedVisitMinutes: true },
+          },
         },
       },
     },
   });
 
-  return tours.map((tour) => {
-    const translation = pickLocalized(tour.translations, locale);
-    return {
-      id: tour.id,
-      slug: tour.slug,
-      name: translation?.name ?? tour.slug,
-      tagline: translation?.tagline ?? "",
-      description: translation?.description ?? "",
-      coverImageUrl: translation?.coverImageUrl ?? "",
-      checkpointCount: tour.checkpoints.length,
-      estimatedMinutes: tour.checkpoints.reduce(
-        (sum, tc) => sum + tc.checkpoint.estimatedVisitMinutes,
-        0,
-      ),
-    };
-  });
+  return tours.map(
+    (tour: {
+      translations: TourTranslation[];
+      id: string;
+      slug: string;
+      checkpoints: Array<{
+        order: number;
+        checkpointId: string;
+        checkpoint: { estimatedVisitMinutes: number };
+      }>;
+    }) => {
+      const translation = pickLocalized(tour.translations, locale);
+      return {
+        id: tour.id,
+        slug: tour.slug,
+        name: translation?.name ?? tour.slug,
+        tagline: translation?.tagline ?? "",
+        description: translation?.description ?? "",
+        coverImageUrl: translation?.coverImageUrl ?? "",
+        checkpointCount: tour.checkpoints.length,
+        estimatedMinutes: tour.checkpoints.reduce(
+          (sum, tc) => sum + tc.checkpoint.estimatedVisitMinutes,
+          0,
+        ),
+      };
+    },
+  );
 }
 
 /**
- * Full tour detail with ordered checkpoints. When `completedCheckpointIds` is
- * provided (session known), each checkpoint also carries its sequential status.
+ * Full tour detail with ordered checkpoints. Published tours only, mirroring
+ * `listTours`, so DRAFT content never leaks through detail pages or the API.
+ * When `completedCheckpointIds` is provided (session known), each checkpoint
+ * also carries its sequential status.
  */
 export async function getTourDetail(
   slug: string,
@@ -48,7 +70,7 @@ export async function getTourDetail(
   completedCheckpointIds?: string[],
 ): Promise<TourDetailView | null> {
   const tour = await prisma.tour.findUnique({
-    where: { slug },
+    where: { slug, status: "PUBLISHED" },
     include: {
       translations: true,
       checkpoints: {
@@ -68,13 +90,12 @@ export async function getTourDetail(
 
   const translation = pickLocalized(tour.translations, locale);
 
-  let statuses: Map<string, CheckpointStatus> | null = null;
-  if (completedCheckpointIds) {
-    statuses = deriveStatuses(
-      tour.checkpoints.map((tc) => tc.checkpointId),
-      completedCheckpointIds,
-    ).statuses;
-  }
+  const statuses: Map<string, CheckpointStatus> | null = completedCheckpointIds
+    ? deriveStatuses(
+        tour.checkpoints.map((tc) => tc.checkpointId),
+        completedCheckpointIds,
+      ).statuses
+    : null;
 
   const checkpoints: TourCheckpointView[] = tour.checkpoints.map((tc) => {
     const cp = tc.checkpoint;
@@ -89,9 +110,11 @@ export async function getTourDetail(
       latitude: cp.latitude,
       longitude: cp.longitude,
       thumbnailUrl:
-        cp.images.find((img) => img.isThumbnail)?.url ?? cp.images[0]?.url ?? null,
+        cp.images.find((img) => img.isThumbnail)?.url ??
+        cp.images[0]?.url ??
+        null,
       estimatedVisitMinutes: cp.estimatedVisitMinutes,
-      status: statuses ? (statuses.get(cp.id) ?? null) : null,
+      status: statuses?.get(cp.id) ?? null,
     };
   });
 

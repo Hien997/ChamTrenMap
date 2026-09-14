@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CircleCheckIcon, StampIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,21 +14,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getCurrentPositionOnce } from "@/lib/geolocation-client";
+import type { ApiEnvelope } from "@/lib/api-client";
+import { formatDistance } from "@/lib/format";
 import type { CheckInView, TourProgressView } from "@/types";
 import { SuccessModal } from "./SuccessModal";
 
 type Phase = "idle" | "explainer" | "locating";
 
-interface ApiEnvelope {
-  ok: boolean;
-  data?: { checkIn: CheckInView; progress: TourProgressView };
-  error?: { code: string; message: string; details?: unknown };
-}
+type CheckInEnvelope = ApiEnvelope<{
+  checkIn: CheckInView;
+  progress: TourProgressView;
+}>;
 
 /**
  * The full check-in interaction (Plan.md §8):
  * explainer dialog → GPS fix → POST /api/checkins → success modal / failure toast.
  * The server decides the outcome; the client only renders it.
+ *
+ * When `variant === "food"`, the button label changes to "Already ate / Check-in"
+ * and the success modal uses food-specific copy.
  */
 export function CheckInFlow({
   checkpointId,
@@ -35,14 +40,18 @@ export function CheckInFlow({
   checkedIn = false,
   disabled = false,
   onChecked,
+  variant = "default",
 }: {
   checkpointId: string;
   locale: string;
   checkedIn?: boolean;
   disabled?: boolean;
   onChecked?: (progress: TourProgressView | null) => void;
+  /** "default" for ticketed sites, "food" for food stops. */
+  variant?: "default" | "food";
 }) {
   const t = useTranslations("CheckIn");
+  const tCommon = useTranslations("Common");
   const [phase, setPhase] = useState<Phase>("idle");
   const [success, setSuccess] = useState<{
     checkIn: CheckInView;
@@ -69,7 +78,7 @@ export function CheckInFlow({
             : null,
         }),
       });
-      const json = (await response.json()) as ApiEnvelope;
+      const json = (await response.json()) as CheckInEnvelope;
 
       if (json.ok && json.data) {
         setSuccess(json.data);
@@ -77,33 +86,46 @@ export function CheckInFlow({
         return;
       }
 
-      switch (json.error?.code) {
+      const error = json.error;
+      if (!error) {
+        showError();
+        return;
+      }
+
+      switch (error.code) {
         case "ALREADY_CHECKED_IN": {
-          const details = json.error.details as
+          const details = error.details as
             | { progress?: TourProgressView }
             | undefined;
           setAlreadyProgress(details?.progress ?? null);
           break;
         }
         case "TOO_FAR": {
-          const details = json.error.details as {
+          const details = error.details as {
             distanceMeters: number;
             radiusMeters: number;
           };
-          toast.error(t("tooFarTitle", { distance: details.distanceMeters }), {
-            description: t("tooFarBody", { radius: details.radiusMeters }),
-          });
+          toast.error(
+            t("tooFarTitle", {
+              distance: formatDistance(details.distanceMeters, tCommon),
+            }),
+            {
+              description: t("tooFarBody", {
+                radius: formatDistance(details.radiusMeters, tCommon),
+              }),
+            },
+          );
           break;
         }
         case "POOR_ACCURACY": {
-          const details = json.error.details as {
+          const details = error.details as {
             accuracy: number;
             maxAccuracy: number;
           };
           toast.error(t("poorAccuracyTitle"), {
             description: t("poorAccuracyBody", {
-              accuracy: details.accuracy,
-              maxAccuracy: details.maxAccuracy,
+              accuracy: Math.round(details.accuracy),
+              maxAccuracy: Math.round(details.maxAccuracy),
             }),
           });
           break;
@@ -141,8 +163,9 @@ export function CheckInFlow({
 
   if (checkedIn) {
     return (
-      <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-medium text-emerald-800">
-        ✅ {t("checkedIn")}
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-status-completed/15 px-3 py-1.5 text-sm font-medium text-status-completed-ink dark:text-status-completed">
+        <CircleCheckIcon aria-hidden className="size-4" />
+        {variant === "food" ? t("ate") : t("checkedIn")}
       </span>
     );
   }
@@ -154,7 +177,12 @@ export function CheckInFlow({
         disabled={disabled || phase === "locating"}
         onClick={() => setPhase("explainer")}
       >
-        {phase === "locating" ? t("locating") : `✅ ${t("action")}`}
+        <StampIcon aria-hidden className="size-4" />
+        {phase === "locating"
+          ? t("locating")
+          : variant === "food"
+            ? t("ateAction")
+            : t("action")}
       </Button>
 
       {/* Location permission explainer (spec §28) — before the browser prompt. */}
@@ -189,6 +217,7 @@ export function CheckInFlow({
           }}
           checkIn={success.checkIn}
           progress={success.progress}
+          variant={variant}
         />
       )}
 
@@ -201,7 +230,7 @@ export function CheckInFlow({
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>🎉 {t("alreadyTitle")}</DialogTitle>
+            <DialogTitle>{t("alreadyTitle")}</DialogTitle>
             <DialogDescription>{t("alreadyBody")}</DialogDescription>
           </DialogHeader>
         </DialogContent>

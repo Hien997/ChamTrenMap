@@ -1,6 +1,6 @@
-# 🧭 Chàm Trên Map — Hà Tiên Checkpoint Travel Platform
+# 🧭 Chắm Trên Map — Hà Tiên Checkpoint Travel Platform
 
-**Your digital passport for discovering Hà Tiên.** Tourists follow the *Hà Tiên Discovery* tour on a Google Map, visit 8 checkpoints, read VN/EN online guides, check in via server-validated GPS, track progress and share their achievement.
+**Your digital passport for discovering Hà Tiên.** Tourists follow the _Hà Tiên Discovery_ tour on a Google Map, visit 8 checkpoints, read VN/EN online guides, check in via server-validated GPS, track progress and share their achievement.
 
 > Phase 1 MVP per `Plan.md` — Google Maps · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share links · VN/EN i18n. Phase 2 (audio, badges/XP, admin, PWA) is scaffolded for by the DB schema.
 
@@ -13,7 +13,7 @@ Next.js 16 (App Router) · TypeScript strict · Tailwind CSS 4 · shadcn/ui · f
 ```bash
 npm install
 cp .env.example .env        # then fill the values (see below)
-npx prisma db push          # create tables
+npx prisma migrate deploy   # create tables from migration history
 npm run db:seed             # DEMO seed: 1 tour + 8 checkpoints (vi + en)
 npm run dev                 # http://localhost:3000 → redirects to /vi
 ```
@@ -24,12 +24,12 @@ Seed script registration (already set in `package.json`; re-add with
 
 ### Environment variables (`.env`)
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | Postgres connection string — Neon pooled URL in production, local Docker for dev |
+| Variable                          | Purpose                                                                          |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| `DATABASE_URL`                    | Postgres connection string — Neon pooled URL in production, local Docker for dev |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Key with **Maps JavaScript API** + **Directions API** enabled, domain-restricted |
-| `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` | A **Vector Map ID** (required for AdvancedMarker status pins) |
-| `NEXT_PUBLIC_APP_URL` | Canonical origin for share links & Open Graph (e.g. `https://yourdomain.vn`) |
+| `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`  | A **Vector Map ID** (required for AdvancedMarker status pins)                    |
+| `NEXT_PUBLIC_APP_URL`             | Canonical origin for share links & Open Graph (e.g. `https://yourdomain.vn`)     |
 
 ### Google Maps setup
 
@@ -49,7 +49,7 @@ npx vitest run        # haversine, check-in policy, sequential status derivation
 npm run build         # typecheck + production build
 ```
 
-Manual GPS testing: Chrome DevTools → Sensors → Location → *Custom location…* set a checkpoint's coordinates to trigger a successful check-in; move the pin >100 m away to see the too-far flow.
+Manual GPS testing: Chrome DevTools → Sensors → Location → _Custom location…_ set a checkpoint's coordinates to trigger a successful check-in; move the pin >100 m away to see the too-far flow.
 
 ## Architecture (see `Plan.md` for the full design)
 

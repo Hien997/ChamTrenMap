@@ -9,13 +9,11 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string }> };
 
-export async function generateMetadata({
-  params,
-}: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Tours" });
   return {
-    title: `${t("title")} — Chàm Trên Map`,
+    title: `${t("title")} — Chắm Trên Map`,
     description: t("subtitle"),
   };
 }

@@ -10,6 +10,7 @@ export type ApiErrorCode =
   | "BAD_REQUEST"
   | "UNAUTHORIZED"
   | "NOT_FOUND"
+  | "NO_TOUR_LINK"
   | "LOCKED"
   | "TOO_FAR"
   | "POOR_ACCURACY"

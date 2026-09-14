@@ -1,4 +1,4 @@
-# Plan.md — Chàm Trên Map (Hà Tiên Checkpoint Travel Platform)
+# Plan.md — Chắm Trên Map (Hà Tiên Checkpoint Travel Platform)
 
 ## 1. Overview
 
@@ -11,17 +11,17 @@ A mobile-first tourism web app for Hà Tiên, Kiên Giang. Tourists follow the H
 
 ## 2. Decisions Log
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| Project structure | Single Next.js app (Option A) | One deploy, shared TS types, fastest MVP; service layer keeps API extractable |
-| Identity | Anonymous-first, httpOnly session cookie | Zero friction for tourists; upgrade path to accounts later |
-| Hosting | Vercel + Neon Postgres | Free tiers, serverless-friendly |
-| ORM | Prisma (stable 6.x line — `latest` tag currently points to an 8.0.0 RC) | Best DX, native Neon support |
-| i18n | next-intl, locale prefix always (`/vi/...`, `/en/...`), default `vi` | Spec §32 |
-| Map | `@vis.gl/react-google-maps` (official wrapper) + Maps JavaScript API + Directions API | Places/Geocoding deferred — data comes from our DB |
-| Checkpoint ordering | Sequential: only the current checkpoint can be checked in; later ones locked | Spec §2 "unlock next checkpoint"; a free-roam mode is a future flag |
-| XP/Badges | Excluded Phase 1; success UI shows checkpoint count (e.g. "3 / 8") instead of XP | Approved scope; schema leaves room |
-| Demo images | picsum.photos seeded URLs in seed data | Stable placeholder URLs; clearly marked DEMO, replaceable |
+| Decision            | Choice                                                                                | Rationale                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Project structure   | Single Next.js app (Option A)                                                         | One deploy, shared TS types, fastest MVP; service layer keeps API extractable |
+| Identity            | Anonymous-first, httpOnly session cookie                                              | Zero friction for tourists; upgrade path to accounts later                    |
+| Hosting             | Vercel + Neon Postgres                                                                | Free tiers, serverless-friendly                                               |
+| ORM                 | Prisma (stable 6.x line — `latest` tag currently points to an 8.0.0 RC)               | Best DX, native Neon support                                                  |
+| i18n                | next-intl, locale prefix always (`/vi/...`, `/en/...`), default `vi`                  | Spec §32                                                                      |
+| Map                 | `@vis.gl/react-google-maps` (official wrapper) + Maps JavaScript API + Directions API | Places/Geocoding deferred — data comes from our DB                            |
+| Checkpoint ordering | Sequential: only the current checkpoint can be checked in; later ones locked          | Spec §2 "unlock next checkpoint"; a free-roam mode is a future flag           |
+| XP/Badges           | Excluded Phase 1; success UI shows checkpoint count (e.g. "3 / 8") instead of XP      | Approved scope; schema leaves room                                            |
+| Demo images         | picsum.photos seeded URLs in seed data                                                | Stable placeholder URLs; clearly marked DEMO, replaceable                     |
 
 ## 3. Tech Stack
 
@@ -209,15 +209,15 @@ model ShareLink {
 
 All responses use `{ ok: true, data }` or `{ ok: false, error: { code, message } }`. `locale` query param (`vi|en`), default `vi`.
 
-| Method & Path | Auth | Purpose |
-|---|---|---|
-| `GET /api/tours` | — | Published tours, localized |
-| `GET /api/tours/[slug]` | — | Tour + ordered checkpoints (id, slug, name, order, summary, thumbnail) |
-| `GET /api/tours/[slug]/progress` | session | `TourProgressView` (below); creates session lazily |
-| `GET /api/checkpoints/[slug]` | — | Full checkpoint: translations, guide sections, images, visit info |
-| `POST /api/checkins` | session | GPS check-in — server-validated (§7) |
-| `GET /api/checkins/me` | session | My check-ins |
-| `POST /api/share/checkin` | session | `{ checkInId }` → `{ url }` (owner verified) |
+| Method & Path                    | Auth    | Purpose                                                                |
+| -------------------------------- | ------- | ---------------------------------------------------------------------- |
+| `GET /api/tours`                 | —       | Published tours, localized                                             |
+| `GET /api/tours/[slug]`          | —       | Tour + ordered checkpoints (id, slug, name, order, summary, thumbnail) |
+| `GET /api/tours/[slug]/progress` | session | `TourProgressView` (below); creates session lazily                     |
+| `GET /api/checkpoints/[slug]`    | —       | Full checkpoint: translations, guide sections, images, visit info      |
+| `POST /api/checkins`             | session | GPS check-in — server-validated (§7)                                   |
+| `GET /api/checkins/me`           | session | My check-ins                                                           |
+| `POST /api/share/checkin`        | session | `{ checkInId }` → `{ url }` (owner verified)                           |
 
 **POST /api/checkins** — request `{ checkpointId, latitude, longitude, accuracy }` (Zod-validated; accuracy optional). Server decides everything; response variants:
 
@@ -236,7 +236,11 @@ interface TourProgressView {
   percent: number;
   isCompleted: boolean;
   currentCheckpointId?: string;
-  checkpoints: { checkpointId: string; order: number; status: "completed" | "current" | "locked" }[];
+  checkpoints: {
+    checkpointId: string;
+    order: number;
+    status: "completed" | "current" | "locked";
+  }[];
 }
 ```
 
@@ -273,16 +277,15 @@ interface TourProgressView {
 
 Tour: **Hà Tiên Discovery** (`ha-tien-discovery`), published, ~4 h walking tour:
 
-| # | Checkpoint | slug | Approx coords (DEMO) | Minutes |
-|---|---|---|---|---|
-| 1 | Mũi Nai | `mui-nai` | 10.3899, 104.5072 | 45 |
-| 2 | Thạch Động | `thach-dong` | 10.3725, 104.4975 | 30 |
-| 3 | Chùa Phù Dung | `chua-phu-dung` | 10.3845, 104.4810 | 30 |
-| 4 | Lăng Mạc Cửu | `lang-mac-cuu` | 10.3858, 104.4822 | 30 |
-| 5 | Đền thờ họ Mạc | `den-tho-ho-mac` | 10.3838, 104.4833 | 20 |
-| 6 | Chợ Hà Tiên (night market) | `cho-ha-tien` | 10.3865, 104.4848 | 40 |
-| 7 | Núi Đá Dựng | `nui-da-dung` | 10.3908, 104.4650 | 60 |
-| 8 | Bãi biển Bình San | `bai-bien-binh-san` | 10.3828, 104.4865 | 45 |
+| #   | Checkpoint                 | slug             | Approx coords (DEMO) | Minutes |
+| --- | -------------------------- | ---------------- | -------------------- | ------- |
+| 1   | Mũi Nai                    | `mui-nai`        | 10.3899, 104.5072    | 45      |
+| 2   | Thạch Động                 | `thach-dong`     | 10.3725, 104.4975    | 30      |
+| 3   | Chùa Phù Dung              | `chua-phu-dung`  | 10.3845, 104.4810    | 30      |
+| 4   | Lăng Mạc Cửu               | `lang-mac-cuu`   | 10.3858, 104.4822    | 30      |
+| 5   | Đền thờ họ Mạc             | `den-tho-ho-mac` | 10.3838, 104.4833    | 20      |
+| 6   | Chợ Hà Tiên (night market) | `cho-ha-tien`    | 10.3865, 104.4848    | 40      |
+| 7   | Núi Đá Dựng                | `nui-da-dung`    | 10.3908, 104.4650    | 60      |
 
 Each checkpoint: vi+en translations (name, summary, address, opening hours, best time), 5 guide sections (introduction/history/culture/interesting_facts/travel_tips) in vi+en with real content about Mạc Cửu history (Hà Tiên founded 1708, Hà Tiên thập vịnh, etc.), 3 demo images (`picsum.photos/seed/<slug>-n`), radius 100 m default. Seed marked `DEMO DATA`.
 

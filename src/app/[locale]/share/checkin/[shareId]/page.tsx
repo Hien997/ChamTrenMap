@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { CircleCheckIcon, MapPinIcon, TrophyIcon } from "lucide-react";
 import { ShareButtons } from "@/components/sharing/ShareButtons";
 import { buttonVariants } from "@/components/ui/button";
 import type { Locale } from "@/config/constants";
@@ -18,13 +19,15 @@ function appUrl(): string {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, shareId } = await params;
   const view = await getSharePageView(shareId, locale as Locale);
-  if (!view) return { title: "Chàm Trên Map" };
+  if (!view) return { title: "Chắm Trên Map" };
 
   const t = await getTranslations({ locale, namespace: "Share" });
-  const title = `✅ ${t("checkedInAt")} ${view.checkpoint.name} — Hà Tiên`;
-  const description = `${view.checkpoint.name}, ${view.checkpoint.address}. ${t("exploreCta")} — Chàm Trên Map`;
+  const title = `${t("checkedInAt")} ${view.checkpoint.name} — Hà Tiên`;
+  const description = `${view.checkpoint.name}, ${view.checkpoint.address}. ${t("exploreCta")} — Chắm Trên Map`;
   const url = `${appUrl()}/${locale}/share/checkin/${shareId}`;
-  const images = view.checkpoint.thumbnailUrl ? [view.checkpoint.thumbnailUrl] : [];
+  const images = view.checkpoint.thumbnailUrl
+    ? [view.checkpoint.thumbnailUrl]
+    : [];
 
   return {
     title,
@@ -44,24 +47,32 @@ export default async function SharePage({ params }: Props) {
   if (!view) notFound();
 
   const shareUrl = `${appUrl()}/${locale}/share/checkin/${view.shareId}`;
-  const shareTitle = `✅ ${t("checkedInAt")} ${view.checkpoint.name} — Hà Tiên`;
+  const shareTitle = `${t("checkedInAt")} ${view.checkpoint.name} — Hà Tiên`;
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gradient-to-b from-primary/15 to-background px-4 py-12">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gradient-to-b from-primary/10 to-background px-4 py-12">
       <div className="w-full max-w-md rounded-2xl border bg-card p-6 text-center shadow-xl">
-        <p className="text-xs font-semibold tracking-[0.3em] text-muted-foreground">
-          🧭 HÀ TIÊN EXPLORER
-        </p>
+        {/* Passport stamp — the check-in moment, inked. */}
+        <div className="relative mx-auto flex h-24 w-24 -rotate-6 items-center justify-center rounded-full border-2 border-dashed border-status-completed/70 bg-status-completed/10">
+          <CircleCheckIcon
+            aria-hidden
+            className="size-10 text-status-completed-ink dark:text-status-completed"
+          />
+          <span
+            aria-hidden
+            className="absolute inset-1.5 rounded-full border border-status-completed/40"
+          />
+        </div>
 
-        <div className="mt-4 text-6xl">✅</div>
-        <p className="mt-2 text-sm font-medium text-emerald-700">
+        <p className="mt-3 text-sm font-medium text-status-completed-ink dark:text-status-completed">
           {t("checkedInAt")}
         </p>
         <h1 className="mt-1 text-3xl font-extrabold tracking-tight">
           {view.checkpoint.name}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          📍 {view.checkpoint.address}
+        <p className="mt-1 flex items-center justify-center gap-1 text-sm text-muted-foreground">
+          <MapPinIcon aria-hidden className="size-4 shrink-0" />
+          {view.checkpoint.address}
         </p>
         {view.tour && (
           <p className="mt-1 text-xs text-muted-foreground">
@@ -70,7 +81,6 @@ export default async function SharePage({ params }: Props) {
         )}
 
         {view.checkpoint.thumbnailUrl && (
-          // eslint-disable-next-line @next/next/no-img-element -- admin-managed URLs
           <img
             src={view.checkpoint.thumbnailUrl}
             alt={view.checkpoint.name}
@@ -78,7 +88,13 @@ export default async function SharePage({ params }: Props) {
           />
         )}
 
-        <p className="mt-4 text-lg font-bold">🏆 {t("exploreCta")}</p>
+        <p className="mt-4 flex items-center justify-center gap-2 text-lg font-bold">
+          <TrophyIcon
+            aria-hidden
+            className="size-5 text-status-current-ink dark:text-status-current"
+          />
+          {t("exploreCta")}
+        </p>
 
         <div className="mt-4">
           <ShareButtons url={shareUrl} title={shareTitle} />

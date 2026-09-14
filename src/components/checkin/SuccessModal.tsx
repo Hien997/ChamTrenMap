@@ -1,29 +1,31 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { CircleCheckIcon, Share2Icon } from "lucide-react";
 import { TourProgress } from "@/components/tour/TourProgress";
 import { ShareButtons } from "@/components/sharing/ShareButtons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Link } from "@/i18n/navigation";
 import type { CheckInView, TourProgressView } from "@/types";
+import type { ApiEnvelope } from "@/lib/api-client";
 
-/** Deterministic confetti pieces (no hydration randomness). */
+/** Deterministic confetti pieces (no hydration randomness) — gulf palette. */
 const CONFETTI = [
-  { x: -120, y: -140, c: "#f59e0b" },
-  { x: 110, y: -150, c: "#10b981" },
-  { x: -150, y: -60, c: "#3b82f6" },
-  { x: 150, y: -70, c: "#ec4899" },
-  { x: -90, y: -180, c: "#8b5cf6" },
-  { x: 90, y: -190, c: "#f43f5e" },
-  { x: -170, y: -110, c: "#14b8a6" },
-  { x: 170, y: -120, c: "#eab308" },
-  { x: -40, y: -200, c: "#06b6d4" },
-  { x: 40, y: -210, c: "#f97316" },
-  { x: -130, y: -170, c: "#a3e635" },
-  { x: 130, y: -165, c: "#fb7185" },
+  { x: -120, y: -140, c: "#2f7d9c" },
+  { x: 110, y: -150, c: "#4bab97" },
+  { x: -150, y: -60, c: "#e2795a" },
+  { x: 150, y: -70, c: "#d9a441" },
+  { x: -90, y: -180, c: "#7fc4d6" },
+  { x: 90, y: -190, c: "#4a6478" },
+  { x: -170, y: -110, c: "#6db3a2" },
+  { x: 170, y: -120, c: "#e8a17c" },
+  { x: -40, y: -200, c: "#8ecfe0" },
+  { x: 40, y: -210, c: "#b0885e" },
+  { x: -130, y: -170, c: "#5a8fae" },
+  { x: 130, y: -165, c: "#d98c66" },
 ] as const;
 
 /** Celebration modal (Plan.md §8/§11): spring check, confetti, progress, share. */
@@ -32,27 +34,30 @@ export function SuccessModal({
   onOpenChange,
   checkIn,
   progress,
+  variant = "default",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   checkIn: CheckInView;
   progress: TourProgressView;
+  /** "default" for ticketed sites, "food" for food stops. */
+  variant?: "default" | "food";
 }) {
   const t = useTranslations("CheckIn");
   const tShare = useTranslations("Share");
+  const reduceMotion = useReducedMotion();
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
   async function createShare() {
     setCreating(true);
     try {
-      const response = await fetch("/api/share/checkin", {
+      const json = await fetch("/api/share/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ checkInId: checkIn.id }),
-      });
-      const json = await response.json();
-      if (json.ok) setShareUrl(json.data.url as string);
+      }).then((r) => r.json()) as ApiEnvelope<{ url: string }>;
+      if (json.ok && json.data) setShareUrl(json.data.url);
     } catch {
       /* keep the modal; user can retry */
     } finally {
@@ -65,6 +70,7 @@ export function SuccessModal({
       <DialogContent className="overflow-hidden sm:max-w-md">
         <div className="relative flex flex-col items-center gap-3 pb-1 pt-2 text-center">
           {open &&
+            !reduceMotion &&
             CONFETTI.map((piece, index) => (
               <motion.span
                 key={index}
@@ -81,15 +87,17 @@ export function SuccessModal({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 14 }}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl"
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-status-completed text-white"
           >
-            ✅
+            <CircleCheckIcon aria-hidden className="size-8" />
           </motion.div>
 
           <h2 className="text-lg font-bold tracking-tight">
-            {t("successTitle")}
+            {variant === "food" ? t("ateSuccessTitle") : t("successTitle")}
           </h2>
-          <p className="text-sm text-muted-foreground">{t("successBody")}</p>
+          <p className="text-sm text-muted-foreground">
+            {variant === "food" ? t("ateSuccessBody") : t("successBody")}
+          </p>
           <p className="text-2xl font-extrabold tracking-tight">
             {checkIn.checkpointName}
           </p>
@@ -114,7 +122,7 @@ export function SuccessModal({
           />
 
           {progress.isCompleted && (
-            <p className="text-sm font-medium text-emerald-700">
+            <p className="text-sm font-medium text-status-completed-ink dark:text-status-completed">
               {t("tourComplete")}
             </p>
           )}
@@ -129,7 +137,8 @@ export function SuccessModal({
             </Link>
             {!shareUrl && (
               <Button variant="outline" onClick={createShare} disabled={creating}>
-                {creating ? "…" : `📲 ${t("share")}`}
+                <Share2Icon aria-hidden />
+                {creating ? "…" : t("share")}
               </Button>
             )}
             {shareUrl && (

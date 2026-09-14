@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ArrowLeftIcon, Clock3Icon, ClockIcon, MapIcon, MapPinIcon, NavigationIcon, SunriseIcon, TicketIcon } from "lucide-react";
 import { CheckInFlow } from "@/components/checkin/CheckInFlow";
+import { QuickStatsCard } from "@/components/checkpoint/QuickStatsCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -10,6 +12,9 @@ import { Separator } from "@/components/ui/separator";
 import type { Locale } from "@/config/constants";
 import { Link } from "@/i18n/navigation";
 import { getSessionUser } from "@/lib/session";
+import { formatVnd } from "@/lib/format";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { googleMapsDirectionsUrl } from "@/components/map/map-links";
 import {
   getCheckpointDetail,
   getTourForCheckpoint,
@@ -73,6 +78,8 @@ export default async function CheckpointPage({ params }: Props) {
     user && tour ? await getCompletedCheckpointIds(user.id, tour.slug) : [];
   const checkedIn = completedIds.includes(checkpoint.id);
 
+  const isFood = checkpoint.priceKind === "food";
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "TouristAttraction",
@@ -96,7 +103,6 @@ export default async function CheckpointPage({ params }: Props) {
         {/* Hero */}
         <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
           {checkpoint.thumbnailUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- admin-managed URLs
             <img
               src={checkpoint.thumbnailUrl}
               alt={checkpoint.name}
@@ -105,51 +111,137 @@ export default async function CheckpointPage({ params }: Props) {
           ) : null}
         </div>
 
+        {/* Tour context + title + address */}
         <div className="mt-5 flex flex-col gap-2">
           {tour && (
             <p className="text-sm text-muted-foreground">
-              {t("onTour", { tour: tour.name })} ·{" "}
+              {t("onTour", { tour: tour.name })}
+              <span
+                aria-hidden
+                className="mx-2 inline-block size-1 rounded-full bg-muted-foreground/50 align-middle"
+              />
               {t("order", { order: tour.order })}
             </p>
           )}
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
             {checkpoint.name}
           </h1>
-          <p className="text-muted-foreground">📍 {checkpoint.address}</p>
-          <div className="mt-1 flex flex-wrap gap-2">
-            <Badge variant="secondary">
-              ⏱ {t("visitMinutes", { minutes: checkpoint.estimatedVisitMinutes })}
-            </Badge>
-            {checkpoint.openingHours && (
-              <Badge variant="secondary">🕒 {checkpoint.openingHours}</Badge>
-            )}
-            {checkpoint.bestTimeToVisit && (
-              <Badge variant="secondary">🌅 {checkpoint.bestTimeToVisit}</Badge>
-            )}
-          </div>
+          <p className="flex items-center gap-1.5 text-muted-foreground">
+            <MapPinIcon aria-hidden className="size-4 shrink-0" />
+            {checkpoint.address}
+          </p>
         </div>
 
-        {/* Online guide sections (spec §8) */}
-        <article className="mt-8 flex flex-col gap-6">
-          {checkpoint.guides.map((section) => (
-            <section key={section.sectionKey}>
-              <h2 className="text-xl font-semibold tracking-tight">
-                {section.title}
-              </h2>
-              <Separator className="my-3" />
-              <div className="flex flex-col gap-3 leading-relaxed text-foreground/90">
-                {section.content
-                  .split(/\n{2,}/)
-                  .filter(Boolean)
-                  .map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
-                  ))}
-              </div>
-            </section>
-          ))}
-        </article>
+        {/* Check-in + primary actions — at the TOP so the user sees them first */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <CheckInFlow
+            checkpointId={checkpoint.id}
+            locale={locale}
+            checkedIn={checkedIn}
+            variant={isFood ? "food" : "default"}
+          />
+          {isFood && (
+            <a
+              href={googleMapsDirectionsUrl(
+                checkpoint.latitude,
+                checkpoint.longitude,
+                "WALKING",
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: "default", size: "sm" })}
+            >
+              <NavigationIcon aria-hidden className="size-4" />
+              {t("navigate")}
+            </a>
+          )}
+          {tour && (
+            <Link
+              href={`/map/${tour.slug}`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              <MapIcon aria-hidden className="size-4" />
+              {t("viewOnMap")}
+            </Link>
+          )}
+        </div>
 
-        {/* Gallery (spec §8) */}
+        {/* Food checkpoint: quick-stats card */}
+        {isFood && (
+          <div className="mt-4">
+            <QuickStatsCard
+              checkpoint={{
+                latitude: checkpoint.latitude,
+                longitude: checkpoint.longitude,
+              }}
+              openingHours={checkpoint.openingHours}
+              priceVnd={checkpoint.priceVnd}
+            />
+          </div>
+        )}
+
+        {/* Ticket/historical checkpoint: badges */}
+        {!isFood && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {checkpoint.openingHours && (
+              <Badge variant="secondary" className="gap-1">
+                <Clock3Icon aria-hidden className="size-3.5" />
+                {checkpoint.openingHours}
+              </Badge>
+            )}
+            {checkpoint.bestTimeToVisit && (
+              <Badge variant="secondary" className="gap-1">
+                <SunriseIcon aria-hidden className="size-3.5" />
+                {checkpoint.bestTimeToVisit}
+              </Badge>
+            )}
+            <Badge variant="secondary" className="gap-1">
+              <ClockIcon aria-hidden className="size-3.5" />
+              {t("visitMinutes", { minutes: checkpoint.estimatedVisitMinutes })}
+            </Badge>
+            {checkpoint.priceVnd != null && (
+              <Badge variant="secondary" className="gap-1">
+                <TicketIcon aria-hidden className="size-3.5" />
+                {t("ticketPrice", { price: formatVnd(checkpoint.priceVnd) })}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Summary */}
+        <p className="mt-4 text-base leading-relaxed text-foreground/80">
+          {checkpoint.summary}
+        </p>
+
+        {/* Article (history / culture / facts / tips) */}
+                {checkpoint.guides.length > 0 && (
+          <article className="mt-8 space-y-8">
+            {checkpoint.guides.map((section) => (
+              <section key={section.sectionKey}>
+                <h2 className="text-xl font-semibold tracking-tight">
+                  {section.title}
+                </h2>
+                <Separator className="my-3" />
+                <div className="flex flex-col gap-3 leading-relaxed text-foreground/90">
+                  {section.contentType === "HTML" ? (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeHtml(section.content) ?? "",
+                      }}
+                    />
+                  ) : (
+                    section.content
+                      .split(/\n{2,}/)
+                      .filter(Boolean)
+                      .map((paragraph, index) => <p key={index}>{paragraph}</p>)
+                  )}
+                </div>
+              </section>
+            ))}
+          </article>
+        )}
+
+        {/* Gallery */}
         {checkpoint.images.length > 0 && (
           <section className="mt-8">
             <h2 className="text-xl font-semibold tracking-tight">
@@ -158,7 +250,6 @@ export default async function CheckpointPage({ params }: Props) {
             <Separator className="my-3" />
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {checkpoint.images.map((image) => (
-                // eslint-disable-next-line @next/next/no-img-element -- admin-managed URLs
                 <img
                   key={image.url}
                   src={image.url}
@@ -170,38 +261,20 @@ export default async function CheckpointPage({ params }: Props) {
           </section>
         )}
 
-        {/* Visit info + check-in (spec §8) */}
-        <Card className="mt-8">
-          <CardContent className="flex flex-col gap-4 p-5">
-            <p className="text-lg font-semibold">📍 {t("youAreHere")}</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <CheckInFlow
-                checkpointId={checkpoint.id}
-                locale={locale}
-                checkedIn={checkedIn}
-              />
-              {tour && (
-                <Link
-                  href={`/map/${tour.slug}`}
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "sm",
-                  })}
-                >
-                  🗺️ {t("viewOnMap")}
-                </Link>
-              )}
-            </div>
-            {tour && (
+        {/* Tour footer */}
+        {tour && (
+          <Card className="mt-8">
+            <CardContent className="p-5">
               <Link
                 href={`/tours/${tour.slug}`}
-                className="text-sm text-muted-foreground underline-offset-2 hover:underline"
+                className="flex items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:underline"
               >
-                ← {t("backToTour")}
+                <ArrowLeftIcon aria-hidden className="size-3.5" />
+                {t("backToTour")}
               </Link>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </main>
 
       {/* Structured data (spec §31) */}

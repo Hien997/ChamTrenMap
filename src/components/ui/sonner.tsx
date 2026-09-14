@@ -39,6 +39,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: "cn-toast",
+          // Sonner hardcodes a faint gray (#3f3f3f / hsl 91%) for [data-description];
+          // force the theme foreground for readable contrast in light & dark mode.
+          description: "text-foreground! text-sm!",
         },
       }}
       {...props}

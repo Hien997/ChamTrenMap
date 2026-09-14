@@ -34,12 +34,13 @@ export async function getCheckpointDetail(
 
   const guides: GuideSectionView[] = [...bySectionKey.entries()]
     .sort((a, b) => (a[1][0]?.sortOrder ?? 0) - (b[1][0]?.sortOrder ?? 0))
-    .map(([sectionKey, sections]) => {
+        .map(([sectionKey, sections]) => {
       const section = pickLocalized(sections, locale);
       return {
         sectionKey: sectionKey as GuideSectionKey,
         title: section?.title ?? sectionKey,
         content: section?.content ?? "",
+        contentType: section?.contentType ?? "TEXT",
       };
     });
 
@@ -50,6 +51,8 @@ export async function getCheckpointDetail(
     longitude: checkpoint.longitude,
     radiusMeters: checkpoint.radiusMeters,
     estimatedVisitMinutes: checkpoint.estimatedVisitMinutes,
+    priceVnd: checkpoint.priceVnd,
+    priceKind: checkpoint.priceKind === "FOOD" ? "food" : "ticket",
     name: translation?.name ?? checkpoint.slug,
     summary: translation?.summary ?? "",
     address: translation?.address ?? "",

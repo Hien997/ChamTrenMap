@@ -19,11 +19,14 @@ export function TourProgress({
     <div className={cn("flex flex-col gap-2", className)}>
       <div className="flex items-center justify-between text-sm">
         {label ? <span className="text-muted-foreground">{label}</span> : null}
-        <span className="font-semibold tabular-nums">
-          {completed} / {total} · {percent}%
+        <span className="ml-auto flex items-baseline gap-2">
+          <span className="font-semibold tabular-nums">
+            {completed}/{total}
+          </span>
+          <span className="tabular-nums text-muted-foreground">{percent}%</span>
         </span>
       </div>
-      <Progress value={percent} />
+      <Progress value={percent} className="bg-primary/15" />
     </div>
   );
 }

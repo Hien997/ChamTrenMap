@@ -12,6 +12,7 @@ import type { CheckInView, TourProgressView } from "@/types";
 export type CheckInResult =
   | { status: "ok"; checkIn: CheckInView; progress: TourProgressView }
   | { status: "already_checked_in"; progress: TourProgressView | null }
+  | { status: "no_tour_link" }
   | { status: "locked" }
   | { status: "too_far"; distanceMeters: number; radiusMeters: number }
   | { status: "poor_accuracy"; accuracy: number; maxAccuracy: number }
@@ -65,8 +66,11 @@ export async function createCheckIn(
   if (!checkpoint) return { status: "not_found" };
 
   // MVP data model: a checkpoint belongs to exactly one tour (enforced by seed).
+  // When a checkpoint is present in the DB but not wired to any tour, the
+  // check-in cannot proceed through the sequential tour flow; report that as
+  // its own outcome instead of reusing "locked".
   const tourLink = checkpoint.tourLinks[0];
-  if (!tourLink) return { status: "locked" };
+  if (!tourLink) return { status: "no_tour_link" };
   const tour = tourLink.tour;
   const orderedIds = tour.checkpoints.map((tc) => tc.checkpointId);
 

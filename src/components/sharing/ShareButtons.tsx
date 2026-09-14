@@ -1,8 +1,26 @@
 "use client";
 
+import { Link2, MessageCircle, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+
+/** Lucide dropped brand marks — the Facebook "f" as an inline SVG (same API). */
+function FacebookIcon({ className, "aria-hidden": ariaHidden }: {
+  className?: string;
+  "aria-hidden"?: boolean | "true" | "false";
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden={ariaHidden}
+    >
+      <path d="M13.5 21v-8.2h2.76l.41-3.2H13.5V7.55c0-.93.26-1.56 1.59-1.56h1.7V3.13c-.3-.04-1.31-.13-2.49-.13-2.46 0-4.15 1.5-4.15 4.26v2.36H7.38v3.2h2.77V21h3.35Z" />
+    </svg>
+  );
+}
 
 /**
  * Platform-aware sharing (spec §15):
@@ -52,20 +70,24 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
           )
         }
       >
-        💙 {t("facebook")}
+        <FacebookIcon aria-hidden className="text-[#1877f2]" />
+        {t("facebook")}
       </Button>
       <Button
         type="button"
         variant="outline"
         onClick={() => openPopup(`https://sp.zalo.me/share?u=${encodedUrl}`)}
       >
-        💬 {t("zalo")}
+        <MessageCircle aria-hidden className="text-[#0068ff]" />
+        {t("zalo")}
       </Button>
       <Button type="button" variant="outline" onClick={nativeShare}>
-        📤 {t("native")}
+        <Share2 aria-hidden />
+        {t("native")}
       </Button>
       <Button type="button" variant="outline" onClick={copyLink}>
-        🔗 {t("copy")}
+        <Link2 aria-hidden />
+        {t("copy")}
       </Button>
     </div>
   );
