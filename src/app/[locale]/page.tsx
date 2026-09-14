@@ -150,7 +150,7 @@ export default async function HomePage({ params }: Props) {
       </main>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        Chắm Trên Map — Hà Tiên, Kiên Giang
+        Chắm Trên Map — Hà Tiên, An Giang
       </footer>
     </div>
   );

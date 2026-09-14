@@ -59,7 +59,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Mũi Nai",
         summary:
           "Bãi biển nổi tiếng nhất Hà Tiên với triền cát vàng nâu, làn nước trong xanh và đường quanh co trên đồi.",
-        address: "Phường Phú Hải, TP. Hà Tiên, Kiên Giang",
+        address: "Phường Phú Hải, TP. Hà Tiên, An Giang",
         openingHours: "Cả ngày",
         bestTimeToVisit: "Sáng sớm hoặc chiều hoàng hôn",
       },
@@ -67,7 +67,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Mui Nai Beach",
         summary:
           "Ha Tien's best-known beach with golden-brown sand, clear water and a winding hillside road.",
-        address: "Phu Hai ward, Ha Tien, Kien Giang",
+        address: "Phu Hai ward, Ha Tien, An Giang",
         openingHours: "All day",
         bestTimeToVisit: "Early morning or sunset",
       },
@@ -133,7 +133,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Thạch Động",
         summary:
           "Hàng ngàn phiến đá chồng xếp tự nhiên tạo thành hang động kỳ vĩ gắn với nhiều truyền thuyết Hà Tiên.",
-        address: "Ấp Thạch Sơn, Phường Mỹ Đức, TP. Hà Tiên, Kiên Giang",
+        address: "Ấp Thạch Sơn, Phường Mỹ Đức, TP. Hà Tiên, An Giang",
         openingHours: "6:00 – 18:00",
         bestTimeToVisit: "Buổi sáng mát mẻ",
       },
@@ -141,7 +141,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Thach Dong Cave",
         summary:
           "Thousands of naturally stacked stone slabs form a dramatic cave tied to many Ha Tien legends.",
-        address: "Thach Son hamlet, My Duc ward, Ha Tien, Kien Giang",
+        address: "Thach Son hamlet, My Duc ward, Ha Tien, An Giang",
         openingHours: "6:00 – 18:00",
         bestTimeToVisit: "Cool morning hours",
       },
@@ -207,7 +207,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Chùa Phù Dung",
         summary:
           "Ngôi chùa cổ trung tâm Hà Tiên với kiến trúc truyền thống và không gian yên tĩnh bên hồ Đông Hồ.",
-        address: "Đường Phào Cừ, Phường Đông Hồ, TP. Hà Tiên, Kiên Giang",
+        address: "Đường Phào Cừ, Phường Đông Hồ, TP. Hà Tiên, An Giang",
         openingHours: "6:00 – 18:00",
         bestTimeToVisit: "Sáng sớm khi mở cổng chùa",
       },
@@ -215,7 +215,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Phu Dung Pagoda",
         summary:
           "A historic pagoda in central Ha Tien with traditional architecture and a quiet setting near Dong Ho lake.",
-        address: "Phao Cu street, Dong Ho ward, Ha Tien, Kien Giang",
+        address: "Phao Cu street, Dong Ho ward, Ha Tien, An Giang",
         openingHours: "6:00 – 18:00",
         bestTimeToVisit: "Early morning when gates open",
       },
@@ -281,7 +281,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Lăng Mạc Cửu",
         summary:
           "Ngôi lăng của người mở đất Hà Tiên — Mạc Cửu — trên đồi Bình San giữa lòng thành phố.",
-        address: "Đồi Bình San, Phường Bình San, TP. Hà Tiên, Kiên Giang",
+        address: "Đồi Bình San, Phường Bình San, TP. Hà Tiên, An Giang",
         openingHours: "6:30 – 17:30",
         bestTimeToVisit: "Sáng sớm hoặc xế chiều",
       },
@@ -289,7 +289,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Mac Cuu Mausoleum",
         summary:
           "The tomb of Ha Tien's founder Mac Cuu, set on Binh San hill in the middle of town.",
-        address: "Binh San hill, Binh San ward, Ha Tien, Kien Giang",
+        address: "Binh San hill, Binh San ward, Ha Tien, An Giang",
         openingHours: "6:30 – 17:30",
         bestTimeToVisit: "Early morning or late afternoon",
       },
@@ -355,7 +355,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Khu Di Tích Lịch Sử Văn Hóa Núi Bình San — Đền Thờ Họ Mạc",
         summary:
           "Nơi thờ tự của dòng họ Mạc — gia tộc khai phá và cai quản Hà Tiên suốt hơn 100 năm.",
-        address: "Đường Mạc Cửu, Phường Bình San, TP. Hà Tiên, Kiên Giang",
+        address: "Đường Mạc Cửu, Phường Bình San, TP. Hà Tiên, An Giang",
         openingHours: "6:30 – 17:30",
         bestTimeToVisit: "Buổi sáng",
       },
@@ -363,7 +363,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Mac Family Temple",
         summary:
           "The ancestral temple of the Mac family — the clan that founded and ruled Ha Tien for over a century.",
-        address: "Mac Cuu street, Binh San ward, Ha Tien, Kien Giang",
+        address: "Mac Cuu street, Binh San ward, Ha Tien, An Giang",
         openingHours: "6:30 – 17:30",
         bestTimeToVisit: "Morning",
       },
@@ -429,7 +429,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Chợ Hà Tiên",
         summary:
           "Chợ và phố đêm bên kênh với hải sản tươi, đặc sản miệt vị và không khí chợ biên giới.",
-        address: "Đường Dương Đông, Phường Đông Hồ, TP. Hà Tiên, Kiên Giang",
+        address: "Đường Dương Đông, Phường Đông Hồ, TP. Hà Tiên, An Giang",
         openingHours: "Chợ ngày: 6:00–18:00 · Phố đêm: 17:00–22:00",
         bestTimeToVisit: "Tối, khi phố đêm nhộn nhịp",
       },
@@ -437,7 +437,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Ha Tien Market",
         summary:
           "A market and evening street by the canal with fresh seafood, local specialties and border-town buzz.",
-        address: "Duong Dong street, Dong Ho ward, Ha Tien, Kien Giang",
+        address: "Duong Dong street, Dong Ho ward, Ha Tien, An Giang",
         openingHours: "Day market 6:00–18:00 · Night street 17:00–22:00",
         bestTimeToVisit: "Evening, when the night street is lively",
       },
@@ -503,7 +503,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Núi Đá Dựng",
         summary:
           "Rừng đá hàng trăm triệu năm với những khối đá chồng xếp kỳ lạ và đường mòn dẫn lên đỉnh ngắm toàn cảnh.",
-        address: "Thôn Mỹ Đức, Xã Mỹ Đức, TP. Hà Tiên, Kiên Giang",
+        address: "Thôn Mỹ Đức, Xã Mỹ Đức, TP. Hà Tiên, An Giang",
         openingHours: "6:30 – 17:30",
         bestTimeToVisit: "Sáng sớm, mát và đẹp nhất",
       },
@@ -511,7 +511,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Da Dung Stone Forest",
         summary:
           "A hundred-million-year-old stone forest of bizarre stacked boulders with a trail to a hilltop panorama.",
-        address: "My Duc hamlet, My Duc commune, Ha Tien, Kien Giang",
+        address: "My Duc hamlet, My Duc commune, Ha Tien, An Giang",
         openingHours: "6:30 – 17:30",
         bestTimeToVisit: "Early morning, coolest and prettiest",
       },
@@ -577,7 +577,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Bún Kèn Năng",
         summary:
           "Gánh bún kèn trứ danh: cá biển xào nghệ nấu nước cốt dừa béo ngậy, ăn kèm đu đủ bào giòn và nước mắm chua ngọt.",
-        address: "Số 09 Mạc Tử Hoàng, Phường Bình San, TP. Hà Tiên, Kiên Giang",
+        address: "Số 09 Mạc Tử Hoàng, Phường Bình San, TP. Hà Tiên, An Giang",
         openingHours: "6:00 – 11:00",
         bestTimeToVisit: "7:00 sáng, khi thỏi cá còn nóng hổi",
       },
@@ -585,7 +585,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Bun Ken Nang",
         summary:
           "Ha Tien's famous bun ken stall: sea fish simmered in turmeric and rich coconut milk, served with crisp papaya slaw and sweet-sour fish sauce.",
-        address: "09 Mac Tu Hoang, Binh San ward, Ha Tien, Kien Giang",
+        address: "09 Mac Tu Hoang, Binh San ward, Ha Tien, An Giang",
         openingHours: "6:00 – 11:00",
         bestTimeToVisit: "7:00 am, while the fish broth is still steaming",
       },
@@ -651,7 +651,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Hủ Tiếu Hấp Cô Ba",
         summary:
           "Hủ tiếu hấp cách thủy thay vì trụng nước lèo, rưới nước cốt dừa thắng sánh cùng bì heo, chả giò và tôm khô.",
-        address: "Số 56 Mạc Thiên Tích, Phường Bình San, TP. Hà Tiên, Kiên Giang",
+        address: "Số 56 Mạc Thiên Tích, Phường Bình San, TP. Hà Tiên, An Giang",
         openingHours: "6:30 – 11:30",
         bestTimeToVisit: "8:30 sáng",
       },
@@ -659,7 +659,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Co Ba Steamed Noodles",
         summary:
           "Noodles steamed rather than boiled, dressed with silky coconut caramel, sliced pork belly, crispy spring rolls and dried shrimp.",
-        address: "56 Mac Thien Tich, Binh San ward, Ha Tien, Kien Giang",
+        address: "56 Mac Thien Tich, Binh San ward, Ha Tien, An Giang",
         openingHours: "6:30 – 11:30",
         bestTimeToVisit: "8:30 am",
       },
@@ -725,7 +725,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Gỏi Cá Trích & Cà Xỉu Xào Tỏi",
         summary:
           "Hương vị đầm Đông Hồ: gỏi cá trích tươi tái chanh trộn dừa nạo, cùng cà xỉu xào tỏi ớt bốc khói.",
-        address: "Ven bờ sông quanh Cầu Tô Châu / đường Trần Hầu, TP. Hà Tiên, Kiên Giang",
+        address: "Ven bờ sông quanh Cầu Tô Châu / đường Trần Hầu, TP. Hà Tiên, An Giang",
         openingHours: "10:00 – 14:00 · 17:00 – 21:00",
         bestTimeToVisit: "Buổi trưa, khi cá trích vừa cập bến",
       },
@@ -733,7 +733,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Herring Salad & Stir-fried Ca Xiu",
         summary:
           "The flavours of Dong Ho lagoon: fresh herring salad tossed with shredded coconut, alongside smoking garlic stir-fried ca xiu clams.",
-        address: "To Chau bridge riverside / Tran Hau street, Ha Tien, Kien Giang",
+        address: "To Chau bridge riverside / Tran Hau street, Ha Tien, An Giang",
         openingHours: "10:00 – 14:00 · 17:00 – 21:00",
         bestTimeToVisit: "Lunchtime, when the herring just comes ashore",
       },
@@ -799,7 +799,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Bánh Ống Lá Dứa & Bánh Bò Thốt Nốt",
         summary:
           "Quà bánh dạo phố: bánh ống lá dứa hấp trong ống nhôm nóng hổi và bánh bò thốt nốt vàng ươm xốp mềm.",
-        address: "Xe gánh bánh dọc đường Trần Hầu, cổng Chợ Hà Tiên, Kiên Giang",
+        address: "Xe gánh bánh dọc đường Trần Hầu, cổng Chợ Hà Tiên, An Giang",
         openingHours: "14:30 – 17:30",
         bestTimeToVisit: "15:30 xế chiều, khi bánh vừa hấp xong",
       },
@@ -807,7 +807,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Pandan Tube Cakes & Palm-Sugar Bobo",
         summary:
           "Street-sweets of Ha Tien: pandan tube cakes steamed in hot aluminium moulds and golden, springy palm-sugar bobo cakes.",
-        address: "Cake carts along Tran Hau street, at the Ha Tien market gate, Kien Giang",
+        address: "Cake carts along Tran Hau street, at the Ha Tien market gate, An Giang",
         openingHours: "14:30 – 17:30",
         bestTimeToVisit: "3:30 pm, right after a fresh steaming batch",
       },
@@ -873,7 +873,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Xôi Xiêm Hà Tiên",
         summary:
           "Nếp Thái dẻo thơm rưới nhân hột gà hấp cốt dừa, ăn cùng xoài chín hoặc sầu riêng — món xế trứ danh của Hà Tiên.",
-        address: "Đường Trần Hầu, cổng Chợ Hà Tiên, TP. Hà Tiên, Kiên Giang",
+        address: "Đường Trần Hầu, cổng Chợ Hà Tiên, TP. Hà Tiên, An Giang",
         openingHours: "15:00 – 19:00",
         bestTimeToVisit: "16:00 chiều",
       },
@@ -881,7 +881,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Ha Tien Sticky Rice Xiem",
         summary:
           "Fragrant sticky Siamese rice dressed with coconut-steamed custard, paired with ripe mango or durian — Ha Tien's famous street dessert.",
-        address: "Tran Hau street, at the Ha Tien market gate, Ha Tien, Kien Giang",
+        address: "Tran Hau street, at the Ha Tien market gate, Ha Tien, An Giang",
         openingHours: "15:00 – 19:00",
         bestTimeToVisit: "4:00 pm",
       },
@@ -947,7 +947,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Chợ Đêm Hà Tiên Mới",
         summary:
           "Khu ẩm thực đêm của đô thị mới bên sông: ốc giác, hải sản nướng, gà đốt Campuchia và chè thốt nốt cuối đêm.",
-        address: "Số 6 Trần Hầu kéo dài, Khu đô thị mới Hà Tiên, Kiên Giang",
+        address: "Số 6 Trần Hầu kéo dài, Khu đô thị mới Hà Tiên, An Giang",
         openingHours: "17:30 – 22:30",
         bestTimeToVisit: "Tối 18:30 – 21:30, khi các quầy đông nhất",
       },
@@ -955,7 +955,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Ha Tien New Night Market",
         summary:
           "The new-town riverside night-food quarter: snail clams, grilled seafood, Cambodian-style fired chicken and late-night palm-sugar desserts.",
-        address: "06 Tran Hau extended, New Urban Area, Ha Tien, Kien Giang",
+        address: "06 Tran Hau extended, New Urban Area, Ha Tien, An Giang",
         openingHours: "17:30 – 22:30",
         bestTimeToVisit: "Evenings 6:30–9:30 pm, when the stalls are liveliest",
       },
@@ -1021,7 +1021,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Hủ Tiếu Nam Vang Quến Hà Tiên",
         summary:
           "Tô hủ tiếu nam vang trứ danh với tôm, thịt, gan, trứng cút và nước dùng ngọt xương — thương hiệu lâu đời của Hà Tiên.",
-        address: "Đường Chi Lăng, Phường Bình San, TP. Hà Tiên, Kiên Giang",
+        address: "Đường Chi Lăng, Phường Bình San, TP. Hà Tiên, An Giang",
         openingHours: "6:00 – 11:00",
         bestTimeToVisit: "Buổi sáng, khi nước dùng vừa sánh xong",
       },
@@ -1029,7 +1029,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Nam Vang Quern Hu Tieu, Ha Tien",
         summary:
           "The town's famed nam vang noodle bowl — shrimp, sliced pork, liver and quail eggs in a rich bone broth — a long-standing Ha Tien brand.",
-        address: "Chi Lang street, Binh San ward, Ha Tien, Kien Giang",
+        address: "Chi Lang street, Binh San ward, Ha Tien, An Giang",
         openingHours: "6:00 – 11:00",
         bestTimeToVisit: "In the morning, while the broth is fresh off the pot",
       },

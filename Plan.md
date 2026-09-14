@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-A mobile-first tourism web app for Hà Tiên, Kiên Giang. Tourists follow the Hà Tiên Discovery tour on a Google Map, visit 8 checkpoints, read VN/EN online guides, check in via GPS (server-validated), track progress, and share their achievement via a public share page.
+A mobile-first tourism web app for Hà Tiên, An Giang. Tourists follow the Hà Tiên Discovery tour on a Google Map, visit 8 checkpoints, read VN/EN online guides, check in via GPS (server-validated), track progress, and share their achievement via a public share page.
 
 **Core loop:** Explore → Visit → Learn → Check In → Complete Tour → Share
 
