@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowLeftIcon, Clock3Icon, ClockIcon, MapIcon, MapPinIcon, NavigationIcon, SunriseIcon, TicketIcon } from "lucide-react";
 import { CheckInFlow } from "@/components/checkin/CheckInFlow";
+import { CheckpointGallery } from "@/components/checkpoint/CheckpointGallery";
 import { QuickStatsCard } from "@/components/checkpoint/QuickStatsCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Badge } from "@/components/ui/badge";
@@ -244,20 +245,19 @@ export default async function CheckpointPage({ params }: Props) {
         {/* Gallery */}
         {checkpoint.images.length > 0 && (
           <section className="mt-8">
-            <h2 className="text-xl font-semibold tracking-tight">
-              {t("gallery")}
-            </h2>
-            <Separator className="my-3" />
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {checkpoint.images.map((image) => (
-                <img
-                  key={image.url}
-                  src={image.url}
-                  alt={image.alt ?? checkpoint.name}
-                  className="aspect-square w-full rounded-xl object-cover"
-                />
-              ))}
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-xl font-semibold tracking-tight">
+                {t("gallery")}
+              </h2>
+              <span className="text-sm tabular-nums text-muted-foreground">
+                {checkpoint.images.length}
+              </span>
             </div>
+            <Separator className="my-3" />
+            <CheckpointGallery
+              images={checkpoint.images}
+              name={checkpoint.name}
+            />
           </section>
         )}
 
