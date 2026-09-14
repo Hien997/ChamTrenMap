@@ -1,4 +1,4 @@
-// Chàm Trên Map — Phase 1 schema (see Plan.md §5)
+// Chắm Trên Map — Phase 1 schema (see Plan.md §5)
 // NOTE: `checkpoint_audio`, `badges`, `user_badges` are intentionally deferred to Phase 2.
 
 generator client {
@@ -13,6 +13,21 @@ datasource db {
 enum TourStatus {
   DRAFT
   PUBLISHED
+}
+
+enum CheckpointPriceKind {
+  TICKET
+  FOOD
+}
+
+enum Role {
+  ANONYMOUS
+  ADMIN
+}
+
+enum ContentType {
+  TEXT
+  HTML
 }
 
 model Tour {
@@ -47,6 +62,9 @@ model Checkpoint {
   radiusMeters          Int                     @default(100) // admin-configurable check-in radius
   estimatedVisitMinutes Int                     @default(30)
   sortOrderHint         Int                     @default(0)
+  /** Entrance-ticket or food budget per person, VND; null = free. */
+  priceVnd              Int?
+  priceKind             CheckpointPriceKind     @default(TICKET)
   translations          CheckpointTranslation[]
   images                CheckpointImage[]
   guides                GuideSection[]
@@ -69,13 +87,14 @@ model CheckpointTranslation {
 }
 
 model GuideSection {
-  id           String     @id @default(cuid())
+  id           String      @id @default(cuid())
   checkpointId String
-  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  checkpoint   Checkpoint  @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
   locale       String
   sectionKey   String // "introduction" | "history" | "culture" | "interesting_facts" | "travel_tips"
   title        String
-  content      String // markdown
+  content      String
+  contentType  ContentType @default(TEXT)
   sortOrder    Int
 
   @@unique([checkpointId, locale, sectionKey])
@@ -106,6 +125,9 @@ model TourCheckpoint {
 model User {
   id           String         @id @default(cuid())
   sessionToken String         @unique // random 32-byte hex; the httpOnly cookie value
+  role         Role           @default(ANONYMOUS)
+  email        String?        @unique // null for anonymous users
+  passwordHash String?        // null for anonymous users
   createdAt    DateTime       @default(now())
   checkIns     CheckIn[]
   progress     TourProgress[]
