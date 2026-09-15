@@ -4,9 +4,17 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BackLink, Field, PageHeader, Panel } from "@/components/admin/ui";
+import { TranslationFields } from "@/components/admin/CheckpointTranslationFields";
+import { CheckpointFields } from "@/components/admin/CheckpointFields";
+
+const emptyTranslation = {
+  name: "",
+  summary: "",
+  address: "",
+  openingHours: null,
+  bestTimeToVisit: null,
+};
 
 export default function AdminCheckpointNewPage() {
   const router = useRouter();
@@ -59,76 +67,56 @@ export default function AdminCheckpointNewPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">New Checkpoint</h1>
-      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+      <BackLink href="/admin/checkpoints">Back to checkpoints</BackLink>
+      <PageHeader title="New checkpoint" />
+
+      {error && (
+        <p role="alert" className="mb-4 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+
       <form onSubmit={onSubmit} className="space-y-6">
-        <div className="space-y-1">
-          <Label>Slug</Label>
-          <Input name="slug" placeholder="e.g. chua-phu-dung" required />
+        <Panel title="URL slug">
+          <Field
+            label="Slug"
+            htmlFor="slug"
+            hint="Shown in the public URL, e.g. chua-phu-dung."
+          >
+            <Input
+              id="slug"
+              name="slug"
+              placeholder="chua-phu-dung"
+              required
+              autoComplete="off"
+            />
+          </Field>
+        </Panel>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Panel title="Tiếng Việt (vi)">
+            <TranslationFields locale="vi" defaultValue={emptyTranslation} prefix="vi" />
+          </Panel>
+          <Panel title="English (en)">
+            <TranslationFields locale="en" defaultValue={emptyTranslation} prefix="en" />
+          </Panel>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="space-y-1">
-            <Label>Latitude</Label>
-            <Input name="latitude" type="number" step="0.000001" required />
-          </div>
-          <div className="space-y-1">
-            <Label>Longitude</Label>
-            <Input name="longitude" type="number" step="0.000001" required />
-          </div>
-          <div className="space-y-1">
-            <Label>Radius (m)</Label>
-            <Input name="radiusMeters" type="number" defaultValue={100} />
-          </div>
-          <div className="space-y-1">
-            <Label>Visit (min)</Label>
-            <Input name="estimatedVisitMinutes" type="number" defaultValue={30} />
-          </div>
-          <div className="space-y-1">
-            <Label>Sort Order</Label>
-            <Input name="sortOrderHint" type="number" defaultValue={0} />
-          </div>
-          <div className="space-y-1">
-            <Label>Price</Label>
-            <Input name="priceVnd" type="number" placeholder="Empty = free" />
-          </div>
-          <div className="space-y-1">
-            <Label>Price Kind</Label>
-            <Select name="priceKind" defaultValue="TICKET">
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="TICKET">Ticket</SelectItem>
-                <SelectItem value="FOOD">Food</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-4">
-            <h3 className="font-semibold">English (en)</h3>
-            <div className="space-y-1"><Label>Name</Label><Input name="en.name" required /></div>
-            <div className="space-y-1"><Label>Summary</Label><Textarea name="en.summary" required /></div>
-            <div className="space-y-1"><Label>Address</Label><Input name="en.address" required /></div>
-            <div className="space-y-1"><Label>Opening Hours</Label><Input name="en.openingHours" /></div>
-            <div className="space-y-1"><Label>Best Time to Visit</Label><Input name="en.bestTimeToVisit" /></div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="font-semibold">Tiếng Việt (vi)</h3>
-            <div className="space-y-1"><Label>Name</Label><Input name="vi.name" required /></div>
-            <div className="space-y-1"><Label>Summary</Label><Textarea name="vi.summary" required /></div>
-            <div className="space-y-1"><Label>Address</Label><Input name="vi.address" required /></div>
-            <div className="space-y-1"><Label>Opening Hours</Label><Input name="vi.openingHours" /></div>
-            <div className="space-y-1"><Label>Best Time to Visit</Label><Input name="vi.bestTimeToVisit" /></div>
-          </div>
-        </div>
+        <Panel title="Location & visit">
+          <CheckpointFields />
+        </Panel>
 
         <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={() => router.push("/admin/checkpoints")} disabled={isPending}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/checkpoints")}
+            disabled={isPending}
+          >
             Cancel
           </Button>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Creating…" : "Create Checkpoint"}
+            {isPending ? "Creating…" : "Create checkpoint"}
           </Button>
         </div>
       </form>

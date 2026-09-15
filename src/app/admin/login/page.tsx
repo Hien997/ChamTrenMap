@@ -1,11 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
+import { WaypointsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -37,23 +37,56 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12">
+      <div className="mb-8 flex items-center gap-2.5">
+        <WaypointsIcon aria-hidden className="size-6 text-primary" />
+        <span className="text-lg font-semibold tracking-tight">
+          Chắm trên Map
+        </span>
+      </div>
+
       <form
         onSubmit={onSubmit}
-        className="w-80 space-y-4 rounded-lg border bg-white p-8 shadow"
+        className="w-full max-w-sm rounded-lg border bg-card p-6 sm:p-8"
       >
-        <h1 className="text-xl font-bold">Admin Login</h1>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="space-y-1">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" required disabled={isPending} />
+        <h1 className="text-lg font-medium tracking-tight">Log in</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Sign in to edit tours and checkpoints.
+        </p>
+
+        {error ? (
+          <p role="alert" className="mt-4 text-sm text-destructive">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="mt-6 space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              disabled={isPending}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              disabled={isPending}
+            />
+          </div>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" name="password" type="password" required disabled={isPending} />
-        </div>
-        <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? "Logging in…" : "Log in"}
+
+        <Button type="submit" disabled={isPending} className="mt-6 w-full">
+          {isPending ? "Checking…" : "Log in"}
         </Button>
       </form>
     </div>

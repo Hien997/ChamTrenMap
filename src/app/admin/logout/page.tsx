@@ -16,11 +16,15 @@ export default function AdminLogoutPage() {
   };
 
   return (
-    <div className="p-6">
-      <p>Logging out…</p>
-      <Button onClick={onLogout} disabled={isPending}>
-        {isPending ? "Logging out…" : "Confirm logout"}
-      </Button>
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="rounded-lg border bg-card p-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          {isPending ? "Logging out…" : "Ready to log out?"}
+        </p>
+        <Button onClick={onLogout} disabled={isPending} className="mt-4">
+          {isPending ? "One moment…" : "Log out"}
+        </Button>
+      </div>
     </div>
   );
 }

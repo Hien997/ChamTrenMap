@@ -1,33 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import CheckpointEditForm from "@/components/admin/CheckpointEditForm";
+import type { TCheckpoint, TGuide } from "@/components/admin/CheckpointFormTypes";
 
 export const dynamic = "force-dynamic";
-
-type TGuide = {
-  id?: string;
-  sectionKey: string;
-  locale: string;
-  title: string;
-  content: string;
-  contentType: "TEXT" | "HTML";
-  sortOrder: number;
-};
-
-type TCheckpoint = {
-  id: string;
-  slug: string;
-  latitude: number;
-  longitude: number;
-  radiusMeters: number;
-  estimatedVisitMinutes: number;
-  sortOrderHint: number;
-  priceVnd: number | null;
-  priceKind: "TICKET" | "FOOD";
-  vi: { name: string; summary: string; address: string; openingHours?: string | null; bestTimeToVisit?: string | null } | null;
-  en: { name: string; summary: string; address: string; openingHours?: string | null; bestTimeToVisit?: string | null } | null;
-  guides: TGuide[];
-};
 
 export default async function AdminCheckpointEditPage({
   params,
@@ -80,15 +56,19 @@ export default async function AdminCheckpointEditPage({
           }
         : null;
     })(),
-    guides: cp.guides.map((g) => ({
-      id: g.id,
-      sectionKey: g.sectionKey,
-      locale: g.locale,
-      title: g.title,
-      content: g.content,
-      contentType: g.contentType as "TEXT" | "HTML",
-      sortOrder: g.sortOrder,
-    })),
+    guides: cp.guides.map(
+      (g): TGuide => ({
+        id: g.id,
+        // The DB column is a plain String; narrow it to the shared union so the
+        // edit form's guide keys stay type-checked end to end.
+        sectionKey: g.sectionKey as TGuide["sectionKey"],
+        locale: g.locale as TGuide["locale"],
+        title: g.title,
+        content: g.content,
+        contentType: g.contentType,
+        sortOrder: g.sortOrder,
+      }),
+    ),
   };
 
   return <CheckpointEditForm checkpoint={checkpoint} />;

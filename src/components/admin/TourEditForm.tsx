@@ -1,13 +1,13 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GripVerticalIcon } from "lucide-react";
-import { useState } from "react";
+import { BackLink, Field, PageHeader, Panel, StatusChip } from "./ui";
 
 type TCheckpointRef = {
   id: string;
@@ -73,87 +73,128 @@ export default function AdminTourEditPage({ tour }: { tour: TTour }) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Edit Tour: {tour.slug}</h1>
+      <BackLink href="/admin/tours">Back to tours</BackLink>
+      <PageHeader
+        title={vi.name || tour.slug}
+        sub={`/${tour.slug}`}
+        actions={<StatusChip status={tour.status} />}
+      />
 
-      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="mb-4 text-sm text-destructive">
+          {error}
+        </p>
+      )}
 
       <form onSubmit={onSubmit} className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-4">
-            <h3 className="font-semibold">English (en)</h3>
-            <div className="space-y-1">
-              <Label>Status</Label>
-              <Select name="status" defaultValue={tour.status}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="DRAFT">Draft</SelectItem>
-                  <SelectItem value="PUBLISHED">Published</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Name</Label>
-              <Input name="en.name" defaultValue={en.name} required />
-            </div>
-            <div className="space-y-1">
-              <Label>Tagline</Label>
-              <Input name="en.tagline" defaultValue={en.tagline} required />
-            </div>
-            <div className="space-y-1">
-              <Label>Description</Label>
-              <Input name="en.description" defaultValue={en.description} required />
-            </div>
-            <div className="space-y-1">
-              <Label>Cover Image URL</Label>
-              <Input name="en.coverImageUrl" defaultValue={en.coverImageUrl || ""} />
-            </div>
+        <Panel title="Status">
+          <div className="max-w-48">
+            <Select name="status" defaultValue={tour.status}>
+              <SelectTrigger aria-label="Publication status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="DRAFT">Draft</SelectItem>
+                <SelectItem value="PUBLISHED">Published</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+        </Panel>
 
-          <div className="space-y-4">
-            <h3 className="font-semibold">Tiếng Việt (vi)</h3>
-            <div className="space-y-1">
-              <Label>Name</Label>
-              <Input name="vi.name" defaultValue={vi.name} required />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Panel title="Tiếng Việt (vi)">
+            <div className="space-y-4">
+              <Field label="Name" htmlFor="vi.name">
+                <Input id="vi.name" name="vi.name" defaultValue={vi.name} required />
+              </Field>
+              <Field label="Tagline" htmlFor="vi.tagline">
+                <Input id="vi.tagline" name="vi.tagline" defaultValue={vi.tagline} required />
+              </Field>
+              <Field label="Description" htmlFor="vi.description">
+                <Textarea
+                  id="vi.description"
+                  name="vi.description"
+                  defaultValue={vi.description}
+                  rows={4}
+                  required
+                />
+              </Field>
+              <Field label="Cover image URL" htmlFor="vi.coverImageUrl">
+                <Input
+                  id="vi.coverImageUrl"
+                  name="vi.coverImageUrl"
+                  type="url"
+                  defaultValue={vi.coverImageUrl || ""}
+                  autoComplete="off"
+                />
+              </Field>
             </div>
-            <div className="space-y-1">
-              <Label>Tagline</Label>
-              <Input name="vi.tagline" defaultValue={vi.tagline} required />
+          </Panel>
+
+          <Panel title="English (en)">
+            <div className="space-y-4">
+              <Field label="Name" htmlFor="en.name">
+                <Input id="en.name" name="en.name" defaultValue={en.name} required />
+              </Field>
+              <Field label="Tagline" htmlFor="en.tagline">
+                <Input id="en.tagline" name="en.tagline" defaultValue={en.tagline} required />
+              </Field>
+              <Field label="Description" htmlFor="en.description">
+                <Textarea
+                  id="en.description"
+                  name="en.description"
+                  defaultValue={en.description}
+                  rows={4}
+                  required
+                />
+              </Field>
+              <Field label="Cover image URL" htmlFor="en.coverImageUrl">
+                <Input
+                  id="en.coverImageUrl"
+                  name="en.coverImageUrl"
+                  type="url"
+                  defaultValue={en.coverImageUrl || ""}
+                  autoComplete="off"
+                />
+              </Field>
             </div>
-            <div className="space-y-1">
-              <Label>Description</Label>
-              <Input name="vi.description" defaultValue={vi.description} required />
-            </div>
-                        <div className="space-y-1">
-              <Label>Cover Image URL</Label>
-              <Input name="vi.coverImageUrl" defaultValue={vi.coverImageUrl || ""} />
-            </div>
-          </div>
+          </Panel>
         </div>
 
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-semibold">Checkpoints ({tour.checkpoints.length})</h3>
-          </div>
-          <div className="space-y-2">
-            {tour.checkpoints.map((cp) => (
-              <div
-                key={cp.id}
-                className="flex items-center gap-2 rounded border bg-gray-50 px-3 py-2"
-              >
-                <GripVerticalIcon className="h-4 w-4 cursor-move text-gray-400" />
-                <span className="flex-1 text-sm">
-                  {cp.order}. {cp.name}
-                </span>
-                <span className="text-xs text-gray-500">({cp.slug})</span>
-              </div>
-            ))}
-          </div>
-          <p className="mt-2 text-xs text-gray-500">
-            Checkpoint ordering is managed on the Checkpoints page.
+        <Panel title={`Stops on this tour (${tour.checkpoints.length})`}>
+          {tour.checkpoints.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No stops yet. Add checkpoints, then set their sort order to place
+              them on this tour.
+            </p>
+          ) : (
+            <ol className="space-y-2">
+              {tour.checkpoints.map((cp) => (
+                <li
+                  key={cp.id}
+                  className="flex items-center gap-3 rounded-md border bg-background/60 px-3 py-2"
+                >
+                  <GripVerticalIcon
+                    aria-hidden
+                    className="size-4 shrink-0 text-muted-foreground/60"
+                  />
+                  <span className="w-5 text-sm tabular-nums text-muted-foreground">
+                    {cp.order}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {cp.name}
+                  </span>
+                  <span className="hidden text-xs text-muted-foreground sm:inline">
+                    /{cp.slug}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+          <p className="mt-3 text-xs text-muted-foreground">
+            To change the order, edit each checkpoint&apos;s sort order.
           </p>
-        </div>
+        </Panel>
 
         <div className="flex justify-end gap-3">
           <Button
@@ -165,7 +206,7 @@ export default function AdminTourEditPage({ tour }: { tour: TTour }) {
             Cancel
           </Button>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? "Saving…" : "Save changes"}
           </Button>
         </div>
       </form>

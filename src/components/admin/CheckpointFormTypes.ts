@@ -6,10 +6,19 @@ export const GUIDE_KEYS = [
   { key: "travel_tips", label: "Travel Tips" },
 ] as const;
 
+export type GuideSectionKey =
+  | "introduction"
+  | "history"
+  | "culture"
+  | "interesting_facts"
+  | "travel_tips";
+
+export type TGuideSectionKey = GuideSectionKey;
+
 export type TGuide = {
   id?: string;
   sectionKey: string;
-  locale: string;
+  locale: "vi" | "en";
   title: string;
   content: string;
   contentType: "TEXT" | "HTML";

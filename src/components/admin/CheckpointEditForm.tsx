@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TranslationFields } from "./CheckpointTranslationFields";
 import { CheckpointFields } from "./CheckpointFields";
 import { GuideSectionEditor } from "./GuideSectionEditor";
+import { BackLink, PageHeader, Panel } from "./ui";
+import { GUIDE_KEYS } from "./CheckpointFormTypes";
 import type { TCheckpoint, TGuide } from "./CheckpointFormTypes";
 
 export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckpoint }) {
@@ -23,9 +25,8 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckp
     setError(null);
     const formData = new FormData(e.currentTarget);
 
-    const guideKeys = ["introduction", "history", "culture", "interesting_facts", "travel_tips"];
     const guides: TGuide[] = [];
-    for (const gk of guideKeys) {
+    for (const { key: gk } of GUIDE_KEYS) {
       for (const locale of ["vi", "en"] as const) {
         const existing = checkpoint.guides.find((g) => g.sectionKey === gk && g.locale === locale);
         const title = (formData.get(`guide.${gk}.${locale}.title`) as string) ?? "";
@@ -85,33 +86,67 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckp
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <div className="grid gap-6 md:grid-cols-2">
-        <TranslationFields locale="en" defaultValue={en} prefix="en" />
-        <TranslationFields locale="vi" defaultValue={vi} prefix="vi" />
-      </div>
-      <CheckpointFields checkpoint={checkpoint} />
-      <Tabs defaultValue="vi">
-        <TabsList>
-          <TabsTrigger value="vi">Guide Sections (vi)</TabsTrigger>
-          <TabsTrigger value="en">Guide Sections (en)</TabsTrigger>
-        </TabsList>
-        <TabsContent value="vi">
-          <GuideSectionEditor locale="vi" existingGuides={checkpoint.guides} />
-        </TabsContent>
-        <TabsContent value="en">
-          <GuideSectionEditor locale="en" existingGuides={checkpoint.guides} />
-        </TabsContent>
-      </Tabs>
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={() => router.push("/admin/checkpoints")} disabled={isPending}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving…" : "Save"}
-        </Button>
-      </div>
-    </form>
+    <div>
+      <BackLink href="/admin/checkpoints">Back to checkpoints</BackLink>
+      <PageHeader
+        title={vi.name || checkpoint.slug}
+        sub={`/${checkpoint.slug}`}
+      />
+
+      <form onSubmit={onSubmit} className="space-y-6">
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Panel title="Tiếng Việt (vi)">
+            <TranslationFields locale="vi" defaultValue={vi} prefix="vi" />
+          </Panel>
+          <Panel title="English (en)">
+            <TranslationFields locale="en" defaultValue={en} prefix="en" />
+          </Panel>
+        </div>
+
+        <Panel title="Location & visit">
+          <CheckpointFields checkpoint={checkpoint} />
+        </Panel>
+
+        <Panel title="Guide sections">
+          {/* keepMounted on both panels: the hidden locale's fields must stay in
+              the DOM so they still appear in FormData. Without it the inactive
+              locale submitted no guide fields at all, and because the PATCH
+              route replaces every guide row (deleteMany + createMany) that
+              silently wiped the other locale's guides on each save. */}
+          <Tabs defaultValue="vi">
+            <TabsList>
+              <TabsTrigger value="vi">Tiếng Việt</TabsTrigger>
+              <TabsTrigger value="en">English</TabsTrigger>
+            </TabsList>
+            <TabsContent value="vi" keepMounted className="mt-4">
+              <GuideSectionEditor locale="vi" existingGuides={checkpoint.guides} />
+            </TabsContent>
+            <TabsContent value="en" keepMounted className="mt-4">
+              <GuideSectionEditor locale="en" existingGuides={checkpoint.guides} />
+            </TabsContent>
+          </Tabs>
+        </Panel>
+
+        <div className="flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/checkpoints")}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Saving…" : "Save changes"}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

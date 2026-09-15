@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { BackLink, Field, PageHeader, Panel } from "@/components/admin/ui";
 
 export default function AdminTourNewPage() {
   const router = useRouter();
@@ -51,56 +52,76 @@ export default function AdminTourNewPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">New Tour</h1>
+      <BackLink href="/admin/tours">Back to tours</BackLink>
+      <PageHeader title="New tour" />
 
-      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="mb-4 text-sm text-destructive">
+          {error}
+        </p>
+      )}
 
       <form onSubmit={onSubmit} className="space-y-6">
-        <div className="space-y-1">
-          <Label>Slug</Label>
-          <Input name="slug" placeholder="e.g. ha-tien-discovery" required />
-        </div>
+        <Panel title="URL slug">
+          <Field
+            label="Slug"
+            htmlFor="slug"
+            hint="Shown in the public URL, e.g. ha-tien-discovery."
+          >
+            <Input
+              id="slug"
+              name="slug"
+              placeholder="ha-tien-discovery"
+              required
+              autoComplete="off"
+            />
+          </Field>
+        </Panel>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-4">
-            <h3 className="font-semibold">English (en)</h3>
-            <div className="space-y-1">
-              <Label>Name</Label>
-              <Input name="en.name" placeholder="Tour name (English)" required />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Panel title="Tiếng Việt (vi)">
+            <div className="space-y-4">
+              <Field label="Name" htmlFor="vi.name">
+                <Input id="vi.name" name="vi.name" placeholder="Tên tour" required />
+              </Field>
+              <Field label="Tagline" htmlFor="vi.tagline">
+                <Input id="vi.tagline" name="vi.tagline" required />
+              </Field>
+              <Field label="Description" htmlFor="vi.description">
+                <Textarea id="vi.description" name="vi.description" rows={3} required />
+              </Field>
+              <Field label="Cover image URL" htmlFor="vi.coverImageUrl">
+                <Input
+                  id="vi.coverImageUrl"
+                  name="vi.coverImageUrl"
+                  type="url"
+                  placeholder="https://…"
+                />
+              </Field>
             </div>
-            <div className="space-y-1">
-              <Label>Tagline</Label>
-              <Input name="en.tagline" required />
-            </div>
-            <div className="space-y-1">
-              <Label>Description</Label>
-              <Input name="en.description" required />
-            </div>
-            <div className="space-y-1">
-              <Label>Cover Image URL</Label>
-              <Input name="en.coverImageUrl" placeholder="https://..." />
-            </div>
-          </div>
+          </Panel>
 
-          <div className="space-y-4">
-            <h3 className="font-semibold">Tiếng Việt (vi)</h3>
-            <div className="space-y-1">
-              <Label>Name</Label>
-              <Input name="vi.name" placeholder="Tên tour (Việt)" required />
+          <Panel title="English (en)">
+            <div className="space-y-4">
+              <Field label="Name" htmlFor="en.name">
+                <Input id="en.name" name="en.name" placeholder="Tour name" required />
+              </Field>
+              <Field label="Tagline" htmlFor="en.tagline">
+                <Input id="en.tagline" name="en.tagline" required />
+              </Field>
+              <Field label="Description" htmlFor="en.description">
+                <Textarea id="en.description" name="en.description" rows={3} required />
+              </Field>
+              <Field label="Cover image URL" htmlFor="en.coverImageUrl">
+                <Input
+                  id="en.coverImageUrl"
+                  name="en.coverImageUrl"
+                  type="url"
+                  placeholder="https://…"
+                />
+              </Field>
             </div>
-            <div className="space-y-1">
-              <Label>Tagline</Label>
-              <Input name="vi.tagline" required />
-            </div>
-            <div className="space-y-1">
-              <Label>Description</Label>
-              <Input name="vi.description" required />
-            </div>
-            <div className="space-y-1">
-              <Label>Cover Image URL</Label>
-              <Input name="vi.coverImageUrl" placeholder="https://..." />
-            </div>
-          </div>
+          </Panel>
         </div>
 
         <div className="flex justify-end gap-3">
@@ -113,7 +134,7 @@ export default function AdminTourNewPage() {
             Cancel
           </Button>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Creating…" : "Create Tour"}
+            {isPending ? "Creating…" : "Create tour"}
           </Button>
         </div>
       </form>
