@@ -46,12 +46,9 @@ export async function GET(request: NextRequest) {
       })),
       guides: checkpoint.guides.map((g) => ({
         id: g.id,
-        sectionKey: g.sectionKey,
         locale: g.locale,
-        title: g.title,
         content: g.content,
         contentType: g.contentType,
-        sortOrder: g.sortOrder,
       })),
       tours: checkpoint.tourLinks.map((tl) => ({
         tourId: tl.tour.id,
@@ -126,18 +123,16 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    // Replace all guide sections
+    // Replace all guide documents (one per locale)
     if (guides) {
       await prisma.guideSection.deleteMany({ where: { checkpointId: checkpoint.id } });
       await prisma.guideSection.createMany({
         data: guides.map((g) => ({
           checkpointId: checkpoint.id,
           locale: g.locale,
-          sectionKey: g.sectionKey,
-          title: g.title,
-          content: g.contentType === "HTML" ? sanitizeHtml(g.content) : g.content,
+          content: sanitizeHtml(g.content),
           contentType: g.contentType,
-          sortOrder: g.sortOrder,
+          sortOrder: 0,
         })),
       });
     }

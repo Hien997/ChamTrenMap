@@ -1,5 +1,4 @@
 import { GuideSection } from "./GuideSection";
-import { GUIDE_KEYS } from "./CheckpointFormTypes";
 import type { TGuide } from "./CheckpointFormTypes";
 
 interface Props {
@@ -7,30 +6,13 @@ interface Props {
   existingGuides: TGuide[];
 }
 
-/**
- * The five guide sections for one locale.
- *
- * Passes the whole stored guide row through (not just title/content/order) so
- * the section keeps its `contentType` — dropping it silently downgraded every
- * HTML guide to plain text on the next save.
- */
+/** The single guide document for one locale. */
 export function GuideSectionEditor({ locale, existingGuides }: Props) {
+  const existing = existingGuides.find((g) => g.locale === locale);
   return (
     <div lang={locale}>
-      {GUIDE_KEYS.map((gk) => {
-        const existing = existingGuides.find(
-          (g) => g.sectionKey === gk.key && g.locale === locale,
-        );
-        return (
-          <GuideSection
-            key={`${gk.key}-${locale}`}
-            locale={locale}
-            sectionKey={gk.key}
-            label={gk.label}
-            existing={existing}
-          />
-        );
-      })}
+      <GuideSection locale={locale} existing={existing} />
     </div>
   );
 }
+

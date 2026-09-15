@@ -1,11 +1,7 @@
 import type { Locale } from "@/config/constants";
 import { prisma } from "@/lib/prisma";
 import { pickLocalized } from "@/services/localize";
-import type {
-  CheckpointDetailView,
-  GuideSectionKey,
-  GuideSectionView,
-} from "@/types";
+import type { CheckpointDetailView, GuideSectionView } from "@/types";
 
 /** Full checkpoint with localized guide sections & gallery (Plan.md §6). */
 export async function getCheckpointDetail(
@@ -24,25 +20,18 @@ export async function getCheckpointDetail(
 
   const translation = pickLocalized(checkpoint.translations, locale);
 
-  // Group guide sections by key, then pick the requested locale (vi fallback).
-  const bySectionKey = new Map<string, typeof checkpoint.guides>();
-  for (const section of checkpoint.guides) {
-    const list = bySectionKey.get(section.sectionKey) ?? [];
-    list.push(section);
-    bySectionKey.set(section.sectionKey, list);
-  }
+  // One guide row per locale; pick the requested locale (vi fallback).
+  const guide = pickLocalized(checkpoint.guides, locale);
 
-  const guides: GuideSectionView[] = [...bySectionKey.entries()]
-    .sort((a, b) => (a[1][0]?.sortOrder ?? 0) - (b[1][0]?.sortOrder ?? 0))
-        .map(([sectionKey, sections]) => {
-      const section = pickLocalized(sections, locale);
-      return {
-        sectionKey: sectionKey as GuideSectionKey,
-        title: section?.title ?? sectionKey,
-        content: section?.content ?? "",
-        contentType: section?.contentType ?? "TEXT",
-      };
-    });
+  const guides: GuideSectionView[] = guide
+    ? [
+        {
+          locale: guide.locale as "vi" | "en",
+          content: guide.content,
+          contentType: guide.contentType,
+        },
+      ]
+    : [];
 
   return {
     id: checkpoint.id,

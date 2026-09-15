@@ -57,16 +57,19 @@ async function seedCheckpoint(checkpoint: SeedCheckpoint) {
   });
 
   await prisma.guideSection.createMany({
-    data: checkpoint.guides.flatMap((section, index) =>
-      (Object.keys(section.content) as SeedLocale[]).map((locale) => ({
-        checkpointId: created.id,
-        locale,
-        sectionKey: section.sectionKey,
-        title: section.title[locale],
-        content: section.content[locale],
-        sortOrder: index,
-      })),
-    ),
+    data: (["vi", "en"] as SeedLocale[]).map((locale) => ({
+      checkpointId: created.id,
+      locale,
+      // Merge the 5 legacy sections into one HTML doc; h2s are structure, not fields.
+      content: checkpoint.guides
+        .map(
+          (section) =>
+            `<h2>${section.title[locale]}</h2><p>${section.content[locale]}</p>`,
+        )
+        .join(""),
+      contentType: "HTML",
+      sortOrder: 0,
+    })),
   });
 
   await prisma.checkpointImage.createMany({

@@ -59,14 +59,9 @@ export default async function AdminCheckpointEditPage({
     guides: cp.guides.map(
       (g): TGuide => ({
         id: g.id,
-        // The DB column is a plain String; narrow it to the shared union so the
-        // edit form's guide keys stay type-checked end to end.
-        sectionKey: g.sectionKey as TGuide["sectionKey"],
         locale: g.locale as TGuide["locale"],
-        title: g.title,
         content: g.content,
         contentType: g.contentType,
-        sortOrder: g.sortOrder,
       }),
     ),
   };

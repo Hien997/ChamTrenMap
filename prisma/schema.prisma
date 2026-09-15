@@ -91,13 +91,11 @@ model GuideSection {
   checkpointId String
   checkpoint   Checkpoint  @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
   locale       String
-  sectionKey   String // "introduction" | "history" | "culture" | "interesting_facts" | "travel_tips"
-  title        String
-  content      String
-  contentType  ContentType @default(TEXT)
-  sortOrder    Int
+  content      String // single HTML document; headings inside are structure
+  contentType  ContentType @default(HTML)
+  sortOrder    Int         @default(0)
 
-  @@unique([checkpointId, locale, sectionKey])
+  @@unique([checkpointId, locale])
 }
 
 model CheckpointImage {

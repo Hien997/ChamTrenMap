@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowLeftIcon, Clock3Icon, ClockIcon, MapIcon, MapPinIcon, NavigationIcon, SunriseIcon, TicketIcon } from "lucide-react";
 import { CheckInFlow } from "@/components/checkin/CheckInFlow";
 import { CheckpointGallery } from "@/components/checkpoint/CheckpointGallery";
+import { GuideContentRenderer } from "@/components/guide/GuideContent";
 import { QuickStatsCard } from "@/components/checkpoint/QuickStatsCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,6 @@ import type { Locale } from "@/config/constants";
 import { Link } from "@/i18n/navigation";
 import { getSessionUser } from "@/lib/session";
 import { formatVnd } from "@/lib/format";
-import { sanitizeHtml } from "@/lib/sanitize";
 import { googleMapsDirectionsUrl } from "@/components/map/map-links";
 import {
   getCheckpointDetail,
@@ -214,30 +214,11 @@ export default async function CheckpointPage({ params }: Props) {
           {checkpoint.summary}
         </p>
 
-        {/* Article (history / culture / facts / tips) */}
-                {checkpoint.guides.length > 0 && (
-          <article className="mt-8 space-y-8">
-            {checkpoint.guides.map((section) => (
-              <section key={section.sectionKey}>
-                <h2 className="text-xl font-semibold tracking-tight">
-                  {section.title}
-                </h2>
-                <Separator className="my-3" />
-                <div className="flex flex-col gap-3 leading-relaxed text-foreground/90">
-                  {section.contentType === "HTML" ? (
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(section.content) ?? "",
-                      }}
-                    />
-                  ) : (
-                    section.content
-                      .split(/\n{2,}/)
-                      .filter(Boolean)
-                      .map((paragraph, index) => <p key={index}>{paragraph}</p>)
-                  )}
-                </div>
-              </section>
+        {/* Guide article (single content document) */}
+        {checkpoint.guides.length > 0 && (
+          <article className="mt-8">
+            {checkpoint.guides.map((guide) => (
+              <GuideContentRenderer key={guide.locale} content={guide.content} />
             ))}
           </article>
         )}

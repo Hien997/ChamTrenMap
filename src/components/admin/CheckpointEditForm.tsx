@@ -8,7 +8,6 @@ import { TranslationFields } from "./CheckpointTranslationFields";
 import { CheckpointFields } from "./CheckpointFields";
 import { GuideSectionEditor } from "./GuideSectionEditor";
 import { BackLink, PageHeader, Panel } from "./ui";
-import { GUIDE_KEYS } from "./CheckpointFormTypes";
 import type { TCheckpoint, TGuide } from "./CheckpointFormTypes";
 
 export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckpoint }) {
@@ -26,24 +25,17 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckp
     const formData = new FormData(e.currentTarget);
 
     const guides: TGuide[] = [];
-    for (const { key: gk } of GUIDE_KEYS) {
-      for (const locale of ["vi", "en"] as const) {
-        const existing = checkpoint.guides.find((g) => g.sectionKey === gk && g.locale === locale);
-        const title = (formData.get(`guide.${gk}.${locale}.title`) as string) ?? "";
-        const content = (formData.get(`guide.${gk}.${locale}.content`) as string) ?? "";
-        // Skip entirely-empty sections (title AND content blank) so the API
-        // doesn't try to create empty guide rows.
-        if (!title.trim() && !content.trim()) continue;
-        guides.push({
-          id: existing?.id,
-          sectionKey: gk,
-          locale,
-          title,
-          content,
-          contentType: (formData.get(`guide.${gk}.${locale}.contentType`) as "TEXT" | "HTML") || "TEXT",
-          sortOrder: parseInt(formData.get(`guide.${gk}.${locale}.sortOrder`) as string) || 0,
-        });
-      }
+    for (const locale of ["vi", "en"] as const) {
+      const existing = checkpoint.guides.find((g) => g.locale === locale);
+      const content = ((formData.get(`guide.${locale}.content`) as string) ?? "").trim();
+      // Skip empty locales so the API doesn't try to create empty guide rows.
+      if (!content) continue;
+      guides.push({
+        id: existing?.id,
+        locale,
+        content,
+        contentType: "HTML",
+      });
     }
 
     const payload = {
@@ -113,7 +105,7 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckp
           <CheckpointFields checkpoint={checkpoint} />
         </Panel>
 
-        <Panel title="Guide sections">
+        <Panel title="Guide content">
           {/* keepMounted on both panels: the hidden locale's fields must stay in
               the DOM so they still appear in FormData. Without it the inactive
               locale submitted no guide fields at all, and because the PATCH

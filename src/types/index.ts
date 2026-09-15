@@ -38,16 +38,8 @@ export interface TourDetailView extends TourSummaryView {
   checkpoints: TourCheckpointView[];
 }
 
-export type GuideSectionKey =
-  | "introduction"
-  | "history"
-  | "culture"
-  | "interesting_facts"
-  | "travel_tips";
-
 export interface GuideSectionView {
-  sectionKey: GuideSectionKey;
-  title: string;
+  locale: "vi" | "en";
   content: string;
   contentType: "TEXT" | "HTML";
 }

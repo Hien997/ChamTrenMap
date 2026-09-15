@@ -79,11 +79,9 @@ export async function POST(request: NextRequest) {
           ? {
               create: guides.map((g) => ({
                 locale: g.locale,
-                sectionKey: g.sectionKey,
-                title: g.title,
-                content: g.contentType === "HTML" ? sanitizeHtml(g.content) : g.content,
+                content: sanitizeHtml(g.content),
                 contentType: g.contentType,
-                sortOrder: g.sortOrder,
+                sortOrder: 0,
               })),
             }
           : undefined,

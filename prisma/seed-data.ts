@@ -9,12 +9,6 @@
 export type SeedLocale = "vi" | "en";
 
 export interface SeedGuideSection {
-  sectionKey:
-    | "introduction"
-    | "history"
-    | "culture"
-    | "interesting_facts"
-    | "travel_tips";
   title: Record<SeedLocale, string>;
   content: Record<SeedLocale, string>;
 }
@@ -74,7 +68,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Mũi Nai nằm cách trung tâm Hà Tiên khoảng 3 km về phía đông nam, là bãi tắm nổi bật nhất của thành phố biển này. Triền cát thoải, nước trong và hàng quán ven bờ khiến nơi đây phù hợp cho cả gia đình.",
@@ -82,7 +75,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: 'Tên gọi Mũi Nai xuất hiện trong mười bài thơ nổi tiếng "Hà Tiên thập vịnh" của Mạc Thiên Tích thế kỷ XVIII — nơi đây xưa là bến nước gắn với đời sống cư dân ven biển.',
@@ -90,7 +82,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Chiều muộn, người dân và du khách tụ về Mũi Nai tắm biển, ăn hải sản và ngắm hoàng hôn trên vịnh Thái Lan. Gánh hàng rong, chè và trái cây tạo nên không khí chợ biển đặc trưng.",
@@ -98,7 +89,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Cát ở Mũi Nai có màu vàng nâu đặc trưng do nguồn đá gốc địa phương. Từ đường trên đồi, bạn có thể nhìn trọn vịnh và, trong những ngày trong trẻo, hòn đảo phía xa.",
@@ -106,7 +96,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Mang kem chống nắng và nước uống, giữ vé để gửi xe thuận tiện. Kết hợp tham quan chùa Hang và đồi sim trên đường lên Mũi Nai.",
@@ -148,7 +137,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Thạch Động — còn gọi là Thạch Sơn — là khối đá vôi cao khoảng 40 m nổi lên giữa đồng bằng, với hang xuyên núi nhìn ra biển. Đây là một trong tám cảnh nổi tiếng của Hà Tiên xưa.",
@@ -156,7 +144,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Thời kỳ Mạc Cửu mở đất, Thạch Động là điểm quan sát cửa biển quan trọng. Sau này, trong hang còn lưu giữ nhiều dấu tích kháng chiến của thế kỷ XX.",
@@ -164,7 +151,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Trong hang có miếu nhỏ thờ Thánh Mẫu và gắn với truyền thuyết Tấm của phiên bản Hà Tiên — người con gái bị oan được người chài cứu. Người dân thường đến dâng hương cầu bình an.",
@@ -172,7 +158,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Các phiến đá chồng khít tự nhiên đến mức không cần vữa — dạng karst xếp phiến hiếm gặp. Trên đỉnh núi có cột đá trông như cổng trời.",
@@ -180,7 +165,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Mang giày đi bộ vì bậc đá trơn, xin phép trước khi chụp ảnh khu miếu. Ghé cùng Mũi Nai vì nằm trên cung đường phía nam thành phố.",
@@ -222,7 +206,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Chùa Phù Dung nằm ngay trung tâm thị xã, là một trong những ngôi chùa lâu đời nhất Hà Tiên. Sân chùa rộng, cây cổ thụ che bóng và tiếng chuông ngân mang lại cảm giác bình yên giữa phố thị.",
@@ -230,7 +213,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Chùa gắn với giai thoại cô gái Phù Dung thời Mạc Thiên Tích. Qua nhiều lần trùng tu, ngôi chùa vẫn giữ bố cục và nét chạm khắc truyền thống của vùng Hà Tiên.",
@@ -238,7 +220,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Vào rằm và lễ Phật đản, Phật tử khắp Hà Tiên tụ họp làm lễ tại đây. Chùa còn giữ nhiều hoành phi, câu đối cổ mang dấu ấn dòng họ Mạc.",
@@ -246,7 +227,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Từ cổng chùa nhìn ra hồ Đông Hồ — vào mùa nước nổi, cảnh chùa phản chiếu trên mặt nước rất đẹp. Nơi đây cách lăng Mạc Cửu chỉ vài phút đi bộ.",
@@ -254,7 +234,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Ăn mặc lịch sự và giữ yên tĩnh trong sân chùa. Kết hợp thăm lăng Mạc Cửu và đền thờ họ Mạc trong bán kính 500 m — cụm di tích trung tâm của thành phố.",
@@ -296,7 +275,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Lăng Mạc Cửu tọa lạc trên đồi Bình San — nơi an táng Mạc Cửu, người khai phá vùng đất Hà Tiên cuối thế kỷ XVII. Cả khu lăng quanh năm rợp bóng cây và hương hoa.",
@@ -304,7 +282,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Mạc Cửu (1655–1735), gốc người Lôi Châu, đã tập hợp lưu dân khai phá Hà Tiên thành thương cảng sầm uất, rồi dâng đất cho chúa Nguyễn và được phong Tổng binh trấn Hà Tiên.",
@@ -312,7 +289,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Hằng năm vào kỳ giỗ, dòng họ và người dân Hà Tiên làm lễ lâu đời tại lăng. Kiến trúc lăng kết hợp phong cách Hoa – Việt đặc trưng của vùng biên giới biển Tây.",
@@ -320,7 +296,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Xung quanh lăng là mộ phần của nhiều đời họ Mạc — cả khu vực như một bảo tàng mở về lịch sử Hà Tiên. Con cháu họ Mạc vẫn sinh sống và giữ nghề truyền thống trong thành phố.",
@@ -328,7 +303,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Đi bộ lên đồi qua cổng tam quan và giữ trật tự vì đây là nơi thờ tự. Đi tiếp 200 m đến đền thờ họ Mạc và chùa Tam Bảo trên cùng trục di tích.",
@@ -370,7 +344,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Đền thờ họ Mạc nằm ở chân đồi Bình San, thờ các thế hệ ông cha họ Mạc cùng những người có công với Hà Tiên. Nghiên đêm, án hương và hoành phi nơi đây đều mang giá trị nghệ thuật cổ.",
@@ -378,7 +351,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Sau khi Mạc Cửu mất, con cháu kế nghiệp cai quản Hà Tiên hơn 100 năm. Đền thờ là nơi tưởng niệm cả dòng tộc — từ Mạc Cửu, Mạc Thiên Tích đến các thế hệ sau.",
@@ -386,7 +358,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Lễ giỗ tổ họ Mạc diễn ra trang nghiêm với nghi thức truyền thống. Đây cũng là nơi diễn ra hoạt động văn hóa cộng đồng của người Hà Tiên gốc Hoa – Việt.",
@@ -394,7 +365,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: 'Cách đền không xa là miếu bà Cô Hiên — nhân vật huyền thoại gắn với tích trầu cau của Hà Tiên. Cả cụm di tích hình thành nên "phố cổ" nhỏ của thành phố.',
@@ -402,7 +372,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Ghé cùng lăng Mạc Cửu và chùa Tam Bảo trong một vòng đi bộ. Ăn mặc trang nhã, giữ trật tự khu thờ tự.",
@@ -444,7 +413,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Chợ Hà Tiên nằm bên kênh dẫn ra hồ Đông Hồ, là trung tâm mua sắm và ẩm thực của thành phố. Buổi tối, con đường ven kênh biến thành phố đêm với hàng loạt gánh hải sản, bún kị và bánh quai dầu.",
@@ -452,7 +420,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Hà Tiên xưa là thương cảng quốc tế sầm uất dưới thời Mạc Cửu, thương thuyền các nước đến buôn bán. Chợ ngày nay kế thừa vai trò ấy trên chính mảnh đất trăm năm.",
@@ -460,7 +427,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Chợ phản chiếu nét pha trộn Việt – Hoa – Khmer của Hà Tiên: từ cách nêm nếm món ăn đến tiếng rao, mùi hương và nhịp sống ven kênh.",
@@ -468,7 +434,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Bún kị Hà Tiên — nước lèo cá thơm được lên men tự nhiên — là món phải thử. Cá gàng, gỏi cá trích và bánh căn cũng là đặc sản không thể bỏ lỡ.",
@@ -476,7 +441,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Hỏi giá trước khi gọi món, mang tiền mặt vì nhiều gánh hàng không nhận chuyển khoản. Ghé chợ sáng sớm để mua khô hải sản làm quà.",
@@ -518,7 +482,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Núi Đá Dựng là quần thể đá đen kỳ vĩ cách trung tâm Hà Tiên khoảng 6 km về phía tây. Con đường mòn len qua các khối đá đưa bạn lên đỉnh — nơi có thể nhìn thấy biên giới và biển phía xa.",
@@ -526,7 +489,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Dưới thời Mạc Cửu, vùng núi này thuộc mạng lưới trấn giữ biên giới phía tây của trấn Hà Tiên. Những dấu tích lán trại và đạo lộ cũ vẫn được người dân nhắc đến.",
@@ -534,7 +496,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Người địa phương coi đá Dựng là linh vật của đất trời; nhiều câu ca dao, truyền thuyết kể về những tảng đá có hình người, hình thú được tự nhiên khắc tạc.",
@@ -542,7 +503,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Các khối đá được hình thành từ dòng dung nham cổ cách đây hàng trăm triệu năm, phong hóa thành hình thù độc đáo. Trên đỉnh có nhiều hang nhỏ để khám phá.",
@@ -550,7 +510,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Mang giày trèo tốt, nước uống và đi theo đoàn. Không trèo đá sau mưa vì trơn. Kết hợp thăm chùa Hang ở chân núi.",
@@ -592,7 +551,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Bún kèn là món sáng đặc trưng nhất của Hà Tiên: thịt cá lóc hoặc cá nhồng làm nhuyễn, xào tẩm nghệ thơm lừng rồi nấu cùng nước cốt dừa béo ngậy. Tô bún kèn ăn kèm đu đủ bào giòn, dưa leo, rau sống và chén nước mắm chua ngọt.",
@@ -600,7 +558,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Bún kèn ra đời từ nếp ăn sáng của cư dân chài lưới ven kênh Hà Tiên — cá đánh bắt trong ngày được chế biến ngay để giữ trọn vị tươi. Gánh bún kèn Năng là một trong những gánh lâu đời nhất thành phố.",
@@ -608,7 +565,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Chiếc tô bún kèn phản chiếu giao thoa Kinh – Khmer – Hoa: nghệ và nước cốt dừa của người Khmer, kỹ thuật làm cá của người Hoa, cách nêm mắm chua ngọt của người Kinh.",
@@ -616,7 +572,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Tên gọi 'kèn' được nhiều người giải thích từ hình dáng thỏi cá xào nghệ cong như chiếc kèn. Đu đủ bào giòn trộn trong tô tạo độ sần đặc trưng không thể thay thế.",
@@ -624,7 +579,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Đến sớm trước 9:00 để kẻo hết cá. Ghé cùng hủ tiếu hấp Cô Ba trên trục Mạc Công Du — cụm ăn sáng trung tâm của thành phố.",
@@ -666,7 +620,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Hủ tiếu hấp Hà Tiên không trụng qua nước lèo mà được hấp cách thủy, giữ sợi bún dai và khô ráo. Khi ăn, rưới nước cốt dừa thắng sánh mịn trộn cùng nước mắm chua ngọt, rắc bì heo thái sợi, tôm khô và chả giò giòn rụm.",
@@ -674,7 +627,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Món ăn mang đậm dấu ấn người Hoa tại Hà Tiên: kỹ thuật hấp từ ẩm thực Triều Châu kết hợp nước cốt dừa bản địa, tạo nên phiên bản hủ tiếu khô không lặp lại ở nơi khác.",
@@ -682,7 +634,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Các quán hủ tiếu hấp quanh trục Mạc Công Du – Mạc Thiên Tích do bà con gốc Hoa mở và giữ nghề qua nhiều đời, phục vụ cả người địa phương lẫn du khách.",
@@ -690,7 +641,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Nước cốt dừa được thắng trong nồi đất đến khi sánh như caramel — bí quyết quyết định chất lượng tô hủ tiếu hấp. Nhiều quán còn giã đậu phộng rắc thêm khi khách dặn.",
@@ -698,7 +648,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Gọi chung bàn với người địa phương nếu quán đông. Kết hợp bún kèn Năng gần đó cho một buổi sáng 'càn quét' ẩm thực Hà Tiên.",
@@ -740,7 +689,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Gỏi cá trích Hà Tiên dùng cá trích tươi đánh bắt trong ngày, tái chanh vừa đủ, trộn dừa nạo, đậu phộng rang và rau rừng. Cuốn bánh tráng chấm mắm nêm hoặc tương đậu phộng. Món ăn đôi không thể thiếu là cà xỉu xào tỏi — loài nhuyễn thể độc đáo chỉ có ở đầm Đông Hồ.",
@@ -748,7 +696,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Đầm Đông Hồ từ thuở Mạc Cửu đã cung cấp hải sản cho thị trấn. Gỏi cá trích là món 'hao cơm' của dân chài, nay trở thành món nhắm nổi tiếng mà khách xa tìm về.",
@@ -756,7 +703,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Cà xỉu gắn với đời sống đầm phà của người Khmer ven đầm: săn cà xỉu mùa nước nổi, chế biến xào tỏi hoặc nướng cuốn lá chúc.",
@@ -764,7 +710,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Cà xỉu có thịt mềm, vòi giòn sần sật — đặc tính có được nhờ môi trường nước lợ đầm Đông Hồ. Mắm cà xỉu đóng chai là đặc sản được nhiều du khách chọn mua về.",
@@ -772,7 +717,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Hỏi giá trước khi gọi món, ưu tiên quán đông người địa phương. Ghé cùng chợ Hà Tiên và phố đêm đường Trần Hầu ở cùng khu vực trung tâm.",
@@ -814,7 +758,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Bánh ống Hà Tiên làm từ nếp xay trộn nước cốt lá dứa, hấp trong những ống nhôm nhỏ nóng hổi trên bếp than — ăn thơm nức mùi dứa và ngậy vị cùi dừa nạo. Bánh bò thốt nốt vàng ươm, xốp mềm, ngọt thanh vị đường thốt nốt nguyên chất.",
@@ -822,7 +765,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Bánh ống là phiên bản Việt hóa của bánh hấp ống người Khmer, kết hợp kỹ thuật hấp người Hoa và nguyên liệu thốt nốt bản địa của Hà Tiên.",
@@ -830,7 +772,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Những xe gánh bánh dạo quanh chợ là hình ảnh quen thuộc của xế chiều Hà Tiên — vừa gánh vừa rao, vừa hấp bánh tại chỗ cho khách mua.",
@@ -838,7 +779,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Bánh bò thốt nốt của Hà Tiên có màu vàng đẹp tự nhiên nhờ đường thốt nốt nguyên chất, không nhuộm màu. Đường thốt nốt bánh tròn đóng gói tại chợ là quà nổi tiếng.",
@@ -846,7 +786,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Mua tại xe gánh để ăn nóng hổi. Mang tiền mặt — gánh bánh không nhận chuyển khoản. Dạo tiếp phố đêm Trần Hầu ngay cạnh khi trời tối.",
@@ -888,7 +827,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Xôi xiêm Hà Tiên dùng nếp Thái dẻo thơm, hấp chín tới rồi rưới lớp nhân hột gà hấp cốt dừa sánh mịn. Món ăn kèm xoài chín tới hoặc múi sầu riêng tùy mùa — ngọt, béo, thơm trong một thập xôi nhỏ.",
@@ -896,7 +834,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "'Xiêm' trong tên gọi dẫn từ nếp Thái (lúa xiêm) được thương thuyền Hà Tiên chuyển tải từ Xiêm La về trong thời kỳ thương cảng rộn ràng dưới thời Mạc Cửu.",
@@ -904,7 +841,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Xôi xiêm là món quà chiều của người Hà Tiên: mẹ mua cho con, khách mua làm quà. Thập xôi nhỏ gọn dễ mang về, trở thành 'đặc sản cầm tay' của phố chợ.",
@@ -912,7 +848,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Nhân hột gà hấp cốt dừa của xôi xiêm phải đánh đến khi sánh như sữa — bí quyết mỗi gánh xôi xiêm giữ riêng. Mùa xoài cát và mùa sầu riêng là hai mùa thơm nhất.",
@@ -920,7 +855,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Ăn tại chỗ để cảm nhận độ dẻo của nếp và độ béo của nhân. Mua thêm bánh tráng thốt nốt hoặc đường thốt nốt bánh tròn làm quà ở chợ cạnh đó.",
@@ -962,7 +896,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Chợ đêm Hà Tiên Mới là điểm hẹn ẩm thực buổi tối của thành phố: hàng loạt quầy hải sản nướng, ốc giác, gà đốt và bánh ngọt dọc bờ sông trong khu đô thị mới. Đây là chặng cuối hoàn hảo cho một ngày food tour.",
@@ -970,7 +903,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Phố đêm Trần Hầu xưa là chợ bến nước của thương cảng Mạc Cửu; khi đô thị mới mở rộng về phía nam, chợ đêm theo dòng khách vào khu đô thị mới bên sông nhưng vẫn giữ hồn chợ biên giới.",
@@ -978,7 +910,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Gà đốt Campuchia ướp sả, lá chúc và ớt đốt trong nồi đất là dấu ấn văn hóa ảnh hưởng từ bên kia biên giới; ốc giác và ghẹ hấp sả ớt là phiên bản Hà Tiên của hải sản đồng bằng sông Cửu Long.",
@@ -986,7 +917,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Ốc giác — loài ốc lớn của vùng nước lợ — luộc chấm muối tiêu chanh hoặc xào sa tế đều thơm. Chè thốt nốt sữa tươi và dừa nước đá đường là món tráng miệng cuối đêm quen thuộc.",
@@ -994,7 +924,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Hỏi giá trước khi gọi món và mang tiền mặt. Đi theo nhóm để gọi chung hải sản nướng và gà đốt; về muộn nhớ đặt xe trở về trung tâm.",
@@ -1036,7 +965,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
     },
     guides: [
       {
-        sectionKey: "introduction",
         title: { vi: "Giới thiệu", en: "Introduction" },
         content: {
           vi: "Hủ tiếu nam vang Quến là một trong những thương hiệu hủ tiếu lâu đời nhất Hà Tiên. Tô bún đặc trưng với tôm tươi, thịt heo thái lát, gan, trứng cút, hành tây và cần tây trên nền nước dùng ngọt xương đậm đà.",
@@ -1044,7 +972,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "history",
         title: { vi: "Lịch sử", en: "History" },
         content: {
           vi: "Nam vang (Phnôm Pênh) du nhập vào Hà Tiên qua đường thương mại biên giới, được các gia đình gốc Hoa tại đây chế biến lại theo khẩu vị sông nước — gầy nên phiên bản hủ tiếu nam vang riêng của Hà Tiên.",
@@ -1052,7 +979,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "culture",
         title: { vi: "Văn hóa", en: "Culture" },
         content: {
           vi: "Cùng với bún kèn và hủ tiếu hấp, nam vang Quến thuộc 'bộ ba' bữa sáng của người Hà Tiên — nơi ba thế hệ cùng ngồi chung một quán trước giờ làm.",
@@ -1060,7 +986,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "interesting_facts",
         title: { vi: "Những điều thú vị", en: "Interesting facts" },
         content: {
           vi: "Khác biệt của nam vang Hà Tiên nằm ở nước dùng nấu xương trong nhiều giờ, ít ngọt nhân tạo hơn bản gốc Phnôm Pênh, và luôn kèm đĩa rau sống kiarow (rau hung bài) đặc trưng.",
@@ -1068,7 +993,6 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         },
       },
       {
-        sectionKey: "travel_tips",
         title: { vi: "Mẹo tham quan", en: "Travel tips" },
         content: {
           vi: "Đến trước 10:00 để kịp tô nam vang đầy đủ topping. Ghé cùng cụm bún kèn — hủ tiếu hấp trong vòng 500 m để 'càn quét' đủ ba món sáng của thành phố.",

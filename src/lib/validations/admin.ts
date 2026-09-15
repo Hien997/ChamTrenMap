@@ -71,12 +71,9 @@ const checkpointBaseSchema = z.object({
     .array(
       z.object({
         id: z.string().optional(),
-        locale: z.string(),
-        sectionKey: z.string(),
-        title: z.string().min(1),
-        content: z.string(),
-        contentType: z.enum(["TEXT", "HTML"]).default("TEXT"),
-        sortOrder: z.number().int().min(0),
+        locale: z.enum(["vi", "en"]),
+        content: z.string().min(1),
+        contentType: z.literal("HTML").default("HTML"),
       }),
     )
     .optional(),
