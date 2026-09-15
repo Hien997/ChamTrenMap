@@ -18,24 +18,32 @@ export const SELECTED_MARKER_CLASSES = [
 ] as const;
 
 /**
- * Built-in raster style served from the official OpenStreetMap tiles.
- * Sensible development default (free, low-volume use with attribution —
- * https://www.openstreetmap.org/copyright). Production should point
- * `NEXT_PUBLIC_MAP_STYLE_URL` at a dedicated style/tile provider.
+ * Built-in raster style served from CARTO's raster tiles (OpenStreetMap data).
+ * `tile.openstreetmap.org` is unreachable from some networks (Vietnam ISPs
+ * commonly fail DNS for it) and OSM's tile policy discourages production app
+ * traffic, so CARTO is the sensible default — free for reasonable use with
+ * attribution (https://www.carto.com/attributions).
+ * Custom deployments can point `NEXT_PUBLIC_MAP_STYLE_URL` at a dedicated
+ * style/tile provider instead.
  */
 export function defaultMapStyle(): StyleSpecification {
   return {
     version: 8,
     sources: {
-      "osm-tiles": {
+      "carto-tiles": {
         type: "raster",
-        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+        tiles: [
+          "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
+          "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
+          "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
+        ],
         tileSize: 256,
-        maxzoom: 19,
-        attribution: "© OpenStreetMap contributors",
+        maxzoom: 20,
+        attribution:
+          "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors © <a href=\"https://carto.com/attributions\">CARTO</a>",
       },
     },
-    layers: [{ id: "osm-tiles", type: "raster", source: "osm-tiles" }],
+    layers: [{ id: "carto-tiles", type: "raster", source: "carto-tiles" }],
   };
 }
 
