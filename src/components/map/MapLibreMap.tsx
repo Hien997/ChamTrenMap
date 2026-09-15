@@ -4,6 +4,7 @@ import {
   Marker,
   Map as MaplibreMap,
   NavigationControl,
+  type ErrorEvent as MapErrorEvent,
   type MapMouseEvent,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -36,6 +37,7 @@ import {
   createUserLocationElement,
   fitLocationsBounds,
   flyToLocation,
+  isTileLevelMapError,
   resolveMapStyle,
   setMarkerSelected,
 } from "./map.utils";
@@ -211,7 +213,11 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       ensureRouteLayers(map);
       setStatus("ready");
     };
-    const handleError = () => {
+    const handleError = (event: MapErrorEvent) => {
+      // Per-tile failures (e.g. an optional shaded-relief source 404ing in the
+      // chosen style) must not block the map — only a style-level failure
+      // before load is fatal.
+      if (isTileLevelMapError(event)) return;
       if (!loaded) setStatus("error");
     };
     const handleClick = (event: MapMouseEvent) => {

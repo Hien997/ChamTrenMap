@@ -3,7 +3,11 @@ import type { StyleSpecification } from "maplibre-gl";
 
 import { cn } from "@/lib/utils";
 import type { CheckpointStatus } from "@/types";
-import type { MapLocation, RouteFeatureCollection, RouteResult } from "./map.types";
+import type {
+  MapLocation,
+  RouteFeatureCollection,
+  RouteResult,
+} from "./map.types";
 import type { MapCheckpoint } from "./types";
 
 /** Default Hà Tiên view ([longitude, latitude]) — same as the previous map. */
@@ -40,15 +44,29 @@ export function defaultMapStyle(): StyleSpecification {
         tileSize: 256,
         maxzoom: 20,
         attribution:
-          "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors © <a href=\"https://carto.com/attributions\">CARTO</a>",
+          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
       },
     },
     layers: [{ id: "carto-tiles", type: "raster", source: "carto-tiles" }],
   };
 }
 
+/**
+ * MapLibre fires a map-level `error` event for every failed resource fetch,
+ * including individual tile 404s. Events that carry a `tile` payload are
+ * per-tile failures: retryable and non-fatal. A style whose optional overlay
+ * source 404s (e.g. OpenFreeMap Liberty's `ne2_shaded` shaded relief) must not
+ * brick the whole map — only style-level failures (no `tile`) are fatal.
+ */
+export function isTileLevelMapError(event: unknown): boolean {
+  if (typeof event !== "object" || event === null) return false;
+  return "tile" in event && (event as { tile?: unknown }).tile != null;
+}
+
 /** Explicit prop wins, then the env var, then the built-in OSM style. */
-export function resolveMapStyle(styleUrl?: string): string | StyleSpecification {
+export function resolveMapStyle(
+  styleUrl?: string,
+): string | StyleSpecification {
   const url = styleUrl ?? process.env.NEXT_PUBLIC_MAP_STYLE_URL;
   const trimmed = url?.trim();
   return trimmed ? trimmed : defaultMapStyle();
@@ -73,10 +91,7 @@ export function fitLocationsBounds(
     });
     return;
   }
-  const bounds = new LngLatBounds(
-    coordinates[0],
-    coordinates[0],
-  );
+  const bounds = new LngLatBounds(coordinates[0], coordinates[0]);
   for (const coord of coordinates) {
     bounds.extend(coord);
   }
@@ -193,7 +208,9 @@ export function createUserLocationElement(): HTMLDivElement {
 }
 
 /** Kit default pin when no custom renderer is provided (task §7 "custom"). */
-export function createDefaultMarkerElement(location: MapLocation): HTMLDivElement {
+export function createDefaultMarkerElement(
+  location: MapLocation,
+): HTMLDivElement {
   const element = document.createElement("div");
   element.title = location.name;
   element.style.zIndex = String(MARKER_Z.normal);
@@ -219,7 +236,9 @@ export function lineStringFeatureCollection(
 }
 
 /** Convert a fetched `RouteResult` into drawable GeoJSON (task §14). */
-export function routeResultToGeoJson(route: RouteResult): RouteFeatureCollection {
+export function routeResultToGeoJson(
+  route: RouteResult,
+): RouteFeatureCollection {
   return lineStringFeatureCollection(route.coordinates);
 }
 
@@ -227,4 +246,3 @@ export function routeResultToGeoJson(route: RouteResult): RouteFeatureCollection
 // import it from here. Server Components should import from @/components/map/map-links
 // to avoid transitively pulling maplibre-gl into the React Server environment.
 export { googleMapsDirectionsUrl } from "./map-links";
-
