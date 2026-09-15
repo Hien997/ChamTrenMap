@@ -1,46 +1,60 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { AppLocale } from "@/i18n/routing";
+import { cn } from "@/lib/utils";
 
-const OPTIONS: { value: AppLocale; label: string }[] = [
-  { value: "vi", label: "Tiếng Việt" },
-  { value: "en", label: "English" },
+/** Short codes shown when the header is tight (ISO 639-1). */
+const OPTIONS: { value: AppLocale; code: string }[] = [
+  { value: "vi", code: "VI" },
+  { value: "en", code: "EN" },
 ];
 
-/** Locale switcher — swaps the /{locale} segment, preserving the current path. */
+/**
+ * Locale switcher — swaps the /{locale} segment, preserving the current path.
+ * A two-segment strip instead of a dropdown: with exactly two languages, both
+ * choices stay visible and switching is one tap. Labels are endonyms
+ * ("Tiếng Việt", "English") read from the shared message catalog; the active
+ * option renders as a raised tile on the muted strip.
+ */
 export function LocaleSwitcher() {
+  const t = useTranslations("LocaleSwitcher");
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
 
   return (
-    <Select
-      value={locale}
-      onValueChange={(next) => router.replace(pathname, { locale: next as AppLocale })}
+    <div
+      role="group"
+      aria-label={t("label")}
+      className="flex items-center rounded-lg bg-muted p-0.5 ring-1 ring-foreground/5"
     >
-      <SelectTrigger
-        size="sm"
-        aria-label="Language"
-        className="w-[130px] border-none bg-transparent shadow-none"
-      >
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {OPTIONS.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+      {OPTIONS.map((option) => {
+        const active = option.value === locale;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={active}
+            aria-label={t(option.value)}
+            onClick={() => {
+              if (!active) router.replace(pathname, { locale: option.value });
+            }}
+            className={cn(
+              "flex h-7 cursor-pointer items-center rounded-md px-2.5 text-sm whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
+              active
+                ? "bg-card font-medium text-foreground shadow-sm ring-1 ring-foreground/10"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <span className="sm:hidden" aria-hidden="true">
+              {option.code}
+            </span>
+            <span className="hidden sm:inline">{t(option.value)}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
