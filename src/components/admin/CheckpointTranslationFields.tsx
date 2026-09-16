@@ -1,11 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { TTranslation } from "./CheckpointFormTypes";
+import type { AdminTranslation } from "@/services/checkpoint-content";
 import { Field } from "./ui";
 
 interface Props {
   locale: string;
-  defaultValue: TTranslation;
+  defaultValue: AdminTranslation;
   prefix: string;
 }
 

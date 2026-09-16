@@ -1,11 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { TCheckpoint } from "./CheckpointFormTypes";
+import type { AdminCheckpoint } from "@/services/checkpoint-content";
 import { Field } from "./ui";
 
 interface Props {
   /** Partial: the "new checkpoint" page renders this with defaults only. */
-  checkpoint?: Partial<TCheckpoint>;
+  checkpoint?: Partial<AdminCheckpoint>;
 }
 
 /** Geo + visit fields shared by the edit form and the create page. */

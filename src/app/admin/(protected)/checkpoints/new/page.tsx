@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { BackLink, Field, PageHeader, Panel } from "@/components/admin/ui";
 import { TranslationFields } from "@/components/admin/CheckpointTranslationFields";
 import { CheckpointFields } from "@/components/admin/CheckpointFields";
+import { parseCheckpointCreateForm } from "@/services/checkpoint-content";
 
 const emptyTranslation = {
   name: "",
@@ -27,31 +28,8 @@ export default function AdminCheckpointNewPage() {
     setError(null);
     const formData = new FormData(e.currentTarget);
 
-    const payload = {
-      slug: formData.get("slug") as string,
-      latitude: parseFloat(formData.get("latitude") as string),
-      longitude: parseFloat(formData.get("longitude") as string),
-      radiusMeters: parseInt(formData.get("radiusMeters") as string) || 100,
-      estimatedVisitMinutes: parseInt(formData.get("estimatedVisitMinutes") as string) || 30,
-      sortOrderHint: parseInt(formData.get("sortOrderHint") as string) || 0,
-      priceVnd: formData.get("priceVnd") ? parseFloat(formData.get("priceVnd") as string) : null,
-      priceKind: formData.get("priceKind") as "TICKET" | "FOOD",
-      vi: {
-        name: formData.get("vi.name") as string,
-        summary: formData.get("vi.summary") as string,
-        address: formData.get("vi.address") as string,
-        openingHours: formData.get("vi.openingHours") || null,
-        bestTimeToVisit: formData.get("vi.bestTimeToVisit") || null,
-      },
-      en: {
-        name: formData.get("en.name") as string,
-        summary: formData.get("en.summary") as string,
-        address: formData.get("en.address") as string,
-        openingHours: formData.get("en.openingHours") || null,
-        bestTimeToVisit: formData.get("en.bestTimeToVisit") || null,
-      },
-      guides: [],
-    };
+    // Field names and FormData parsing live in the checkpoint-content module.
+    const payload = parseCheckpointCreateForm(formData);
 
     startTransition(async () => {
       const res = await fetch("/api/admin/checkpoints", {

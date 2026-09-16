@@ -1,7 +1,11 @@
 import type { Locale } from "@/config/constants";
 import { prisma } from "@/lib/prisma";
 import { pickLocalized } from "@/services/localize";
-import type { CheckpointDetailView, GuideSectionView } from "@/types";
+import {
+  toCheckpointDetail,
+  toCheckpointSummary,
+} from "@/services/checkpoint-content";
+import type { CheckpointDetailView } from "@/types";
 
 /** Full checkpoint with localized guide sections & gallery (Plan.md §6). */
 export async function getCheckpointDetail(
@@ -18,42 +22,7 @@ export async function getCheckpointDetail(
   });
   if (!checkpoint) return null;
 
-  const translation = pickLocalized(checkpoint.translations, locale);
-
-  // One guide row per locale; pick the requested locale (vi fallback).
-  const guide = pickLocalized(checkpoint.guides, locale);
-
-  const guides: GuideSectionView[] = guide
-    ? [
-        {
-          locale: guide.locale as "vi" | "en",
-          content: guide.content,
-          contentType: guide.contentType,
-        },
-      ]
-    : [];
-
-  return {
-    id: checkpoint.id,
-    slug: checkpoint.slug,
-    latitude: checkpoint.latitude,
-    longitude: checkpoint.longitude,
-    radiusMeters: checkpoint.radiusMeters,
-    estimatedVisitMinutes: checkpoint.estimatedVisitMinutes,
-    priceVnd: checkpoint.priceVnd,
-    priceKind: checkpoint.priceKind === "FOOD" ? "food" : "ticket",
-    name: translation?.name ?? checkpoint.slug,
-    summary: translation?.summary ?? "",
-    address: translation?.address ?? "",
-    openingHours: translation?.openingHours ?? null,
-    bestTimeToVisit: translation?.bestTimeToVisit ?? null,
-    thumbnailUrl:
-      checkpoint.images.find((img) => img.isThumbnail)?.url ??
-      checkpoint.images[0]?.url ??
-      null,
-    images: checkpoint.images.map((img) => ({ url: img.url, alt: img.alt })),
-    guides,
-  };
+  return toCheckpointDetail(checkpoint, locale);
 }
 
 /** All published checkpoints (marker data), localized. */
@@ -64,18 +33,7 @@ export async function listCheckpoints(locale: Locale) {
       images: { where: { isThumbnail: true }, take: 1 },
     },
   });
-  return checkpoints.map((cp) => {
-    const translation = pickLocalized(cp.translations, locale);
-    return {
-      id: cp.id,
-      slug: cp.slug,
-      latitude: cp.latitude,
-      longitude: cp.longitude,
-      name: translation?.name ?? cp.slug,
-      summary: translation?.summary ?? "",
-      thumbnailUrl: cp.images[0]?.url ?? null,
-    };
-  });
+  return checkpoints.map((cp) => toCheckpointSummary(cp, locale));
 }
 
 /** The published tour a checkpoint belongs to (for "on tour" badges & CTAs). */

@@ -1,12 +1,12 @@
 import { Textarea } from "@/components/ui/textarea";
 import { GuideContentRenderer } from "@/components/guide/GuideContent";
-import type { TGuide } from "./CheckpointFormTypes";
+import type { AdminGuide } from "@/services/checkpoint-content";
 import { useState } from "react";
 
 interface Props {
   locale: "vi" | "en";
   /** All guide documents of the checkpoint; the locale's row is picked here. */
-  guides: TGuide[];
+  guides: AdminGuide[];
 }
 
 /**

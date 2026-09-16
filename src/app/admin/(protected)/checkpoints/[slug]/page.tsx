@@ -1,7 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import CheckpointEditForm from "@/components/admin/CheckpointEditForm";
-import type { TCheckpoint, TGuide } from "@/components/admin/CheckpointFormTypes";
+import { getCheckpointForEdit } from "@/services/checkpoint-content.server";
 
 export const dynamic = "force-dynamic";
 
@@ -12,59 +11,9 @@ export default async function AdminCheckpointEditPage({
 }) {
   const { slug } = await params;
 
-  const cp = await prisma.checkpoint.findUnique({
-    where: { slug },
-    include: {
-      translations: true,
-      guides: true,
-    },
-  });
+  const checkpoint = await getCheckpointForEdit(slug);
 
-  if (!cp) notFound();
-
-  const checkpoint: TCheckpoint = {
-    id: cp.id,
-    slug: cp.slug,
-    latitude: cp.latitude,
-    longitude: cp.longitude,
-    radiusMeters: cp.radiusMeters,
-    estimatedVisitMinutes: cp.estimatedVisitMinutes,
-    sortOrderHint: cp.sortOrderHint,
-    priceVnd: cp.priceVnd,
-    priceKind: cp.priceKind === "FOOD" ? "FOOD" : "TICKET",
-    vi: (() => {
-      const t = cp.translations.find((t) => t.locale === "vi");
-      return t
-        ? {
-            name: t.name,
-            summary: t.summary,
-            address: t.address,
-            openingHours: t.openingHours,
-            bestTimeToVisit: t.bestTimeToVisit,
-          }
-        : null;
-    })(),
-    en: (() => {
-      const t = cp.translations.find((t) => t.locale === "en");
-      return t
-        ? {
-            name: t.name,
-            summary: t.summary,
-            address: t.address,
-            openingHours: t.openingHours,
-            bestTimeToVisit: t.bestTimeToVisit,
-          }
-        : null;
-    })(),
-    guides: cp.guides.map(
-      (g): TGuide => ({
-        id: g.id,
-        locale: g.locale as TGuide["locale"],
-        content: g.content,
-        contentType: g.contentType,
-      }),
-    ),
-  };
+  if (!checkpoint) notFound();
 
   return <CheckpointEditForm checkpoint={checkpoint} />;
 }

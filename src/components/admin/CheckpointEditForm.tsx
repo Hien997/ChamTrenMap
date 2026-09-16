@@ -4,13 +4,16 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  parseCheckpointUpdateForm,
+  type AdminCheckpoint,
+} from "@/services/checkpoint-content";
 import { TranslationFields } from "./CheckpointTranslationFields";
 import { CheckpointFields } from "./CheckpointFields";
 import { GuideSection } from "./GuideSection";
 import { BackLink, PageHeader, Panel } from "./ui";
-import type { TCheckpoint, TGuide } from "./CheckpointFormTypes";
 
-export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckpoint }) {
+export default function CheckpointEditForm({ checkpoint }: { checkpoint: AdminCheckpoint }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -24,45 +27,11 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckp
     setError(null);
     const formData = new FormData(e.currentTarget);
 
-    const guides: TGuide[] = [];
-    for (const locale of ["vi", "en"] as const) {
-      const existing = checkpoint.guides.find((g) => g.locale === locale);
-      const content = ((formData.get(`guide.${locale}.content`) as string) ?? "").trim();
-      // Skip empty locales so the API doesn't try to create empty guide rows.
-      if (!content) continue;
-      guides.push({
-        id: existing?.id,
-        locale,
-        content,
-        contentType: "HTML",
-      });
-    }
-
+    // Field names and FormData parsing live in the checkpoint-content module.
     const payload = {
+      ...parseCheckpointUpdateForm(formData, checkpoint.guides),
       id: checkpoint.id,
       slug: checkpoint.slug,
-      latitude: parseFloat(formData.get("latitude") as string),
-      longitude: parseFloat(formData.get("longitude") as string),
-      radiusMeters: parseInt(formData.get("radiusMeters") as string),
-      estimatedVisitMinutes: parseInt(formData.get("estimatedVisitMinutes") as string),
-      sortOrderHint: parseInt(formData.get("sortOrderHint") as string),
-      priceVnd: formData.get("priceVnd") ? parseFloat(formData.get("priceVnd") as string) : null,
-      priceKind: formData.get("priceKind") as "TICKET" | "FOOD",
-      vi: {
-        name: formData.get("vi.name") as string,
-        summary: formData.get("vi.summary") as string,
-        address: formData.get("vi.address") as string,
-        openingHours: formData.get("vi.openingHours") || null,
-        bestTimeToVisit: formData.get("vi.bestTimeToVisit") || null,
-      },
-      en: {
-        name: formData.get("en.name") as string,
-        summary: formData.get("en.summary") as string,
-        address: formData.get("en.address") as string,
-        openingHours: formData.get("en.openingHours") || null,
-        bestTimeToVisit: formData.get("en.bestTimeToVisit") || null,
-      },
-      guides,
     };
 
     startTransition(async () => {

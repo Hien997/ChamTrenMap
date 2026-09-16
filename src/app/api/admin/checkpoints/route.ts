@@ -1,40 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
-import { createCheckpointSchema } from "@/lib/validations/admin";
-import { sanitizeHtml } from "@/lib/sanitize";
+import {
+  CheckpointWriteError,
+  createCheckpointSchema,
+} from "@/services/checkpoint-content";
+import {
+  createCheckpoint,
+  listCheckpointsForAdmin,
+} from "@/services/checkpoint-content.server";
+
+function writeErrorResponse(error: unknown) {
+  if (error instanceof CheckpointWriteError) {
+    return NextResponse.json(
+      { ok: false, error: error.message },
+      { status: error.status },
+    );
+  }
+  throw error;
+}
 
 export async function GET() {
   await requireAdmin();
-  const checkpoints = await prisma.checkpoint.findMany({
-    include: {
-      translations: true,
-      tourLinks: { include: { tour: true } },
-    },
-    orderBy: { slug: "asc" },
-  });
-
-  return NextResponse.json({
-    ok: true,
-    checkpoints: checkpoints.map((cp) => ({
-      id: cp.id,
-      slug: cp.slug,
-      latitude: cp.latitude,
-      longitude: cp.longitude,
-      radiusMeters: cp.radiusMeters,
-      estimatedVisitMinutes: cp.estimatedVisitMinutes,
-      sortOrderHint: cp.sortOrderHint,
-      priceVnd: cp.priceVnd,
-      priceKind: cp.priceKind,
-      vi: cp.translations.find((t) => t.locale === "vi"),
-      en: cp.translations.find((t) => t.locale === "en"),
-      tours: cp.tourLinks.map((tl) => ({
-        tourId: tl.tour.id,
-        slug: tl.tour.slug,
-        order: tl.order,
-      })),
-    })),
-  });
+  const checkpoints = await listCheckpointsForAdmin();
+  return NextResponse.json({ ok: true, checkpoints });
 }
 
 export async function POST(request: NextRequest) {
@@ -48,51 +36,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { slug, latitude, longitude, radiusMeters, estimatedVisitMinutes, sortOrderHint, priceVnd, priceKind, vi, en, guides } = result.data;
-
   try {
-    const existing = await prisma.checkpoint.findUnique({ where: { slug } });
-    if (existing) {
-      return NextResponse.json(
-        { ok: false, error: "Checkpoint already exists" },
-        { status: 409 },
-      );
-    }
-
-    const checkpoint = await prisma.checkpoint.create({
-      data: {
-        slug,
-        latitude,
-        longitude,
-        radiusMeters,
-        estimatedVisitMinutes,
-        sortOrderHint,
-        priceVnd,
-        priceKind,
-        translations: {
-          create: [
-            { locale: "vi", ...vi },
-            { locale: "en", ...en },
-          ],
-        },
-        guides: guides
-          ? {
-              create: guides.map((g) => ({
-                locale: g.locale,
-                content: sanitizeHtml(g.content),
-                contentType: g.contentType,
-                sortOrder: 0,
-              })),
-            }
-          : undefined,
-      },
-    });
-
-    return NextResponse.json({ ok: true, checkpoint: { id: checkpoint.id, slug: checkpoint.slug } });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "Checkpoint error or database error" },
-      { status: 409 },
-    );
+    const checkpoint = await createCheckpoint(result.data);
+    return NextResponse.json({ ok: true, checkpoint });
+  } catch (error) {
+    return writeErrorResponse(error);
   }
 }
