@@ -41,7 +41,7 @@ import {
 import type { Locale } from "@/config/constants";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { formatDistance } from "@/lib/format";
-import { haversineMeters } from "@/lib/geo";
+import { applyProgress, distanceTo, isNear } from "@/lib/tour-progress";
 import { getRouteService } from "@/lib/routing";
 import type { TourProgressView } from "@/types";
 
@@ -96,33 +96,9 @@ export function MapExperience({
     (cp) => [cp.longitude, cp.latitude] as [number, number],
   );
 
-  const distanceToCurrent =
-    currentCheckpoint && userPosition
-      ? haversineMeters(
-          {
-            latitude: userPosition.latitude,
-            longitude: userPosition.longitude,
-          },
-          {
-            latitude: currentCheckpoint.latitude,
-            longitude: currentCheckpoint.longitude,
-          },
-        )
-      : null;
+  const distanceToCurrent = distanceTo(userPosition, currentCheckpoint);
 
-  const distanceToSelected =
-    selectedCheckpoint && userPosition
-      ? haversineMeters(
-          {
-            latitude: userPosition.latitude,
-            longitude: userPosition.longitude,
-          },
-          {
-            latitude: selectedCheckpoint.latitude,
-            longitude: selectedCheckpoint.longitude,
-          },
-        )
-      : null;
+  const distanceToSelected = distanceTo(userPosition, selectedCheckpoint);
 
   async function fetchRoute() {
     const cp = selectedCheckpoint;
@@ -147,14 +123,7 @@ export function MapExperience({
   function handleChecked(progressData: TourProgressView | null) {
     if (progressData) {
       setProgress(progressData);
-      setCheckpoints((prev) =>
-        prev.map((cp) => {
-          const next = progressData.checkpoints.find(
-            (item) => item.checkpointId === cp.id,
-          );
-          return next ? { ...cp, status: next.status } : cp;
-        }),
-      );
+      setCheckpoints((prev) => applyProgress(prev, progressData));
     }
     setShowCheckin(false);
   }
@@ -384,7 +353,7 @@ export function MapExperience({
                     <MapPinCheckIcon aria-hidden className="size-4" />
                     {tCheckin("action")}
                   </Button>
-                  {distanceToSelected !== null && distanceToSelected <= 200 && (
+                  {isNear(userPosition, selectedCheckpoint) && (
                     <p className="text-xs font-medium text-status-current-ink dark:text-status-current">
                       {t("nearHint")}
                     </p>
