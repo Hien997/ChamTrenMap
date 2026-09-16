@@ -5,16 +5,18 @@ import { useState } from "react";
 
 interface Props {
   locale: "vi" | "en";
-  existing?: TGuide;
+  /** All guide documents of the checkpoint; the locale's row is picked here. */
+  guides: TGuide[];
 }
 
 /**
  * One guide document per locale: a single HTML `content` field.
  * Headings inside the HTML are structure, not DB fields.
  */
-export function GuideSection({ locale, existing }: Props) {
+export function GuideSection({ locale, guides }: Props) {
   const base = `guide.${locale}`;
   const contentId = `${base}.content`;
+  const existing = guides.find((g) => g.locale === locale);
   const [preview, setPreview] = useState(existing?.content ?? "");
 
   return (

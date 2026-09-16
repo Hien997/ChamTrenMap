@@ -109,12 +109,16 @@
     "locateMe": "My location",
     "locating": "Locating…",
     "locationOff": "Enable location to see yourself on the map",
+    "back": "Back",
+    "route": "Directions",
     "loadingMap": "Loading map…",
     "mapTimeout": "The map is taking too long to load. Check your connection and try again.",
     "noCheckpoints": "This tour has no checkpoints yet",
     "backToTour": "Back to tour",
     "tourComplete": "Tour completed!",
-    "enableLocation": "Enable location"
+    "enableLocation": "Enable location",
+    "locationDisabled": "Location is off",
+    "routeUnavailable": "Couldn't load directions"
   },
   "Share": {
     "title": "Share your achievement",

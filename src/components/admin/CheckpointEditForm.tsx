@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TranslationFields } from "./CheckpointTranslationFields";
 import { CheckpointFields } from "./CheckpointFields";
-import { GuideSectionEditor } from "./GuideSectionEditor";
+import { GuideSection } from "./GuideSection";
 import { BackLink, PageHeader, Panel } from "./ui";
 import type { TCheckpoint, TGuide } from "./CheckpointFormTypes";
 
@@ -117,10 +117,10 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: TCheckp
               <TabsTrigger value="en">English</TabsTrigger>
             </TabsList>
             <TabsContent value="vi" keepMounted className="mt-4">
-              <GuideSectionEditor locale="vi" existingGuides={checkpoint.guides} />
+              <GuideSection locale="vi" guides={checkpoint.guides} />
             </TabsContent>
             <TabsContent value="en" keepMounted className="mt-4">
-              <GuideSectionEditor locale="en" existingGuides={checkpoint.guides} />
+              <GuideSection locale="en" guides={checkpoint.guides} />
             </TabsContent>
           </Tabs>
         </Panel>
