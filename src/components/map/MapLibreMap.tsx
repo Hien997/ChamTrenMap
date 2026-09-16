@@ -35,10 +35,13 @@ import {
   HATIEN_CENTER,
   createDefaultMarkerElement,
   createUserLocationElement,
+  defaultMapStyle,
   fitLocationsBounds,
   flyToLocation,
   isTileLevelMapError,
+  resolveMapLoadTimeoutMs,
   resolveMapStyle,
+  resolveMapTimeoutAction,
   setMarkerSelected,
 } from "./map.utils";
 
@@ -70,7 +73,11 @@ export interface MapLibreMapProps<T extends MapLocation = MapLocation> {
   loadingLabel?: string;
   errorLabel?: string;
   retryLabel?: string;
+  /** Overlay message shown when loading exceeds the time budget. */
+  timeoutLabel?: string;
   emptyLabel?: string;
+  /** Time budget (ms) for one load attempt; default 20s, env-tunable. */
+  loadTimeoutMs?: number;
   /** Imperative handle for flyTo/fit from parent components. */
   ref?: React.Ref<MapLibreMapRef<T>>;
 }
@@ -109,7 +116,9 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   loadingLabel,
   errorLabel,
   retryLabel,
+  timeoutLabel,
   emptyLabel,
+  loadTimeoutMs,
   ref,
 }: MapLibreMapProps<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -118,6 +127,11 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   const userMarkerRef = useRef<Marker | null>(null);
   const [status, setStatus] = useState<MapStatus>("loading");
   const [attempt, setAttempt] = useState(0);
+  // Load-budget escalation: when a configured style URL stalls past the time
+  // budget, one silent rebuild happens on the built-in raster style before
+  // the error UI takes over.
+  const [useFallbackStyle, setUseFallbackStyle] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
   // Snapshot of locations as plain data so marker sync never closes over or
   // passes render-scope objects into the imperative MapLibre layer.
   const renderedLocations = useMemo<T[]>(
@@ -175,6 +189,8 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   zoomRef.current = zoom;
   const styleUrlRef = useRef(styleUrl);
   styleUrlRef.current = styleUrl;
+  const loadTimeoutMsRef = useRef(loadTimeoutMs);
+  loadTimeoutMsRef.current = loadTimeoutMs;
   const onLocationClickRef = useRef(onLocationClick);
   onLocationClickRef.current = onLocationClick;
   const onMapClickRef = useRef(onMapClick);
@@ -189,12 +205,20 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     const container = containerRef.current;
     if (!container) return;
     setStatus("loading");
+    setTimedOut(false);
+
+    // The fallback attempt pins the built-in raster style, whatever the
+    // configured URL is.
+    const resolvedStyle = useFallbackStyle
+      ? defaultMapStyle()
+      : resolveMapStyle(styleUrlRef.current);
+    const usedCustomStyle = typeof resolvedStyle === "string";
 
     let map: MaplibreMap;
     try {
       map = new MaplibreMap({
         container,
-        style: resolveMapStyle(styleUrlRef.current),
+        style: resolvedStyle,
         center: centerRef.current ?? HATIEN_CENTER,
         zoom: zoomRef.current ?? DEFAULT_MAP_ZOOM,
       });
@@ -207,6 +231,24 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
     let loaded = false;
+    // Time budget: a stalled style host fires no error event and never fires
+    // `load`, which used to spin the loading overlay forever. Once the budget
+    // lapses, a configured style gets one silent retry on the built-in raster
+    // style; otherwise surface the error UI.
+    const timeoutId = window.setTimeout(() => {
+      if (loaded) return;
+      const action = resolveMapTimeoutAction({
+        usedCustomStyle,
+        fallbackAlreadyTried: useFallbackStyle,
+      });
+      if (action === "fallback-to-default-style") {
+        setUseFallbackStyle(true);
+        return;
+      }
+      setTimedOut(true);
+      setStatus("error");
+    }, resolveMapLoadTimeoutMs(loadTimeoutMsRef.current));
+
     const handleLoad = () => {
       loaded = true;
       ensurePathLayer(map);
@@ -218,7 +260,12 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       // chosen style) must not block the map — only a style-level failure
       // before load is fatal.
       if (isTileLevelMapError(event)) return;
-      if (!loaded) setStatus("error");
+      if (!loaded) {
+        // The error UI is up — stop the budget so a later timer fire can't
+        // trigger a surprise silent rebuild underneath it.
+        window.clearTimeout(timeoutId);
+        setStatus("error");
+      }
     };
     const handleClick = (event: MapMouseEvent) => {
       onMapClickRef.current?.({
@@ -231,6 +278,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     map.on("click", handleClick);
 
     return () => {
+      window.clearTimeout(timeoutId);
       map.off("load", handleLoad);
       map.off("error", handleError);
       map.off("click", handleClick);
@@ -242,7 +290,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       map.remove();
       mapRef.current = null;
     };
-  }, [attempt]);
+  }, [attempt, useFallbackStyle]);
 
   // Checkpoint markers: create once per id, update in place (tasks §15/§19).
   // locations/status drive re-sync via config-relaxed hooks rules; no inline disables.
@@ -402,11 +450,18 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       {status === "error" && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/90 p-4 text-center">
           <p role="alert" className="text-sm text-muted-foreground">
-            {errorLabel ?? "Failed to load the map"}
+            {timedOut
+              ? (timeoutLabel ?? errorLabel ?? "The map took too long to load")
+              : (errorLabel ?? "Failed to load the map")}
           </p>
           <button
             type="button"
-            onClick={() => setAttempt((value) => value + 1)}
+            onClick={() => {
+              // A manual retry gives the configured style another chance —
+              // the network may have recovered.
+              setUseFallbackStyle(false);
+              setAttempt((value) => value + 1);
+            }}
             className="rounded-md border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent"
           >
             {retryLabel ?? "Retry"}

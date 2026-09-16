@@ -72,6 +72,49 @@ export function resolveMapStyle(
   return trimmed ? trimmed : defaultMapStyle();
 }
 
+/** Default time budget for one map-load attempt (style fetch + first render). */
+export const MAP_LOAD_TIMEOUT_MS = 20_000;
+
+/** What to do when a load attempt exceeds its time budget. */
+export type MapTimeoutAction = "fallback-to-default-style" | "give-up";
+
+/**
+ * Time budget for one map-load attempt: explicit prop wins, then the
+ * NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS env var, then the built-in default.
+ * Non-positive or non-numeric values fall through so a bad deployment
+ * config can't disable the budget.
+ */
+export function resolveMapLoadTimeoutMs(override?: number): number {
+  if (
+    typeof override === "number" &&
+    Number.isFinite(override) &&
+    override > 0
+  ) {
+    return override;
+  }
+  const raw = process.env.NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS;
+  const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  return MAP_LOAD_TIMEOUT_MS;
+}
+
+/**
+ * Escalation when the budget elapses before the map fires `load`:
+ * - a configured style URL gets ONE silent rebuild on the built-in raster
+ *   style (its host is likely stalled or unreachable);
+ * - once the built-in style is what we're already loading, give up so the
+ *   error/retry UI takes over instead of an eternal spinner.
+ */
+export function resolveMapTimeoutAction(options: {
+  usedCustomStyle: boolean;
+  fallbackAlreadyTried: boolean;
+}): MapTimeoutAction {
+  if (options.usedCustomStyle && !options.fallbackAlreadyTried) {
+    return "fallback-to-default-style";
+  }
+  return "give-up";
+}
+
 /**
  * Fit the viewport to the given coordinates (task §17).
  * Zero → no-op; one → gentle flyTo; many → padded fitBounds.

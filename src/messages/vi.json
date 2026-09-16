@@ -115,6 +115,7 @@
     "back": "Quay lại",
     "route": "Lấy chỉ đường",
     "loadingMap": "Đang tải bản đồ…",
+    "mapTimeout": "Tải bản đồ quá lâu. Kiểm tra kết nối mạng rồi thử lại.",
     "noCheckpoints": "Tour này chưa có điểm dừng",
     "locationDisabled": "Vị trí đang tắt",
     "routeUnavailable": "Không thể tải chỉ đường"

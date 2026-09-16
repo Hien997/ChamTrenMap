@@ -182,6 +182,9 @@ export function MapExperience({
         fitToLocationsOnLoad
         className="h-full w-full"
         loadingLabel={tCommon("loading")}
+        errorLabel={tCommon("error")}
+        retryLabel={tCommon("retry")}
+        timeoutLabel={t("mapTimeout")}
         emptyLabel={t("noCheckpoints")}
       />
 {/* Top overlay: tour name + progress + close */}

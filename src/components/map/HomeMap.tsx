@@ -30,6 +30,8 @@ export function HomeMap({
   className?: string;
 }) {
   const t = useTranslations("Home");
+  const tCommon = useTranslations("Common");
+  const tMap = useTranslations("Map");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
@@ -83,6 +85,10 @@ export function HomeMap({
       )}
       fitToLocationsOnLoad
       className={cn("h-full w-full", className)}
+      loadingLabel={tMap("loadingMap")}
+      errorLabel={tCommon("error")}
+      retryLabel={tCommon("retry")}
+      timeoutLabel={tMap("mapTimeout")}
     />
   );
 }
