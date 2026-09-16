@@ -19,10 +19,10 @@ import { CheckInFlow } from "@/components/checkin/CheckInFlow";
 import { Link } from "@/i18n/navigation";
 import { MapLibreMap } from "@/components/map/MapLibreMap";
 import {
-  createCheckpointMarkerElement,
   googleMapsDirectionsUrl,
   routeResultToGeoJson,
 } from "@/components/map/map.utils";
+import { createCheckpointPin } from "@/components/map/marker-elements";
 import type {
   RouteFeatureCollection,
   TravelMode,
@@ -144,9 +144,7 @@ export function MapExperience({
         userPosition={userPosition}
         path={path}
         route={route}
-        renderMarkerElement={(cp) => ({
-          element: createCheckpointMarkerElement(cp),
-        })}
+        renderMarkerElement={(cp) => createCheckpointPin(cp)}
         markerSignature={(cp) => cp.status}
         fitToLocationsOnLoad
         className="h-full w-full"

@@ -49,4 +49,6 @@ export interface CustomMarkerRender {
   element: HTMLElement;
   /** Base stacking order; the kit raises selected markers above others. */
   zIndex?: number;
+  /** Optional in-place selection toggle; the kit calls it instead of DOM queries. */
+  setSelected?: (selected: boolean) => void;
 }

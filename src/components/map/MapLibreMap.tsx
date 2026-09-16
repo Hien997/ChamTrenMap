@@ -33,8 +33,6 @@ import type {
 import {
   DEFAULT_MAP_ZOOM,
   HATIEN_CENTER,
-  createDefaultMarkerElement,
-  createUserLocationElement,
   defaultMapStyle,
   fitLocationsBounds,
   flyToLocation,
@@ -42,8 +40,11 @@ import {
   resolveMapLoadTimeoutMs,
   resolveMapStyle,
   resolveMapTimeoutAction,
-  setMarkerSelected,
 } from "./map.utils";
+import {
+  createDefaultPin,
+  createUserLocationElement,
+} from "./marker-elements";
 
 type MapStatus = "loading" | "ready" | "error";
 
@@ -124,6 +125,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const markersRef = useRef(new Map<string, Marker>());
+  const rendersRef = useRef(new Map<string, CustomMarkerRender>());
   const userMarkerRef = useRef<Marker | null>(null);
   const [status, setStatus] = useState<MapStatus>("loading");
   const [attempt, setAttempt] = useState(0);
@@ -285,6 +287,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       const markers = markersRef.current;
       for (const marker of markers.values()) marker.remove();
       markers.clear();
+      rendersRef.current.clear();
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       map.remove();
@@ -298,18 +301,19 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     const map = mapRef.current;
     if (!map || status !== "ready") return;
     const markers = markersRef.current;
+    const renders = rendersRef.current;
     const seen = new Set<string>();
 
     const createMarker = (location: T) => {
       const custom = renderMarkerRef.current?.(location);
-      const element = custom?.element ?? createDefaultMarkerElement(location);
+      const handle = custom ?? createDefaultPin(location);
+      const element = handle.element;
       element.addEventListener("click", (event) => {
         event.stopPropagation();
         onLocationClickRef.current?.(location);
       });
-      if (custom?.zIndex !== undefined) {
-        element.dataset.baseZindex = String(custom.zIndex);
-        element.style.zIndex = String(custom.zIndex);
+      if (handle.zIndex !== undefined) {
+        element.style.zIndex = String(handle.zIndex);
       }
       element.dataset.signature = markerSignatureRef.current?.(location) ?? "";
       const marker = new Marker({
@@ -319,6 +323,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       marker.setLngLat([location.longitude, location.latitude]);
       marker.addTo(map);
       markers.set(location.id, marker);
+      renders.set(location.id, handle);
     };
 
     for (const location of locations) {
@@ -334,6 +339,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
         // Content-affecting change (e.g. check-in status) — rebuild this pin.
         existing.remove();
         markers.delete(location.id);
+        renders.delete(location.id);
         createMarker(location);
       }
     }
@@ -341,13 +347,14 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       if (seen.has(id)) continue;
       marker.remove();
       markers.delete(id);
+      renders.delete(id);
     }
   }, [status]);
 
   // Highlight + restack the selected checkpoint without recreating markers.
   useEffect(() => {
-    for (const [id, marker] of markersRef.current) {
-      setMarkerSelected(marker.getElement(), id === selectedLocationId);
+    for (const id of markersRef.current.keys()) {
+      rendersRef.current.get(id)?.setSelected?.(id === selectedLocationId);
     }
   }, [selectedLocationId, status]);
 

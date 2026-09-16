@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import { MapLibreMap } from "./MapLibreMap";
+import { createHomePin } from "./marker-elements";
 import type { MapLocation } from "./map.types";
 
 /** A checkpoint shown on the homepage map, with its detail-page slug. */
@@ -40,28 +41,7 @@ export function HomeMap({
       selectedLocationId={selectedId}
       onLocationClick={(location) => setSelectedId(location.id)}
       onMapClick={() => setSelectedId(null)}
-      renderMarkerElement={(location) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.dataset.baseZindex = "20";
-        button.setAttribute("aria-label", location.name);
-        button.title = location.name;
-        button.className =
-          "flex cursor-pointer flex-col items-center border-0 bg-transparent p-0 focus-visible:outline-none";
-
-        const circle = document.createElement("div");
-        circle.className =
-          "map-pin-circle flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-primary text-xs font-semibold text-primary-foreground shadow-md transition-transform";
-        circle.textContent = location.name.slice(0, 1).toUpperCase();
-
-        const label = document.createElement("div");
-        label.className =
-          "mt-1 max-w-[120px] truncate rounded-full bg-background/95 px-2 py-0.5 text-[11px] font-medium text-foreground shadow-sm";
-        label.textContent = location.name;
-
-        button.append(circle, label);
-        return { element: button, zIndex: 20 };
-      }}
+      renderMarkerElement={createHomePin}
       renderPopup={(location) => (
         <div className="w-72 rounded-xl border bg-card p-4 shadow-lg">
           <h3 className="text-base font-semibold tracking-tight">
