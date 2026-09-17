@@ -134,23 +134,13 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   // the error UI takes over.
   const [useFallbackStyle, setUseFallbackStyle] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
-  // Snapshot of locations as plain data so marker sync never closes over or
-  // passes render-scope objects into the imperative MapLibre layer.
-  const renderedLocations = useMemo<T[]>(
-    () =>
-      locations.map((location) => ({
-        ...location,
-      })),
-    [locations],
-  );
-
   // Latest-value refs: stable listeners + init-once config without effect churn.
   // Declared before useImperativeHandle so the handle never reads an
   // uninitialized ref (TDZ-safe).
   const renderedLocationsRef = useRef<T[]>([]);
-  // Snapshot props into mutable local copies. Marker sync below reads only
-  // this ref so the effect never closes over the `locations` prop identity,
-  // satisfying react-hooks/immutability without inline disables.
+  // Snapshot props into mutable local copies. The imperative handle, fit and
+  // selection effects read this ref; the marker sync effect re-runs on
+  // `locations` identity changes (see its deps).
   useEffect(() => {
     renderedLocationsRef.current = locations.map((item) => ({ ...item }));
   }, [locations]);
@@ -296,7 +286,9 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   }, [attempt, useFallbackStyle]);
 
   // Checkpoint markers: create once per id, update in place (tasks §15/§19).
-  // locations/status drive re-sync via config-relaxed hooks rules; no inline disables.
+  // Re-syncs when the map becomes ready or the locations data changes; the
+  // signature compare rebuilds content-affected pins (e.g. check-in status)
+  // without touching the rest.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || status !== "ready") return;
@@ -349,7 +341,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       markers.delete(id);
       renders.delete(id);
     }
-  }, [status]);
+  }, [status, locations]);
 
   // Highlight + restack the selected checkpoint without recreating markers.
   useEffect(() => {

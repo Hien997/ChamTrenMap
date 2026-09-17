@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
-import {
-  CheckpointWriteError,
-  createCheckpointSchema,
-} from "@/services/checkpoint-content";
+import { writeErrorResponse } from "@/lib/http";
+import { createCheckpointSchema } from "@/services/checkpoint-content";
 import {
   createCheckpoint,
   listCheckpointsForAdmin,
 } from "@/services/checkpoint-content.server";
-
-function writeErrorResponse(error: unknown) {
-  if (error instanceof CheckpointWriteError) {
-    return NextResponse.json(
-      { ok: false, error: error.message },
-      { status: error.status },
-    );
-  }
-  throw error;
-}
 
 export async function GET() {
   await requireAdmin();

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
-import {
-  CheckpointWriteError,
-  updateCheckpointSchema,
-} from "@/services/checkpoint-content";
+import { writeErrorResponse } from "@/lib/http";
+import { updateCheckpointSchema } from "@/services/checkpoint-content";
 import {
   deleteCheckpoint,
   getCheckpointForEdit,
@@ -14,16 +12,6 @@ function slugFromRequest(request: NextRequest): string {
   const { pathname } = new URL(request.url);
   // Resolve the record by URL slug — same lookup contract across GET/PATCH/DELETE.
   return pathname.split("/").pop() ?? "";
-}
-
-function writeErrorResponse(error: unknown) {
-  if (error instanceof CheckpointWriteError) {
-    return NextResponse.json(
-      { ok: false, error: error.message },
-      { status: error.status },
-    );
-  }
-  throw error;
 }
 
 export async function GET(request: NextRequest) {

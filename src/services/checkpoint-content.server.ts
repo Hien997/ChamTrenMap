@@ -115,14 +115,14 @@ export async function getCheckpointForEdit(
 export async function createCheckpoint(
   input: CreateCheckpointInput,
 ): Promise<{ id: string; slug: string }> {
-  const existing = await prisma.checkpoint.findUnique({
-    where: { slug: input.slug },
-  });
-  if (existing) {
-    throw new CheckpointWriteError("conflict", "Checkpoint already exists");
-  }
-
   try {
+    const existing = await prisma.checkpoint.findUnique({
+      where: { slug: input.slug },
+    });
+    if (existing) {
+      throw new CheckpointWriteError("conflict", "Checkpoint already exists");
+    }
+
     const checkpoint = await prisma.checkpoint.create({
       data: {
         slug: input.slug,
@@ -152,7 +152,8 @@ export async function createCheckpoint(
       },
     });
     return { id: checkpoint.id, slug: checkpoint.slug };
-  } catch {
+  } catch (error) {
+    if (error instanceof CheckpointWriteError) throw error;
     throw new CheckpointWriteError(
       "storage",
       "Checkpoint error or database error",
