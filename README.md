@@ -1,12 +1,12 @@
 # 🧭 Chắm Trên Map — Hà Tiên Checkpoint Travel Platform
 
-**Your digital passport for discovering Hà Tiên.** Tourists follow the _Hà Tiên Discovery_ tour on a Google Map, visit 8 checkpoints, read VN/EN online guides, check in via server-validated GPS, track progress and share their achievement.
+**Your digital passport for discovering Hà Tiên.** Tourists follow the _Hà Tiên Discovery_ tour on an interactive map, visit 8 checkpoints, read VN/EN online guides, check in via server-validated GPS, track progress and share their achievement.
 
-> Phase 1 MVP per `Plan.md` — Google Maps · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share links · VN/EN i18n. Phase 2 (audio, badges/XP, admin, PWA) is scaffolded for by the DB schema.
+> Phase 1 MVP per `Plan.md` — interactive map · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share links · VN/EN i18n, plus the Phase 2 admin CRUD. Remaining Phase 2 work (audio, badges/XP, PWA) is scaffolded for by the DB schema.
 
 ## Tech Stack
 
-Next.js 16 (App Router) · TypeScript strict · Tailwind CSS 4 · shadcn/ui · framer-motion · TanStack Query · Zustand · Zod · next-intl · @vis.gl/react-google-maps · Prisma 6 · Neon Postgres · Vitest · Vercel
+Next.js 16 (App Router) · TypeScript strict · Tailwind CSS 4 · shadcn/ui · framer-motion · TanStack Query · Zustand · Zod · next-intl · MapLibre GL · OpenStreetMap tiles (no API key) · Prisma 6 · Neon Postgres · Vitest · Vercel
 
 ## Quick Start
 
@@ -27,15 +27,38 @@ Seed script registration (already set in `package.json`; re-add with
 | Variable                          | Purpose                                                                          |
 | --------------------------------- | -------------------------------------------------------------------------------- |
 | `DATABASE_URL`                    | Postgres connection string — Neon pooled URL in production, local Docker for dev |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Key with **Maps JavaScript API** + **Directions API** enabled, domain-restricted |
-| `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`  | A **Vector Map ID** (required for AdvancedMarker status pins)                    |
+| `NEXT_PUBLIC_MAP_STYLE_URL`       | Optional. Empty = built-in OpenStreetMap tiles (keyless). Set a style URL to override |
+| `NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS` | Optional. Time budget (ms) for one map-load attempt before the fallback kicks in |
 | `NEXT_PUBLIC_APP_URL`             | Canonical origin for share links & Open Graph (e.g. `https://yourdomain.vn`)     |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD`  | Initial admin account, created by the demo seed (`npm run db:seed`)              |
 
-### Google Maps setup
+### Map tiles (no API key)
 
-1. console.cloud.google.com → enable **Maps JavaScript API** and **Directions API**.
-2. Create an **API key**; restrict it to your domains and to those two APIs.
-3. **Map Management → Create Map ID** (type: Vector) → copy into `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`.
+The map uses **MapLibre GL** with a built-in **OpenStreetMap raster style** — no key,
+no account, no watermark. Nothing to configure: leave `NEXT_PUBLIC_MAP_STYLE_URL`
+empty and it works.
+
+Two built-in styles and an automatic fallback keep the map usable on hostile
+networks (this is not hypothetical — Vietnamese ISPs commonly fail DNS for
+`tile.openstreetmap.org`):
+
+1. **OSM raster** (`tile.openstreetmap.org`) loads first when no URL is configured.
+2. If no tile arrives — or a load attempt exceeds its time budget — the map
+   rebuilds **once** on the **CARTO** raster style (same OpenStreetMap data,
+   different host/CDN).
+3. If that also fails, a retry UI appears instead of an endless spinner.
+
+To use a different provider, set `NEXT_PUBLIC_MAP_STYLE_URL` to a style JSON,
+e.g. a keyless vector style:
+
+```bash
+NEXT_PUBLIC_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
+```
+
+> **Before production:** OSM's free tiles are for low-volume use
+> ([tile usage policy](https://operations.osmfoundation.org/policies/tiles/)) —
+> community tile servers forbid bulk downloads. For real traffic, point
+> `NEXT_PUBLIC_MAP_STYLE_URL` at a commercial provider or a self-hosted style.
 
 ### Database
 
@@ -45,8 +68,8 @@ Seed script registration (already set in `package.json`; re-add with
 ## Testing
 
 ```bash
-npx vitest run        # haversine, check-in policy, sequential status derivation (15 tests)
-npm run build         # typecheck + production build
+npx vitest --run     # 61 tests: haversine, check-in policy, progress, tour-progress, checkpoint-content, i18n parity
+npm run build        # typecheck + production build
 ```
 
 Manual GPS testing: Chrome DevTools → Sensors → Location → _Custom location…_ set a checkpoint's coordinates to trigger a successful check-in; move the pin >100 m away to see the too-far flow.
@@ -55,10 +78,15 @@ Manual GPS testing: Chrome DevTools → Sensors → Location → _Custom locatio
 
 ```
 src/app/[locale]/…      home · tours · map/[tourSlug] · checkpoints/[slug] · share/checkin/[shareId]
+src/app/admin/…         login/logout + protected tours & checkpoints CRUD (incl. guides)
 src/app/api/…           tours · tours/[slug] · tours/[slug]/progress · checkpoints/[slug]
                         checkins (POST, validated) · checkins/me · share/checkin
+                        admin/checkpoints (auth-guarded CRUD) · admin/tours
 src/services/…          business logic (tours, checkpoints, checkins, progress, share)
-src/lib/…               geo (haversine + policy), session (anonymous cookie), rate-limit, api envelope
+                        checkpoint-content* (admin checkpoint seam: schemas + read/write)
+src/components/map/…    MapLibre kit (map · markers · utils) + domain consumers
+src/lib/…               geo (haversine + policy), tour-progress, http, session
+                        (anonymous cookie), rate-limit, api envelope, sanitize
 prisma/…                schema (11 tables) + idempotent DEMO seed
 ```
 
@@ -66,15 +94,17 @@ prisma/…                schema (11 tables) + idempotent DEMO seed
 
 **i18n:** `/vi` (default) and `/en` routes via next-intl; UI strings in `src/messages/*.json`, content in per-locale DB tables with Vietnamese fallback.
 
-**Seed data is DEMO:** approximate coordinates and placeholder photos — verify before production (admin CRUD arrives in Phase 2).
+**Maps:** MapLibre GL with OpenStreetMap tiles — keyless. See [Map tiles](#map-tiles-no-api-key).
+
+**Seed data is DEMO:** approximate coordinates and placeholder photos — verify before production. Admin CRUD is available at `/admin`.
 
 ## Deploy (Vercel + Neon)
 
 1. Push to GitHub → import the repo in Vercel.
-2. Set the four env vars above (Neon URL + Maps key + Map ID + app URL).
+2. Set the env vars above (`DATABASE_URL` from Neon + `NEXT_PUBLIC_APP_URL`). Map tiles need no key — see [Map tiles](#map-tiles-no-api-key).
 3. Run once against the production DB: `npx prisma db push && npx prisma db seed`.
 4. Verify: share-page OG preview (Facebook Sharing Debugger), map rendering, GPS check-in on a real device.
 
 ## Phase 2 Backlog
 
-Audio guides · badges & XP · user profile · admin dashboard (tours/checkpoints CRUD) · PWA · analytics · generated share images (next/og) · Upstash-backed rate limiting.
+Audio guides · badges & XP · user profile · PWA · analytics · generated share images (next/og) · Upstash-backed rate limiting.

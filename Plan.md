@@ -9,6 +9,8 @@ A mobile-first tourism web app for Hà Tiên, An Giang. Tourists follow the Hà 
 **Phase 1 scope (approved):** Google Maps · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share link · VN/EN i18n.
 **Deferred to Phase 2:** audio guides, badges/XP, user profile, admin dashboard, PWA, analytics, generated share images (next/og). Database-driven content means admin CRUD can be added without schema changes.
 
+> **⚠️ Revision — map stack changed (implemented).** The map is **MapLibre GL + OpenStreetMap tiles**, not Google Maps: no API key, no billing account. Sections below that name Google Maps (`§2` map row, `§3`, `§10`, `§12`) describe the *original* plan and are kept for the record; the shipped behaviour lives in `src/components/map/` and the README's *Map tiles* section. Key differences: a raster OSM style instead of the vector `<Map>`; custom marker DOM instead of `AdvancedMarker`; **OSRM** routing (`src/lib/routing.ts`, configurable base URL) instead of the Directions API; and a cross-host fallback style (OSM → CARTO) instead of a Google key fallback. The "Open in Google Maps" *deep link* (`maps/dir/?api=1&…`) is retained — it's an outbound link, not the SDK. Admin CRUD (originally Phase 2) has also shipped.
+
 ## 2. Decisions Log
 
 | Decision            | Choice                                                                                | Rationale                                                                     |
@@ -18,7 +20,7 @@ A mobile-first tourism web app for Hà Tiên, An Giang. Tourists follow the Hà 
 | Hosting             | Vercel + Neon Postgres                                                                | Free tiers, serverless-friendly                                               |
 | ORM                 | Prisma (stable 6.x line — `latest` tag currently points to an 8.0.0 RC)               | Best DX, native Neon support                                                  |
 | i18n                | next-intl, locale prefix always (`/vi/...`, `/en/...`), default `vi`                  | Spec §32                                                                      |
-| Map                 | `@vis.gl/react-google-maps` (official wrapper) + Maps JavaScript API + Directions API | Places/Geocoding deferred — data comes from our DB                            |
+| Map                 | ~~`@vis.gl/react-google-maps` + Maps JS/Directions API~~ → **MapLibre GL + OpenStreetMap raster tiles, keyless** | **Revised:** zero-key setup (the Google plan needed a billing account); fallback host keeps VN ISPs that block `tile.openstreetmap.org` working |
 | Checkpoint ordering | Sequential: only the current checkpoint can be checked in; later ones locked          | Spec §2 "unlock next checkpoint"; a free-roam mode is a future flag           |
 | XP/Badges           | Excluded Phase 1; success UI shows checkpoint count (e.g. "3 / 8") instead of XP      | Approved scope; schema leaves room                                            |
 | Demo images         | picsum.photos seeded URLs in seed data                                                | Stable placeholder URLs; clearly marked DEMO, replaceable                     |
@@ -26,7 +28,7 @@ A mobile-first tourism web app for Hà Tiên, An Giang. Tourists follow the Hà 
 ## 3. Tech Stack
 
 - Next.js **16.3.x** (App Router, TypeScript strict), Tailwind CSS **4.x**, shadcn/ui, **framer-motion 13**, **@tanstack/react-query 5**, **zustand 5**, **zod 4**
-- **next-intl 4.x**, **@vis.gl/react-google-maps 1.10**, **Prisma 6.x + @prisma/client**, **nanoid** (share ids), **vitest** (unit tests)
+- **next-intl 4.x**, **maplibre-gl 6.x** (revised — see the note above), **Prisma 6.x + @prisma/client**, **nanoid** (share ids), **vitest** (unit tests)
 - Node 20+, pnpm or npm
 
 ## 4. Project Structure
@@ -268,10 +270,11 @@ interface TourProgressView {
 
 ## 10. Map & Markers
 
-- Full-screen `<Map>` via `@vis.gl/react-google-maps` (`mapId` required for AdvancedMarkers).
+- **Shipped (revised):** full-screen MapLibre GL map (`src/components/map/MapLibreMap.tsx`) with a raster OpenStreetMap style — no `mapId`, no API key.
 - Markers by status: ✅ completed · ⭐ current/available · 🔒 locked; click → bottom sheet preview card (spec §7 layout).
 - Polyline connecting checkpoints in order; user location via `navigator.geolocation.watchPosition`.
-- Directions: `DirectionsService` + `DirectionsRenderer` for user → current checkpoint, **Walking/Driving** toggle, plus "Open in Google Maps" deep link (`maps/dir/?api=1&destination=lat,lng&travelmode=`).
+- **Shipped (revised):** routing via OSRM (`src/lib/routing.ts`, `/route/v1/{profile}/…`) instead of `DirectionsService`/`DirectionsRenderer`, with the same **Walking/Driving** toggle, plus the retained "Open in Google Maps" deep link (`maps/dir/?api=1&destination=lat,lng&travelmode=`).
+- Load robustness: a per-attempt time budget, plus tile-failure escalation, swaps in the CARTO-hosted fallback style once before showing a retry UI.
 
 ## 11. Seed Data (DEMO — admin must verify before production)
 
@@ -293,9 +296,12 @@ Each checkpoint: vi+en translations (name, summary, address, opening hours, best
 
 ```env
 DATABASE_URL=postgresql://...neon.../db?sslmode=require   # Neon pooled connection
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=                          # Maps JavaScript + Directions APIs enabled, domain-restricted
+NEXT_PUBLIC_MAP_STYLE_URL=                                # optional; empty = built-in OSM tiles (keyless)
+NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS=                          # optional; default 20000
 NEXT_PUBLIC_APP_URL=http://localhost:3000                 # canonical origin for share links & OG
 ```
+
+*(Revised — the original plan listed `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` here; the keyless OSM setup replaced it.)*
 
 ## 13. Implementation Tasks (each = one commit)
 
@@ -322,6 +328,6 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000                 # canonical origin for
 ## 15. Deployment (production)
 
 1. Neon: create project → copy pooled `DATABASE_URL` → `npx prisma db push && npx prisma db seed`.
-2. Google Cloud: enable **Maps JavaScript API** + **Directions API** → API key restricted to the production domain.
-3. Vercel: import Git repo, set the 3 env vars, deploy.
+2. ~~Google Cloud: enable **Maps JavaScript API** + **Directions API** → API key restricted to the production domain.~~ **Revised:** no map provider account needed — OSM tiles are keyless. (Optional: set `NEXT_PUBLIC_MAP_STYLE_URL` to a commercial/self-hosted style before real traffic.)
+3. Vercel: import Git repo, set the env vars, deploy.
 4. Verify share-page OG preview and map on production domain.
