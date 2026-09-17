@@ -2,14 +2,14 @@
 
 ## 1. Overview
 
-A mobile-first tourism web app for Hà Tiên, An Giang. Tourists follow the Hà Tiên Discovery tour on a Google Map, visit 8 checkpoints, read VN/EN online guides, check in via GPS (server-validated), track progress, and share their achievement via a public share page.
+A mobile-first tourism web app for Hà Tiên, An Giang. Tourists follow the Hà Tiên Discovery tour on an interactive map (MapLibre GL + OpenStreetMap — see the revision note below), visit 8 checkpoints, read VN/EN online guides, check in via GPS (server-validated), track progress, and share their achievement via a public share page.
 
 **Core loop:** Explore → Visit → Learn → Check In → Complete Tour → Share
 
-**Phase 1 scope (approved):** Google Maps · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share link · VN/EN i18n.
+**Phase 1 scope (approved):** ~~Google Maps~~ **MapLibre GL + OpenStreetMap tiles** · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share link · VN/EN i18n.
 **Deferred to Phase 2:** audio guides, badges/XP, user profile, admin dashboard, PWA, analytics, generated share images (next/og). Database-driven content means admin CRUD can be added without schema changes.
 
-> **⚠️ Revision — map stack changed (implemented).** The map is **MapLibre GL + OpenStreetMap tiles**, not Google Maps: no API key, no billing account. Sections below that name Google Maps (`§2` map row, `§3`, `§10`, `§12`) describe the *original* plan and are kept for the record; the shipped behaviour lives in `src/components/map/` and the README's *Map tiles* section. Key differences: a raster OSM style instead of the vector `<Map>`; custom marker DOM instead of `AdvancedMarker`; **OSRM** routing (`src/lib/routing.ts`, configurable base URL) instead of the Directions API; and a cross-host fallback style (OSM → CARTO) instead of a Google key fallback. The "Open in Google Maps" *deep link* (`maps/dir/?api=1&…`) is retained — it's an outbound link, not the SDK. Admin CRUD (originally Phase 2) has also shipped.
+> **⚠️ Revision — map stack changed (implemented).** The map is **MapLibre GL + OpenStreetMap tiles**, not Google Maps: no API key, no billing account. Sections below that name Google Maps (`§1` scope, `§2` map row, `§3`, `§10`, `§12`) describe the *original* plan and are kept for the record; the shipped behaviour lives in `src/components/map/` and the README's *Map tiles* section. Key differences: a raster OSM style instead of the vector `<Map>`; custom marker DOM instead of `AdvancedMarker`; **OSRM** routing (`src/lib/routing.ts`, configurable base URL) instead of the Directions API; and a cross-host fallback style (OSM → CARTO) instead of a Google key fallback. The "Open in Google Maps" *deep link* (`maps/dir/?api=1&…`) is retained — it's an outbound link, not the SDK. Admin CRUD (originally Phase 2) has also shipped.
 
 ## 2. Decisions Log
 

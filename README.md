@@ -24,13 +24,13 @@ Seed script registration (already set in `package.json`; re-add with
 
 ### Environment variables (`.env`)
 
-| Variable                          | Purpose                                                                          |
-| --------------------------------- | -------------------------------------------------------------------------------- |
-| `DATABASE_URL`                    | Postgres connection string — Neon pooled URL in production, local Docker for dev |
+| Variable                          | Purpose                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                    | Postgres connection string — Neon pooled URL in production, local Docker for dev      |
 | `NEXT_PUBLIC_MAP_STYLE_URL`       | Optional. Empty = built-in OpenStreetMap tiles (keyless). Set a style URL to override |
-| `NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS` | Optional. Time budget (ms) for one map-load attempt before the fallback kicks in |
-| `NEXT_PUBLIC_APP_URL`             | Canonical origin for share links & Open Graph (e.g. `https://yourdomain.vn`)     |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD`  | Initial admin account, created by the demo seed (`npm run db:seed`)              |
+| `NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS` | Optional. Time budget (ms) for one map-load attempt before the fallback kicks in      |
+| `NEXT_PUBLIC_APP_URL`             | Canonical origin for share links & Open Graph (e.g. `https://yourdomain.vn`)          |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD`  | Initial admin account, created by the demo seed (`npm run db:seed`)                   |
 
 ### Map tiles (no API key)
 
@@ -39,14 +39,21 @@ no account, no watermark. Nothing to configure: leave `NEXT_PUBLIC_MAP_STYLE_URL
 empty and it works.
 
 Two built-in styles and an automatic fallback keep the map usable on hostile
-networks (this is not hypothetical — Vietnamese ISPs commonly fail DNS for
-`tile.openstreetmap.org`):
+networks — verified on a Vietnamese ISP where `tile.openstreetmap.org` returns
+**NXDOMAIN**:
 
 1. **OSM raster** (`tile.openstreetmap.org`) loads first when no URL is configured.
-2. If no tile arrives — or a load attempt exceeds its time budget — the map
-   rebuilds **once** on the **CARTO** raster style (same OpenStreetMap data,
-   different host/CDN).
-3. If that also fails, a retry UI appears instead of an endless spinner.
+2. The map rebuilds **once** on the **CARTO** raster style (same OpenStreetMap
+   data, a different host/CDN) when either trigger fires:
+   - **tiles fail** with none ever rendering (a blocked/NXDOMAIN tile host fails
+     fast and silently — tile errors are non-fatal by design), or
+   - a load attempt exceeds its **time budget** (`NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS`,
+     default 20 s).
+3. If the fallback also fails, a retry UI appears instead of an endless spinner.
+
+Because OSM is unreachable on some networks, a first paint on CARTO after the
+fallback is expected there — that is the fallback working, not a bug. See
+[Map tiles](#map-tiles-no-api-key).
 
 To use a different provider, set `NEXT_PUBLIC_MAP_STYLE_URL` to a style JSON,
 e.g. a keyless vector style:
