@@ -43,6 +43,7 @@ import {
   resolveMapStyle,
   resolveMapTimeoutAction,
   resolveTileFailureAction,
+  styleUsesTileSources,
 } from "./map.utils";
 import {
   createDefaultPin,
@@ -225,12 +226,25 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
     let loaded = false;
-    // Time budget: a stalled style/tile host fires no error event and never
-    // fires `load`, which used to spin the loading overlay forever. Once the
-    // budget lapses, the first attempt gets one silent retry on the other
-    // built-in raster host; the fallback attempt surfaces the error UI instead.
+    // A `sourcedata` event carrying a tile means a tile actually rendered, so
+    // later tile failures are transient gaps rather than a dead host.
+    let anyTileRendered = false;
+    let tileErrorCount = 0;
+    // Time budget: a stalled style host fires no error event and never fires
+    // `load`, which used to spin the loading overlay forever. Once the budget
+    // lapses, the first attempt gets one silent retry on the other built-in
+    // host; the fallback attempt surfaces the error UI instead.
     const timeoutId = window.setTimeout(() => {
-      if (loaded) return;
+      // `load` only means the style's sources reported their metadata; a
+      // tile-backed style whose tiles never arrive is still a blank canvas.
+      // Dropped packets hang silently, and MapLibre treats a 404 tile as a
+      // non-error, so neither `load` nor the error handler reports that case.
+      if (
+        loaded &&
+        (!styleUsesTileSources(map.getStyle()) || anyTileRendered)
+      ) {
+        return;
+      }
       const action = resolveMapTimeoutAction({
         fallbackAlreadyTried: useFallbackStyle,
       });
@@ -250,8 +264,6 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     };
     // A `sourcedata` event carrying a tile means a tile actually rendered, so
     // later tile failures are transient gaps rather than a dead host.
-    let anyTileRendered = false;
-    let tileErrorCount = 0;
     const handleSourceData = (event: MapSourceDataEvent) => {
       if (isTileDataEvent(event)) {
         anyTileRendered = true;

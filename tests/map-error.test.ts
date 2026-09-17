@@ -14,6 +14,7 @@ import {
   resolveMapStyle,
   resolveMapTimeoutAction,
   resolveTileFailureAction,
+  styleUsesTileSources,
 } from "@/components/map/map.utils";
 
 /** Just enough of a MapLibre raster source to assert on. */
@@ -179,6 +180,35 @@ describe("resolveTileFailureAction", () => {
         fallbackAlreadyTried: true,
       }),
     ).toBe("ignore");
+  });
+});
+
+describe("styleUsesTileSources", () => {
+  it("is true for the built-in raster styles", () => {
+    expect(styleUsesTileSources(defaultMapStyle())).toBe(true);
+    expect(styleUsesTileSources(fallbackMapStyle())).toBe(true);
+  });
+
+  it("is true for vector styles, which also fetch tiles", () => {
+    expect(
+      styleUsesTileSources({ sources: { openmaptiles: { type: "vector" } } }),
+    ).toBe(true);
+    expect(
+      styleUsesTileSources({ sources: { dem: { type: "raster-dem" } } }),
+    ).toBe(true);
+  });
+
+  it("is false when no source fetches tiles", () => {
+    // A geojson-only style renders no tiles by design, so a missing tile must
+    // not be mistaken for a broken host.
+    expect(
+      styleUsesTileSources({ sources: { stops: { type: "geojson" } } }),
+    ).toBe(false);
+    expect(styleUsesTileSources({ sources: { logo: { type: "image" } } })).toBe(
+      false,
+    );
+    expect(styleUsesTileSources({ sources: {} })).toBe(false);
+    expect(styleUsesTileSources({})).toBe(false);
   });
 });
 

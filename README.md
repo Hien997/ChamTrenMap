@@ -75,7 +75,8 @@ NEXT_PUBLIC_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
 ## Testing
 
 ```bash
-npx vitest --run     # 61 tests: haversine, check-in policy, progress, tour-progress, checkpoint-content, i18n parity
+npx vitest --run     # 64 tests: geo/haversine, check-in policy, progress, tour-progress,
+                     # checkpoint-content, map error & style policy, i18n parity, sanitize
 npm run build        # typecheck + production build
 ```
 

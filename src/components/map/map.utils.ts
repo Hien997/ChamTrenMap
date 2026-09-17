@@ -112,6 +112,23 @@ export function isTileDataEvent(event: unknown): boolean {
   return hasTilePayload(event);
 }
 
+/** Source types that fetch tiles — the only ones a blank canvas can hide in. */
+const TILE_SOURCE_TYPES = new Set(["raster", "vector", "raster-dem"]);
+
+/**
+ * True when the style has at least one tile-backed source (raster/vector).
+ * A style of only `geojson`/`image` sources is *expected* to render no tiles,
+ * so a tile-arrival check must not treat it as broken.
+ */
+export function styleUsesTileSources(style: {
+  sources?: Record<string, { type?: string }>;
+}): boolean {
+  const sources = style?.sources ?? {};
+  return Object.values(sources).some(
+    (source) => source?.type != null && TILE_SOURCE_TYPES.has(source.type),
+  );
+}
+
 /** Explicit prop wins, then the env var, then the built-in OSM raster style. */
 export function resolveMapStyle(
   styleUrl?: string,
