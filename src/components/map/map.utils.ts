@@ -10,16 +10,53 @@ import type {
 export const HATIEN_CENTER: [number, number] = [104.4835, 10.3836];
 export const DEFAULT_MAP_ZOOM = 13;
 
+/** Standard OpenStreetMap raster tiles — free, no key, no account. */
+export const OSM_RASTER_TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+/** Attribution OSM's tile usage policy requires wherever those tiles render. */
+export const OSM_ATTRIBUTION =
+  '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+/** Highest zoom `tile.openstreetmap.org` serves; MapLibre overzooms past it. */
+export const OSM_RASTER_MAX_ZOOM = 19;
+
 /**
- * Built-in raster style served from CARTO's raster tiles (OpenStreetMap data).
- * `tile.openstreetmap.org` is unreachable from some networks (Vietnam ISPs
- * commonly fail DNS for it) and OSM's tile policy discourages production app
- * traffic, so CARTO is the sensible default — free for reasonable use with
- * attribution (https://www.carto.com/attributions).
- * Custom deployments can point `NEXT_PUBLIC_MAP_STYLE_URL` at a dedicated
- * style/tile provider instead.
+ * Built-in raster style: the standard OpenStreetMap layer.
+ * No API key, no account, no watermark — just the required attribution.
+ *
+ * Before pointing real traffic here, mind OSM's tile usage policy
+ * (https://operations.osmfoundation.org/policies/tiles/): the community tile
+ * servers are for low-volume use and forbid bulk downloads. A busy public
+ * deployment should set `NEXT_PUBLIC_MAP_STYLE_URL` to a commercial provider
+ * (or a self-hosted style) instead.
  */
 export function defaultMapStyle(): StyleSpecification {
+  return {
+    version: 8,
+    sources: {
+      osm: {
+        type: "raster",
+        tiles: [OSM_RASTER_TILE_URL],
+        tileSize: 256,
+        maxzoom: OSM_RASTER_MAX_ZOOM,
+        attribution: OSM_ATTRIBUTION,
+      },
+    },
+    // No maxzoom on the layer: MapLibre keeps drawing (overzoomed) tiles past
+    // zoom 19 rather than blanking the map when the user zooms further.
+    layers: [{ id: "osm", type: "raster", source: "osm" }],
+  };
+}
+
+/**
+ * Second built-in style, used only when a load attempt exhausts its time
+ * budget: the same OpenStreetMap data rastered by CARTO from a different
+ * host/CDN. `tile.openstreetmap.org` is unreachable from some networks
+ * (Vietnam ISPs commonly fail DNS for it), so the fallback exists to keep the
+ * map usable when the primary tiles can't be fetched.
+ * Free for reasonable use with attribution (https://www.carto.com/attributions).
+ */
+export function fallbackMapStyle(): StyleSpecification {
   return {
     version: 8,
     sources: {
@@ -32,8 +69,7 @@ export function defaultMapStyle(): StyleSpecification {
         ],
         tileSize: 256,
         maxzoom: 20,
-        attribution:
-          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        attribution: `${OSM_ATTRIBUTION} © <a href="https://carto.com/attributions">CARTO</a>`,
       },
     },
     layers: [{ id: "carto-tiles", type: "raster", source: "carto-tiles" }],
@@ -47,12 +83,36 @@ export function defaultMapStyle(): StyleSpecification {
  * source 404s (e.g. OpenFreeMap Liberty's `ne2_shaded` shaded relief) must not
  * brick the whole map — only style-level failures (no `tile`) are fatal.
  */
-export function isTileLevelMapError(event: unknown): boolean {
+/** True when a MapLibre event carries a `tile` payload. */
+function hasTilePayload(event: unknown): boolean {
   if (typeof event !== "object" || event === null) return false;
   return "tile" in event && (event as { tile?: unknown }).tile != null;
 }
 
-/** Explicit prop wins, then the env var, then the built-in OSM style. */
+/**
+ * MapLibre fires a map-level `error` event for every failed resource fetch,
+ * including individual tile 404s. Events that carry a `tile` payload are
+ * per-tile failures: retryable and non-fatal. A style whose optional overlay
+ * source 404s (e.g. OpenFreeMap Liberty's `ne2_shaded` shaded relief) must not
+ * brick the whole map — only style-level failures (no `tile`) are fatal.
+ */
+export function isTileLevelMapError(event: unknown): boolean {
+  return hasTilePayload(event);
+}
+
+/**
+ * True for a `sourcedata` event that carries a tile. MapLibre fires one of
+ * these after a tile *successfully* loads, so it's the positive "at least one
+ * tile actually rendered" signal — unlike `sourceDataType === "content"`,
+ * which fires as soon as the source's TileJSON metadata arrives (i.e. before
+ * any tile is requested) and therefore can't distinguish a working host from
+ * an unreachable one.
+ */
+export function isTileDataEvent(event: unknown): boolean {
+  return hasTilePayload(event);
+}
+
+/** Explicit prop wins, then the env var, then the built-in OSM raster style. */
 export function resolveMapStyle(
   styleUrl?: string,
 ): string | StyleSpecification {
@@ -65,7 +125,7 @@ export function resolveMapStyle(
 export const MAP_LOAD_TIMEOUT_MS = 20_000;
 
 /** What to do when a load attempt exceeds its time budget. */
-export type MapTimeoutAction = "fallback-to-default-style" | "give-up";
+export type MapTimeoutAction = "use-fallback-style" | "give-up";
 
 /**
  * Time budget for one map-load attempt: explicit prop wins, then the
@@ -89,19 +149,42 @@ export function resolveMapLoadTimeoutMs(override?: number): number {
 
 /**
  * Escalation when the budget elapses before the map fires `load`:
- * - a configured style URL gets ONE silent rebuild on the built-in raster
- *   style (its host is likely stalled or unreachable);
- * - once the built-in style is what we're already loading, give up so the
+ * - the first attempt gets ONE silent rebuild on the other built-in host
+ *   (whether it was loading a configured style or the OSM default);
+ * - once the fallback style is what's already loading, give up so the
  *   error/retry UI takes over instead of an eternal spinner.
  */
 export function resolveMapTimeoutAction(options: {
-  usedCustomStyle: boolean;
   fallbackAlreadyTried: boolean;
 }): MapTimeoutAction {
-  if (options.usedCustomStyle && !options.fallbackAlreadyTried) {
-    return "fallback-to-default-style";
+  return options.fallbackAlreadyTried ? "give-up" : "use-fallback-style";
+}
+
+/**
+ * Failed tiles are normally non-fatal (see `isTileLevelMapError`), but when
+ * *no* tile ever arrives the map sits blank forever with no error UI — the
+ * host is unreachable (DNS-blocked, offline). After this many failed tiles,
+ * with none succeeding, the host is treated as unreachable.
+ */
+export const TILE_FAILURE_ESCALATION_THRESHOLD = 3;
+
+/** `ignore` keeps the map up (tiles are arriving); the rest escalate as above. */
+export type TileFailureAction = MapTimeoutAction | "ignore";
+
+/**
+ * Decide what a failed tile means. Once a single tile has rendered, tile
+ * failures are transient (gaps while panning) and stay non-fatal.
+ */
+export function resolveTileFailureAction(options: {
+  tileErrorCount: number;
+  anyTileRendered: boolean;
+  fallbackAlreadyTried: boolean;
+}): TileFailureAction {
+  if (options.anyTileRendered) return "ignore";
+  if (options.tileErrorCount < TILE_FAILURE_ESCALATION_THRESHOLD) {
+    return "ignore";
   }
-  return "give-up";
+  return options.fallbackAlreadyTried ? "give-up" : "use-fallback-style";
 }
 
 /**

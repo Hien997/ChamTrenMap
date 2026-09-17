@@ -6,6 +6,7 @@ import {
   NavigationControl,
   type ErrorEvent as MapErrorEvent,
   type MapMouseEvent,
+  type MapSourceDataEvent,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
@@ -33,13 +34,15 @@ import type {
 import {
   DEFAULT_MAP_ZOOM,
   HATIEN_CENTER,
-  defaultMapStyle,
+  fallbackMapStyle,
   fitLocationsBounds,
   flyToLocation,
   isTileLevelMapError,
+  isTileDataEvent,
   resolveMapLoadTimeoutMs,
   resolveMapStyle,
   resolveMapTimeoutAction,
+  resolveTileFailureAction,
 } from "./map.utils";
 import {
   createDefaultPin,
@@ -52,7 +55,7 @@ export interface MapLibreMapProps<T extends MapLocation = MapLocation> {
   locations: T[];
   center?: [number, number];
   zoom?: number;
-  /** MapLibre style URL; defaults to NEXT_PUBLIC_MAP_STYLE_URL, then built-in OSM style. */
+  /** MapLibre style URL; defaults to NEXT_PUBLIC_MAP_STYLE_URL, then built-in OSM raster. */
   styleUrl?: string;
   selectedLocationId?: string | null;
   onLocationClick?: (location: T) => void;
@@ -199,12 +202,11 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     setStatus("loading");
     setTimedOut(false);
 
-    // The fallback attempt pins the built-in raster style, whatever the
-    // configured URL is.
+    // The fallback attempt pins the second built-in raster style (CARTO), so
+    // a primary host that can't be reached doesn't leave the map blank.
     const resolvedStyle = useFallbackStyle
-      ? defaultMapStyle()
+      ? fallbackMapStyle()
       : resolveMapStyle(styleUrlRef.current);
-    const usedCustomStyle = typeof resolvedStyle === "string";
 
     let map: MaplibreMap;
     try {
@@ -223,17 +225,16 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
     let loaded = false;
-    // Time budget: a stalled style host fires no error event and never fires
-    // `load`, which used to spin the loading overlay forever. Once the budget
-    // lapses, a configured style gets one silent retry on the built-in raster
-    // style; otherwise surface the error UI.
+    // Time budget: a stalled style/tile host fires no error event and never
+    // fires `load`, which used to spin the loading overlay forever. Once the
+    // budget lapses, the first attempt gets one silent retry on the other
+    // built-in raster host; the fallback attempt surfaces the error UI instead.
     const timeoutId = window.setTimeout(() => {
       if (loaded) return;
       const action = resolveMapTimeoutAction({
-        usedCustomStyle,
         fallbackAlreadyTried: useFallbackStyle,
       });
-      if (action === "fallback-to-default-style") {
+      if (action === "use-fallback-style") {
         setUseFallbackStyle(true);
         return;
       }
@@ -247,11 +248,39 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       ensureRouteLayers(map);
       setStatus("ready");
     };
+    // A `sourcedata` event carrying a tile means a tile actually rendered, so
+    // later tile failures are transient gaps rather than a dead host.
+    let anyTileRendered = false;
+    let tileErrorCount = 0;
+    const handleSourceData = (event: MapSourceDataEvent) => {
+      if (isTileDataEvent(event)) {
+        anyTileRendered = true;
+      }
+    };
     const handleError = (event: MapErrorEvent) => {
       // Per-tile failures (e.g. an optional shaded-relief source 404ing in the
       // chosen style) must not block the map — only a style-level failure
       // before load is fatal.
-      if (isTileLevelMapError(event)) return;
+      if (isTileLevelMapError(event)) {
+        // ...unless not one tile has ever arrived: the tile host is
+        // unreachable (commonly DNS-blocked) and the map would render blank
+        // forever with no error UI, since tile errors are non-fatal. Escalate
+        // to the other built-in host once, then give up.
+        tileErrorCount += 1;
+        const action = resolveTileFailureAction({
+          tileErrorCount,
+          anyTileRendered,
+          fallbackAlreadyTried: useFallbackStyle,
+        });
+        if (action === "use-fallback-style") {
+          window.clearTimeout(timeoutId);
+          setUseFallbackStyle(true);
+        } else if (action === "give-up") {
+          window.clearTimeout(timeoutId);
+          setStatus("error");
+        }
+        return;
+      }
       if (!loaded) {
         // The error UI is up — stop the budget so a later timer fire can't
         // trigger a surprise silent rebuild underneath it.
@@ -266,12 +295,14 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       });
     };
     map.on("load", handleLoad);
+    map.on("sourcedata", handleSourceData);
     map.on("error", handleError);
     map.on("click", handleClick);
 
     return () => {
       window.clearTimeout(timeoutId);
       map.off("load", handleLoad);
+      map.off("sourcedata", handleSourceData);
       map.off("error", handleError);
       map.off("click", handleClick);
       const markers = markersRef.current;
