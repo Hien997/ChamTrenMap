@@ -1,11 +1,3 @@
-/**
- * DEMO SEED DATA — Hà Tiên Discovery (Plan.md §11).
- *
- * Realistic but DEMO: coordinates are approximate and photos are placeholders
- * (picsum.photos). An admin must verify coordinates, opening hours and copy
- * before using this as production content.
- */
-
 export type SeedLocale = "vi" | "en";
 
 export interface SeedGuideSection {
@@ -19,7 +11,6 @@ export interface SeedCheckpoint {
   longitude: number;
   radiusMeters: number;
   estimatedVisitMinutes: number;
-  /** Entrance-ticket or food budget per person, VND; null = free. */
   priceVnd?: number | null;
   priceKind?: "ticket" | "food";
   translations: Record<
@@ -1022,7 +1013,6 @@ export interface SeedTour {
   checkpointSlugs: string[];
 }
 
-/** Default tours (Plan.md §11) — sequential routes through the seed checkpoints. */
 export const seedTours: SeedTour[] = [
   {
     slug: "ha-tien-discovery",

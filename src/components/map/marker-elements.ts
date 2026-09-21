@@ -1,12 +1,10 @@
-import { cn } from "@/lib/utils";
-import type { CheckpointStatus } from "@/types";
 import type { MapLocation } from "./map.types";
 import type { MapCheckpoint } from "./types";
+import { cn } from "@/lib/utils";
+import type { CheckpointStatus } from "@/types";
 
-/** Z-order bands: locked pins sink, selection floats above every pin. */
 const MARKER_Z = { selected: 30, normal: 20, locked: 5, user: 40 } as const;
 
-/** Classes toggled on the pin circle when a marker is selected. */
 const SELECTED_CLASSES = ["scale-125", "ring-2", "ring-primary/60"] as const;
 
 const STATUS_TONES: Record<CheckpointStatus, string> = {
@@ -30,19 +28,12 @@ const DEFAULT_STATUS_LABELS: Record<CheckpointStatus, string> = {
   locked: "Locked",
 };
 
-/**
- * A marker element plus in-place selection handling: callers consume the
- * interface instead of the DOM contract — no class or dataset queries.
- */
 export interface MarkerElementHandle {
   element: HTMLElement;
-  /** Base stacking order the map kit should honor. */
   zIndex: number;
-  /** Toggle the selected look without recreating the element. */
   setSelected(selected: boolean): void;
 }
 
-/** DOM element for a tour checkpoint pin — status-toned circle + label (task §7). */
 export function createCheckpointPin(
   checkpoint: MapCheckpoint,
   options?: {
@@ -88,7 +79,6 @@ export function createCheckpointPin(
   return { element: button, zIndex: baseZ, setSelected };
 }
 
-/** Letter-circle pin for the homepage map (initial + name label). */
 export function createHomePin(location: MapLocation): MarkerElementHandle {
   const baseZ = MARKER_Z.normal;
 
@@ -122,7 +112,6 @@ export function createHomePin(location: MapLocation): MarkerElementHandle {
   return { element: button, zIndex: baseZ, setSelected };
 }
 
-/** Kit default pin when no custom renderer is provided (task §7 "custom"). */
 export function createDefaultPin(location: MapLocation): MarkerElementHandle {
   const element = document.createElement("div");
   element.title = location.name;
@@ -139,7 +128,6 @@ export function createDefaultPin(location: MapLocation): MarkerElementHandle {
   return { element, zIndex: MARKER_Z.normal, setSelected };
 }
 
-/** Pulsing blue dot for the user's position (same look as before). */
 export function createUserLocationElement(): HTMLDivElement {
   const wrapper = document.createElement("div");
   wrapper.setAttribute("aria-label", "You");

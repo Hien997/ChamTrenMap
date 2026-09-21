@@ -1,15 +1,5 @@
 import type { CheckpointStatus } from "@/types";
 
-/**
- * Pure sequential-tour status derivation (Plan.md §2 "unlock next checkpoint",
- * §14 tests). Given the tour's checkpoint order and the set of checkpoint ids
- * the user has checked in, derive per-checkpoint statuses.
- *
- *   completed — a check-in exists
- *   current   — the first checkpoint (by tour order) without a check-in
- *   locked    — everything after the current checkpoint
- */
-
 export interface DeriveStatusesResult {
   statuses: Map<string, CheckpointStatus>;
   currentCheckpointId: string | null;

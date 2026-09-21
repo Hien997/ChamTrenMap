@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CircleCheckIcon, MapPinIcon, TrophyIcon } from "lucide-react";
 import { ShareButtons } from "@/components/sharing/ShareButtons";
+import { PanoramaViewer } from "@/components/three/PanoramaViewer";
 import { buttonVariants } from "@/components/ui/button";
 import type { Locale } from "@/config/constants";
 import { Link } from "@/i18n/navigation";
@@ -37,7 +38,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** Public, OG-rich achievement page (spec §16). */
 export default async function SharePage({ params }: Props) {
   const { locale, shareId } = await params;
   setRequestLocale(locale);
@@ -81,10 +81,10 @@ export default async function SharePage({ params }: Props) {
         )}
 
         {view.checkpoint.thumbnailUrl && (
-          <img
+          <PanoramaViewer
             src={view.checkpoint.thumbnailUrl}
             alt={view.checkpoint.name}
-            className="mt-4 aspect-[16/9] w-full rounded-xl object-cover"
+            className="mt-4 aspect-[16/9] w-full overflow-hidden rounded-xl [&_img]:rounded-xl [&_canvas]:rounded-xl"
           />
         )}
 

@@ -2,13 +2,6 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
-/**
- * Local source-base guardrail: inline eslint directives are banned.
- * Fix the code or add a file-scoped override in this config instead.
- *
- * NOTE: this comment itself intentionally avoids the literal directive text so
- * the local rule does not flag its own documentation.
- */
 const localPlugin = {
   rules: {
     "no-eslint-disable-comments": {
@@ -43,19 +36,14 @@ const localPlugin = {
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Tooling & agent config — not project source:
     ".agents/**",
     "public/**",
   ]),
-  // Source-base control: inline directives are banned everywhere.
-  // noInlineConfig makes them inert; the local rule reports them as errors.
   {
     plugins: {
       local: localPlugin,
@@ -75,12 +63,6 @@ const eslintConfig = defineConfig([
       "src/components/map/MapPopup.tsx",
     ],
     rules: {
-      // MapLibre is imperative: markers/popups/controls are created from refs and
-      // updated in place, so the default refs lint is relaxed
-      // here via config (no inline disables allowed in source).
-      // immutability is also relaxed: the marker sync reads locations through a
-      // copied snapshot ref, but the rule's taint tracking still links the
-      // snapshot back to the `locations` prop and reports a false positive.
       "react-hooks/refs": "off",
       "react-hooks/immutability": "off",
       "react-hooks/set-state-in-effect": "off",
@@ -91,18 +73,53 @@ const eslintConfig = defineConfig([
   {
     files: [
       "src/components/tour/TourCard.tsx",
+      "src/components/checkpoint/CheckpointGallery.tsx",
       "src/app/**/tours/**/page.tsx",
       "src/app/**/checkpoints/**/page.tsx",
       "src/app/**/share/**/page.tsx",
     ],
     rules: {
-      // Admin-managed content images (CMS/photo URLs) have no fixed
-      // remotePatterns, so plain <img> is intentional here for these
-      // specific page/component sinks only. This is a file-scoped config
-      // override, not an invitation to add inline eslint disables.
       "@next/next/no-img-element": "off",
+    },
+  },
+  {
+    files: [
+      "src/components/three/PanoramaViewer.tsx",
+      "src/lib/reduced-motion.ts",
+    ],
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
+  {
+    files: [
+      "src/components/three/PanoramaViewer.tsx",
+    ],
+    rules: {
+      "@next/next/no-img-element": "off",
+    },
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "padding-line-between-statements": [
+        "error",
+        { blankLine: "any", prev: ["return"], next: ["return"] },
+      ],
+      "eqeqeq": ["error", "always", { "null": "ignore" }],
+      "no-console": "warn",
+      "react/self-closing-comp": "error",
+      "react/no-array-index-key": "warn",
+      "@typescript-eslint/consistent-type-imports": "error",
+    },
+  },
+  {
+    files: ["src/lib/api.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
 ]);
 
 export default eslintConfig;
+

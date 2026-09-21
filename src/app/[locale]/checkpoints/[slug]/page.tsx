@@ -1,12 +1,22 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ArrowLeftIcon, Clock3Icon, ClockIcon, MapIcon, MapPinIcon, NavigationIcon, SunriseIcon, TicketIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Clock3Icon,
+  ClockIcon,
+  MapIcon,
+  MapPinIcon,
+  NavigationIcon,
+  SunriseIcon,
+  TicketIcon,
+} from "lucide-react";
 import { CheckInFlow } from "@/components/checkin/CheckInFlow";
 import { CheckpointGallery } from "@/components/checkpoint/CheckpointGallery";
 import { GuideContentRenderer } from "@/components/guide/GuideContent";
 import { QuickStatsCard } from "@/components/checkpoint/QuickStatsCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { PanoramaViewer } from "@/components/three/PanoramaViewer";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,7 +83,6 @@ export default async function CheckpointPage({ params }: Props) {
 
   const tour = await getTourForCheckpoint(slug, locale as Locale);
 
-  // Personalized check-in state (anonymous session; empty on first visit).
   const user = await getSessionUser();
   const completedIds =
     user && tour ? await getCompletedCheckpointIds(user.id, tour.slug) : [];
@@ -81,7 +90,7 @@ export default async function CheckpointPage({ params }: Props) {
 
   const isFood = checkpoint.priceKind === "food";
 
-  const jsonLd = {
+  const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "TouristAttraction",
     name: checkpoint.name,
@@ -92,7 +101,9 @@ export default async function CheckpointPage({ params }: Props) {
       latitude: checkpoint.latitude,
       longitude: checkpoint.longitude,
     },
-    image: checkpoint.images.map((img) => img.url),
+    ...(checkpoint.images.length > 0
+      ? { image: checkpoint.images.map((img) => img.url) }
+      : {}),
     url: `${appUrl()}/${locale}/checkpoints/${slug}`,
   };
 
@@ -101,15 +112,19 @@ export default async function CheckpointPage({ params }: Props) {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16">
-        {/* Hero */}
-        <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+        <div className="mt-4 relative">
           {checkpoint.thumbnailUrl ? (
-            <img
-              src={checkpoint.thumbnailUrl}
-              alt={checkpoint.name}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : null}
+            <div className="relative w-full aspect-video overflow-hidden rounded-2xl bg-muted">
+              <PanoramaViewer
+                src={checkpoint.thumbnailUrl}
+                alt={checkpoint.name}
+                className="absolute inset-0"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+            </div>
+          ) : (
+            <div className="aspect-video overflow-hidden rounded-2xl bg-muted" />
+          )}
         </div>
 
         {/* Tour context + title + address */}
@@ -200,7 +215,7 @@ export default async function CheckpointPage({ params }: Props) {
               <ClockIcon aria-hidden className="size-3.5" />
               {t("visitMinutes", { minutes: checkpoint.estimatedVisitMinutes })}
             </Badge>
-            {checkpoint.priceVnd != null && (
+            {checkpoint.priceVnd !== null && (
               <Badge variant="secondary" className="gap-1">
                 <TicketIcon aria-hidden className="size-3.5" />
                 {t("ticketPrice", { price: formatVnd(checkpoint.priceVnd) })}
@@ -218,7 +233,10 @@ export default async function CheckpointPage({ params }: Props) {
         {checkpoint.guides.length > 0 && (
           <article className="mt-8">
             {checkpoint.guides.map((guide) => (
-              <GuideContentRenderer key={guide.locale} content={guide.content} />
+              <GuideContentRenderer
+                key={guide.locale}
+                content={guide.content}
+              />
             ))}
           </article>
         )}

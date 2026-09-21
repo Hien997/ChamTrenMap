@@ -2,12 +2,11 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { Button } from "@/components/ui/button";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { buttonVariants , Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/admin/ui";
 import { ConfirmDelete } from "@/components/admin/ConfirmDelete";
-import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { formatVnd } from "@/lib/format";
 
 type TCheckpoint = {
@@ -130,7 +129,7 @@ export default function AdminCheckpointsListPage() {
           {checkpoints.map((cp) => {
             const name = cp.vi?.name || cp.slug;
             const price =
-              cp.priceVnd != null
+              cp.priceVnd !== null
                 ? `${cp.priceKind === "FOOD" ? "Food" : "Ticket"} ${formatVnd(cp.priceVnd)}`
                 : "Free";
             return (

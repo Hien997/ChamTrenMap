@@ -3,12 +3,6 @@ import { ChevronLeftIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 
-/**
- * Shared presentation primitives for the admin "chart desk".
- * Server-safe: no hooks — usable from server and client components.
- */
-
-/** Page title block — weight and size carry hierarchy, not decoration. */
 export function PageHeader({
   title,
   sub,
@@ -35,7 +29,6 @@ export function PageHeader({
   );
 }
 
-/** Back navigation shown above an edit page title. */
 export function BackLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link
@@ -48,7 +41,6 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
   );
 }
 
-/** A hairline-bordered section of chart paper — never shadowed. */
 export function Panel({
   title,
   children,
@@ -70,7 +62,6 @@ export function Panel({
   );
 }
 
-/** Publication state, spoken in the app's own status palette. */
 export function StatusChip({ status }: { status: string }) {
   const published = status === "PUBLISHED";
   return (
@@ -92,7 +83,6 @@ export function StatusChip({ status }: { status: string }) {
   );
 }
 
-/** Consistent field stack used across every admin form. */
 export function Field({
   label,
   htmlFor,

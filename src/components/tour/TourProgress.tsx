@@ -1,7 +1,6 @@
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-/** Compact "X / Y + bar" progress used on tour pages and the map sheet. */
 export function TourProgress({
   completed,
   total,

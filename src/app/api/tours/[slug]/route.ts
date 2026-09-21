@@ -3,7 +3,6 @@ import { apiError, apiOk, handleApiError } from "@/lib/api";
 import { localeQuerySchema } from "@/lib/validations";
 import { getTourDetail } from "@/services/tours.service";
 
-/** GET /api/tours/[slug]?locale=vi — tour detail with ordered checkpoints. */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },

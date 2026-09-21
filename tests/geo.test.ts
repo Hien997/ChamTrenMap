@@ -8,7 +8,6 @@ describe("haversineMeters", () => {
   });
 
   it("measures 100 m of pure latitude within 0.5 m", () => {
-    // 1° of latitude ≈ 111,195 m (WGS84 mean) → 100 m ≈ 0.00089933°
     const a = { latitude: 10, longitude: 104.5 };
     const b = { latitude: 10 + 100 / 111_195, longitude: 104.5 };
     const d = haversineMeters(a, b);

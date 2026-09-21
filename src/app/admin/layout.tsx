@@ -1,7 +1,3 @@
-// Root layout for everything under /admin.
-// Supplies the required <html>/<body> so Next.js doesn't throw
-// "Missing <html> and <body> tags in the root layout".
-
 import type { Metadata } from "next";
 import "../globals.css";
 import { Geist, Geist_Mono } from "next/font/google";

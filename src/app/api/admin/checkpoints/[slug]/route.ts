@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { writeErrorResponse } from "@/lib/http";
 import { updateCheckpointSchema } from "@/services/checkpoint-content";
@@ -10,7 +11,6 @@ import {
 
 function slugFromRequest(request: NextRequest): string {
   const { pathname } = new URL(request.url);
-  // Resolve the record by URL slug — same lookup contract across GET/PATCH/DELETE.
   return pathname.split("/").pop() ?? "";
 }
 

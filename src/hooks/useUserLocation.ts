@@ -8,11 +8,6 @@ export type LocationPermissionState =
   | "denied"
   | "prompt";
 
-/**
- * Watches the user's position for the map (Plan.md §10).
- * The browser permission prompt is only triggered when the user opts in
- * via `startWatching()` — never on page load (spec §28).
- */
 export function useUserLocation() {
   const [position, setPosition] = useState<GeolocationCoordinates | null>(null);
   const [error, setError] = useState<string | null>(null);

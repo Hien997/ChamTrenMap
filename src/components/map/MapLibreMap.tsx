@@ -18,7 +18,6 @@ import {
   type ReactNode,
 } from "react";
 
-import { cn } from "@/lib/utils";
 import { MapPopup } from "./MapPopup";
 import {
   ensurePathLayer,
@@ -49,6 +48,7 @@ import {
   createDefaultPin,
   createUserLocationElement,
 } from "./marker-elements";
+import { cn } from "@/lib/utils";
 
 type MapStatus = "loading" | "ready" | "error";
 
@@ -56,52 +56,33 @@ export interface MapLibreMapProps<T extends MapLocation = MapLocation> {
   locations: T[];
   center?: [number, number];
   zoom?: number;
-  /** MapLibre style URL; defaults to NEXT_PUBLIC_MAP_STYLE_URL, then built-in OSM raster. */
   styleUrl?: string;
   selectedLocationId?: string | null;
   onLocationClick?: (location: T) => void;
   onMapClick?: (coordinates: { latitude: number; longitude: number }) => void;
-  /** Static line connecting points in order (tour path), [longitude, latitude][]. */
   path?: [number, number][];
-  /** Directions route GeoJSON (user → target); null hides the route. */
   route?: RouteFeatureCollection | null;
   userPosition?: { latitude: number; longitude: number } | null;
-  /** Custom marker element factory (checkpoint pins); default = plain dot. */
   renderMarkerElement?: (location: T) => CustomMarkerRender | null;
-  /** Recreate a marker's element when this signature changes (e.g. status). */
   markerSignature?: (location: T) => string;
-  /** Optional kit-level popup content for the selected location. */
   renderPopup?: (location: T) => ReactNode;
-  /** Fit the viewport to all locations once data is ready (default true). */
   fitToLocationsOnLoad?: boolean;
   className?: string;
   loadingLabel?: string;
   errorLabel?: string;
   retryLabel?: string;
-  /** Overlay message shown when loading exceeds the time budget. */
   timeoutLabel?: string;
   emptyLabel?: string;
-  /** Time budget (ms) for one load attempt; default 20s, env-tunable. */
   loadTimeoutMs?: number;
-  /** Imperative handle for flyTo/fit from parent components. */
   ref?: React.Ref<MapLibreMapRef<T>>;
 }
 
 export interface MapLibreMapRef<T extends MapLocation = MapLocation> {
-  /** Fly to a specific checkpoint by id (no-op when not loaded). */
   flyToCheckpoint: (id: string) => void;
-  /** Fit bounds to all currently rendered locations (no-op when empty). */
   fitToCheckpoints: () => void;
-  /** Current selected location id (for external sync). */
   selectedLocationId: string | null;
 }
 
-/**
- * Reusable client-only MapLibre map (OpenStreetMap-compatible style).
- * Initialized once per mount inside `useEffect` and destroyed via
- * `map.remove()`. Markers/lines update in place — never recreated on
- * re-render (tasks §5, §15, §19).
- */
 export function MapLibreMap<T extends MapLocation = MapLocation>({
   locations,
   center,
@@ -133,18 +114,10 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   const userMarkerRef = useRef<Marker | null>(null);
   const [status, setStatus] = useState<MapStatus>("loading");
   const [attempt, setAttempt] = useState(0);
-  // Load-budget escalation: when a configured style URL stalls past the time
-  // budget, one silent rebuild happens on the built-in raster style before
-  // the error UI takes over.
   const [useFallbackStyle, setUseFallbackStyle] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
-  // Latest-value refs: stable listeners + init-once config without effect churn.
-  // Declared before useImperativeHandle so the handle never reads an
-  // uninitialized ref (TDZ-safe).
   const renderedLocationsRef = useRef<T[]>([]);
-  // Snapshot props into mutable local copies. The imperative handle, fit and
-  // selection effects read this ref; the marker sync effect re-runs on
-  // `locations` identity changes (see its deps).
+  const cancelledRef = useRef(false);
   useEffect(() => {
     renderedLocationsRef.current = locations.map((item) => ({ ...item }));
   }, [locations]);
@@ -189,6 +162,10 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   loadTimeoutMsRef.current = loadTimeoutMs;
   const onLocationClickRef = useRef(onLocationClick);
   onLocationClickRef.current = onLocationClick;
+  const pathRef = useRef(path ?? null);
+  pathRef.current = path ?? null;
+  const routeRef = useRef(route ?? null);
+  routeRef.current = route ?? null;
   const onMapClickRef = useRef(onMapClick);
   onMapClickRef.current = onMapClick;
   const renderMarkerRef = useRef(renderMarkerElement);
@@ -196,15 +173,12 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   const markerSignatureRef = useRef(markerSignature);
   markerSignatureRef.current = markerSignature;
 
-  // Init MapLibre once per attempt (retry after a load failure recreates it).
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     setStatus("loading");
     setTimedOut(false);
 
-    // The fallback attempt pins the second built-in raster style (CARTO), so
-    // a primary host that can't be reached doesn't leave the map blank.
     const resolvedStyle = useFallbackStyle
       ? fallbackMapStyle()
       : resolveMapStyle(styleUrlRef.current);
@@ -222,23 +196,12 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       return;
     }
     mapRef.current = map;
-    // Zoom in/out only — matches the previous map's chrome (zoomControl).
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
     let loaded = false;
-    // A `sourcedata` event carrying a tile means a tile actually rendered, so
-    // later tile failures are transient gaps rather than a dead host.
     let anyTileRendered = false;
     let tileErrorCount = 0;
-    // Time budget: a stalled style host fires no error event and never fires
-    // `load`, which used to spin the loading overlay forever. Once the budget
-    // lapses, the first attempt gets one silent retry on the other built-in
-    // host; the fallback attempt surfaces the error UI instead.
     const timeoutId = window.setTimeout(() => {
-      // `load` only means the style's sources reported their metadata; a
-      // tile-backed style whose tiles never arrive is still a blank canvas.
-      // Dropped packets hang silently, and MapLibre treats a 404 tile as a
-      // non-error, so neither `load` nor the error handler reports that case.
       if (
         loaded &&
         (!styleUsesTileSources(map.getStyle()) || anyTileRendered)
@@ -258,26 +221,17 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
 
     const handleLoad = () => {
       loaded = true;
-      ensurePathLayer(map);
-      ensureRouteLayers(map);
+      if (map.isStyleLoaded()) ensurePathLayer(map);
+      if (map.isStyleLoaded()) ensureRouteLayers(map);
       setStatus("ready");
     };
-    // A `sourcedata` event carrying a tile means a tile actually rendered, so
-    // later tile failures are transient gaps rather than a dead host.
     const handleSourceData = (event: MapSourceDataEvent) => {
       if (isTileDataEvent(event)) {
         anyTileRendered = true;
       }
     };
     const handleError = (event: MapErrorEvent) => {
-      // Per-tile failures (e.g. an optional shaded-relief source 404ing in the
-      // chosen style) must not block the map — only a style-level failure
-      // before load is fatal.
       if (isTileLevelMapError(event)) {
-        // ...unless not one tile has ever arrived: the tile host is
-        // unreachable (commonly DNS-blocked) and the map would render blank
-        // forever with no error UI, since tile errors are non-fatal. Escalate
-        // to the other built-in host once, then give up.
         tileErrorCount += 1;
         const action = resolveTileFailureAction({
           tileErrorCount,
@@ -294,8 +248,6 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
         return;
       }
       if (!loaded) {
-        // The error UI is up — stop the budget so a later timer fire can't
-        // trigger a surprise silent rebuild underneath it.
         window.clearTimeout(timeoutId);
         setStatus("error");
       }
@@ -307,13 +259,25 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       });
     };
     map.on("load", handleLoad);
+    let styleActive = true;
+    const handleStyleData = () => {
+      if (!styleActive || cancelledRef.current) return;
+      if (map.isStyleLoaded()) {
+        if (ensurePathLayer(map)) setPathData(map, pathRef.current ?? null);
+        if (ensureRouteLayers(map)) setRouteData(map, routeRef.current ?? null);
+      }
+    };
+    map.on("styledata", handleStyleData);
     map.on("sourcedata", handleSourceData);
     map.on("error", handleError);
     map.on("click", handleClick);
 
     return () => {
+      styleActive = false;
+      cancelledRef.current = true;
       window.clearTimeout(timeoutId);
       map.off("load", handleLoad);
+      map.off("styledata", handleStyleData);
       map.off("sourcedata", handleSourceData);
       map.off("error", handleError);
       map.off("click", handleClick);
@@ -328,10 +292,6 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     };
   }, [attempt, useFallbackStyle]);
 
-  // Checkpoint markers: create once per id, update in place (tasks §15/§19).
-  // Re-syncs when the map becomes ready or the locations data changes; the
-  // signature compare rebuilds content-affected pins (e.g. check-in status)
-  // without touching the rest.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || status !== "ready") return;
@@ -371,7 +331,6 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       existing.setLngLat([location.longitude, location.latitude]);
       const nextSignature = markerSignatureRef.current?.(location) ?? "";
       if (existing.getElement().dataset.signature !== nextSignature) {
-        // Content-affecting change (e.g. check-in status) — rebuild this pin.
         existing.remove();
         markers.delete(location.id);
         renders.delete(location.id);
@@ -386,14 +345,12 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     }
   }, [status, locations]);
 
-  // Highlight + restack the selected checkpoint without recreating markers.
   useEffect(() => {
     for (const id of markersRef.current.keys()) {
       rendersRef.current.get(id)?.setSelected?.(id === selectedLocationId);
     }
   }, [selectedLocationId, status]);
 
-  // Fit all checkpoints once data is ready (task §17); waits for non-empty data.
   const didFitRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
@@ -410,8 +367,6 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     );
   }, [status, fitToLocationsOnLoad]);
 
-  // Click → select → animate to the checkpoint (task §8). The very first
-  // selection is skipped: the initial view comes from fitLocationsBounds.
   const prevSelectedRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     const isFirst = prevSelectedRef.current === undefined;
@@ -429,7 +384,6 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       ]);
   }, [selectedLocationId, status]);
 
-  // User location dot: one marker, moved via setLngLat (no recreation).
   useEffect(() => {
     const map = mapRef.current;
     if (!map || status !== "ready") return;
@@ -452,19 +406,16 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     ] as [number, number]);
   }, [userPosition, status]);
 
-  // Lines: sources/layers exist after load; data flows through setData only.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || status !== "ready") return;
-    ensurePathLayer(map);
-    setPathData(map, path ?? null);
+    if (ensurePathLayer(map)) setPathData(map, path ?? null);
   }, [path, status]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || status !== "ready") return;
-    ensureRouteLayers(map);
-    setRouteData(map, route ?? null);
+    if (ensureRouteLayers(map)) setRouteData(map, route ?? null);
   }, [route, status]);
 
   const selectedLocation = useMemo(
@@ -499,8 +450,6 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
           <button
             type="button"
             onClick={() => {
-              // A manual retry gives the configured style another chance —
-              // the network may have recovered.
               setUseFallbackStyle(false);
               setAttempt((value) => value + 1);
             }}

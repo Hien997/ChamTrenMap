@@ -8,14 +8,6 @@ import {
   type UpdateCheckpointInput,
 } from "@/services/checkpoint-content";
 
-/**
- * Server half of the checkpoint-content module: admin reads and writes.
- * Kept apart from the client-safe core so forms can import parsers and
- * shapes without pulling prisma into the browser bundle.
- */
-
-// ---------- admin reads ----------
-
 function toAdminTranslation(
   rows: {
     locale: string;
@@ -39,7 +31,6 @@ function toAdminTranslation(
     : null;
 }
 
-/** All checkpoints for the admin list (Plan.md admin spec). */
 export async function listCheckpointsForAdmin(): Promise<AdminCheckpoint[]> {
   const checkpoints = await prisma.checkpoint.findMany({
     include: {
@@ -69,7 +60,6 @@ export async function listCheckpointsForAdmin(): Promise<AdminCheckpoint[]> {
   }));
 }
 
-/** One checkpoint for the edit form; the slug is authoritative. */
 export async function getCheckpointForEdit(
   slug: string,
 ): Promise<AdminCheckpoint | null> {
@@ -109,8 +99,6 @@ export async function getCheckpointForEdit(
     })),
   };
 }
-
-// ---------- writes ----------
 
 export async function createCheckpoint(
   input: CreateCheckpointInput,
@@ -166,8 +154,6 @@ export async function updateCheckpoint(
   input: UpdateCheckpointInput,
 ): Promise<{ id: string; slug: string }> {
   try {
-    // Resolve the record by URL slug — the slug is authoritative, never a
-    // client-supplied id.
     const existing = await prisma.checkpoint.findUnique({ where: { slug } });
     if (!existing) {
       throw new CheckpointWriteError("not-found", "Not found");
@@ -210,7 +196,6 @@ export async function updateCheckpoint(
       },
     });
 
-    // Replace all guide documents (one per locale); sanitize at the seam.
     if (input.guides) {
       await prisma.guideSection.deleteMany({
         where: { checkpointId: checkpoint.id },

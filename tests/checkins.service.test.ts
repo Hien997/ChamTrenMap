@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import type { Locale } from "@/config/constants";
 import type { CreateCheckInInput } from "@/lib/validations";
 
-/** Shallow shape that matches the fields `createCheckIn` reads from a checkpoint. */
 interface CheckpointFixture {
   id: string;
   slug: string;

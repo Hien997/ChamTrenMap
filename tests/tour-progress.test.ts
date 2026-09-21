@@ -37,7 +37,6 @@ describe("distanceTo", () => {
   });
 
   it("measures great-circle distance in meters", () => {
-    // 0.001° of longitude at the equator is ~111.2 m.
     const distance = distanceTo(
       { latitude: 0, longitude: 0 },
       { latitude: 0, longitude: 0.001 },
@@ -49,14 +48,12 @@ describe("distanceTo", () => {
 
 describe("isNear", () => {
   it("is true inside the hint threshold, false beyond it, false when unknown", () => {
-    // ~111 m apart — inside the default 200 m hint threshold.
     expect(
       isNear(
         { latitude: 0, longitude: 0 },
         { latitude: 0, longitude: 0.001 },
       ),
     ).toBe(true);
-    // ~222 m apart — outside it.
     expect(
       isNear(
         { latitude: 0, longitude: 0 },

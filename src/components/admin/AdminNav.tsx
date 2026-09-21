@@ -10,10 +10,6 @@ const items = [
   { href: "/admin/checkpoints", label: "Checkpoints", icon: MapPinIcon },
 ] as const;
 
-/**
- * The chart rail's navigation. Vertical (desktop sidebar): icon + label.
- * Horizontal (mobile top bar): icon only, labels for screen readers.
- */
 export function AdminNav({ orientation }: { orientation: "vertical" | "horizontal" }) {
   const pathname = usePathname();
   const vertical = orientation === "vertical";

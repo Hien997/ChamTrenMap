@@ -1,14 +1,12 @@
+import { Field } from "./ui";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { AdminCheckpoint } from "@/services/checkpoint-content";
-import { Field } from "./ui";
 
 interface Props {
-  /** Partial: the "new checkpoint" page renders this with defaults only. */
   checkpoint?: Partial<AdminCheckpoint>;
 }
 
-/** Geo + visit fields shared by the edit form and the create page. */
 export function CheckpointFields({ checkpoint }: Props) {
   const c = {
     latitude: checkpoint?.latitude ?? 10.3864,

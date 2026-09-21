@@ -4,11 +4,6 @@ import { Marker, type Map as MaplibreMap, type PositionAnchor } from "maplibre-g
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-/**
- * Reusable single MapLibre marker with React children (the AdvancedMarker
- * equivalent for ad-hoc use). `MapLibreMap` manages markers imperatively for
- * efficiency; use this component for one-off overlays outside the kit map.
- */
 export function MapMarker({
   map,
   position,
@@ -18,7 +13,6 @@ export function MapMarker({
   children,
 }: {
   map: MaplibreMap | null;
-  /** [longitude, latitude] */
   position: [number, number];
   zIndex?: number;
   anchor?: PositionAnchor;
@@ -26,7 +20,7 @@ export function MapMarker({
   children: ReactNode;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  if (containerRef.current == null && typeof document !== "undefined") {
+  if (containerRef.current === null && typeof document !== "undefined") {
     containerRef.current = document.createElement("div");
   }
   const container = containerRef.current;
@@ -36,7 +30,6 @@ export function MapMarker({
     onClickRef.current = onClick;
   }, [onClick]);
 
-  // Create/remove the marker with the map/anchor lifecycle.
   useEffect(() => {
     if (!map || !container) return;
     const marker = new Marker({ element: container, anchor });
@@ -55,13 +48,10 @@ export function MapMarker({
     };
   }, [map, anchor]);
 
-  // Move in place when the position changes — never recreate the marker.
   useEffect(() => {
     markerRef.current?.setLngLat(position);
   }, [position]);
 
-  // Restack in place when the zIndex changes (MapLibre owns this DOM node,
-  // so style updates are intentional and centralized here via config).
   useEffect(() => {
     if (container && zIndex !== undefined) {
       container.style.zIndex = String(zIndex);

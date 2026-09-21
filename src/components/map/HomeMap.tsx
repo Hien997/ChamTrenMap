@@ -4,25 +4,18 @@ import { useState } from "react";
 
 import { useTranslations } from "next-intl";
 
+import { MapLibreMap } from "./MapLibreMap";
+import { createHomePin } from "./marker-elements";
+import type { MapLocation } from "./map.types";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-import { MapLibreMap } from "./MapLibreMap";
-import { createHomePin } from "./marker-elements";
-import type { MapLocation } from "./map.types";
 
-/** A checkpoint shown on the homepage map, with its detail-page slug. */
 export interface HomeMapLocation extends MapLocation {
   slug: string;
 }
 
-/**
- * Interactive homepage map: every published checkpoint rendered as a tappable
- * pin (MapLibreMap kit). Selecting a pin opens a small popup with the
- * checkpoint summary and a link to its detail page. Fits the viewport to the
- * checkpoints once the map is ready.
- */
 export function HomeMap({
   locations,
   className,

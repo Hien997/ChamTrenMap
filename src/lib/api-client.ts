@@ -1,4 +1,3 @@
-/** Shared client-side shape for this app’s JSON API envelope. */
 export interface ApiEnvelope<TData> {
   ok: boolean;
   data?: TData;
@@ -7,13 +6,6 @@ export interface ApiEnvelope<TData> {
 
 export type ApiEnvelopeError = Extract<ApiEnvelope<never>, { ok: false }>["error"];
 
-/**
- * Fetch a route that returns this app’s JSON envelope and throw on an error
- * response so callers only handle success data.
- *
- * This wrapper exists so the envelope contract is explicit in one place
- * instead of re-interpreted by each consumer.
- */
 export async function fetchApiOk<TData>(
   url: string,
   init?: RequestInit,

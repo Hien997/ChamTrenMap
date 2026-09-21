@@ -5,7 +5,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { TourSummaryView } from "@/types";
 
-/** Landing/tour-list card with cover photo, stats and CTAs. */
 export async function TourCard({ tour }: { tour: TourSummaryView }) {
   const t = await getTranslations("Tours");
 

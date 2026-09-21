@@ -5,19 +5,11 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-/** Short codes shown when the header is tight (ISO 639-1). */
 const OPTIONS: { value: AppLocale; code: string }[] = [
   { value: "vi", code: "VI" },
   { value: "en", code: "EN" },
 ];
 
-/**
- * Locale switcher — swaps the /{locale} segment, preserving the current path.
- * A two-segment strip instead of a dropdown: with exactly two languages, both
- * choices stay visible and switching is one tap. Labels are endonyms
- * ("Tiếng Việt", "English") read from the shared message catalog; the active
- * option renders as a raised tile on the muted strip.
- */
 export function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher");
   const locale = useLocale();

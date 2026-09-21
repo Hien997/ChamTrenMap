@@ -4,10 +4,6 @@ export interface LocalizedRow {
   locale: string;
 }
 
-/**
- * Pick the translation row for `locale`, falling back to Vietnamese (the
- * content source of truth) and finally to whatever row exists.
- */
 export function pickLocalized<T extends LocalizedRow>(
   rows: T[],
   locale: Locale,

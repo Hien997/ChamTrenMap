@@ -4,7 +4,6 @@ import { getOrCreateSessionUser } from "@/lib/session";
 import { createShareLinkSchema } from "@/lib/validations";
 import { createShareLink } from "@/services/share.service";
 
-/** POST /api/share/checkin — mint a share link for one of my check-ins. */
 export async function POST(request: NextRequest) {
   try {
     const parsed = createShareLinkSchema.safeParse(await request.json());

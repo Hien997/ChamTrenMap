@@ -1,8 +1,3 @@
-/**
- * DEMO seed runner (Plan.md §11/§2). Idempotent: safe to run repeatedly.
- * Re-running refreshes the demo translations/guides/images but never touches
- * users, check-ins or progress.
- */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
@@ -37,7 +32,6 @@ async function seedCheckpoint(checkpoint: SeedCheckpoint) {
     },
   });
 
-  // The demo seed owns localized content for these checkpoints.
   await prisma.checkpointTranslation.deleteMany({
     where: { checkpointId: created.id },
   });
@@ -60,7 +54,6 @@ async function seedCheckpoint(checkpoint: SeedCheckpoint) {
     data: (["vi", "en"] as SeedLocale[]).map((locale) => ({
       checkpointId: created.id,
       locale,
-      // Merge the 5 legacy sections into one HTML doc; h2s are structure, not fields.
       content: checkpoint.guides
         .map(
           (section) =>
@@ -130,9 +123,6 @@ async function main() {
     });
   }
 
-  // Keep the Checkpoint table exactly in sync with seedCheckpoints: remove any
-  // rows that are no longer part of the demo data set (e.g. removed checkpoints).
-  // Tour links are re-created above, so stale checkpoints have no references.
   const seededSlugs = new Set(seedCheckpoints.map((cp) => cp.slug));
   const staleCheckpoints = await prisma.checkpoint.findMany({
     where: { NOT: { slug: { in: [...seededSlugs] } } },
@@ -147,8 +137,6 @@ async function main() {
     `✅ Seeded ${seedTours.length} tours with ${checkpoints.length} checkpoints (vi + en).`,
   );
 
-  // Admin user (spec §Admin). Credentials come from env; only the bcrypt
-  // hash is stored. If env vars are absent the seed skips this step.
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (adminEmail && adminPassword) {

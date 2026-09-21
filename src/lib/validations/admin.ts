@@ -18,12 +18,8 @@ export const createTourSchema = z.object({
 });
 
 export const updateTourSchema = z.object({
-  // Prisma ids are cuids (not UUIDs). `id` is optional — the PATCH handler
-  // resolves the record from the URL slug when it isn't supplied.
   id: z.string().min(1).optional(),
   slug: z.string().min(1).optional(),
-  // NOTE: no .default() here — an omitted `status` in PATCH must leave the
-  // existing value untouched (defaults would silently reset it to DRAFT).
   status: z.enum(["DRAFT", "PUBLISHED"]).optional(),
   vi: z
     .object({

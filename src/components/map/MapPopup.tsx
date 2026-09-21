@@ -4,11 +4,6 @@ import { Popup, type Map as MaplibreMap } from "maplibre-gl";
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-/**
- * Reusable MapLibre popup anchored at a coordinate, rendering React children
- * (the InfoWindow equivalent for ad-hoc use). The tour screen keeps its
- * existing bottom-sheet detail UI; this is part of the reusable kit.
- */
 export function MapPopup({
   map,
   longitude,
@@ -25,7 +20,7 @@ export function MapPopup({
   children: ReactNode;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  if (containerRef.current == null && typeof document !== "undefined") {
+  if (containerRef.current === null && typeof document !== "undefined") {
     containerRef.current = document.createElement("div");
   }
   const onCloseRef = useRef(onClose);

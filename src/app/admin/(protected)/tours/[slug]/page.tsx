@@ -1,6 +1,6 @@
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import TourEditForm from "@/components/admin/TourEditForm";
-import { notFound } from "next/navigation";
 
 type TTour = {
   id: string;

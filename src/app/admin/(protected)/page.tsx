@@ -5,10 +5,6 @@ import { PageHeader } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
-/**
- * The desk's log: real counts, so the editor sees content state
- * (published vs draft, guide coverage) before diving in.
- */
 export default async function AdminDashboard() {
   const [tourTotal, tourPublished, checkpointTotal, checkpointsWithGuides, guideTotal] =
     await Promise.all([

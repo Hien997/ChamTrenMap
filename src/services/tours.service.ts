@@ -1,6 +1,6 @@
+import type { TourTranslation } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { pickLocalized } from "@/services/localize";
-import type { TourTranslation } from "@prisma/client";
 import { deriveStatuses } from "@/services/progress-status";
 import type {
   CheckpointStatus,
@@ -10,7 +10,6 @@ import type {
 } from "@/types";
 import type { Locale } from "@/config/constants";
 
-/** Published tours with localized metadata (Plan.md §6: GET /api/tours). */
 export async function listTours(locale: Locale): Promise<TourSummaryView[]> {
   const tours = await prisma.tour.findMany({
     where: { status: "PUBLISHED" },
@@ -20,7 +19,6 @@ export async function listTours(locale: Locale): Promise<TourSummaryView[]> {
       checkpoints: {
         orderBy: { order: "asc" },
         include: {
-          // Only the visit duration feeds the summary — skip unused translations.
           checkpoint: {
             select: { estimatedVisitMinutes: true },
           },
@@ -58,12 +56,6 @@ export async function listTours(locale: Locale): Promise<TourSummaryView[]> {
   );
 }
 
-/**
- * Full tour detail with ordered checkpoints. Published tours only, mirroring
- * `listTours`, so DRAFT content never leaks through detail pages or the API.
- * When `completedCheckpointIds` is provided (session known), each checkpoint
- * also carries its sequential status.
- */
 export async function getTourDetail(
   slug: string,
   locale: Locale,

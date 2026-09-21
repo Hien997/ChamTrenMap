@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CircleCheckIcon, StampIcon } from "lucide-react";
+import { SuccessModal } from "./SuccessModal";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +18,6 @@ import { getCurrentPositionOnce } from "@/lib/geolocation-client";
 import type { ApiEnvelope } from "@/lib/api-client";
 import { formatDistance } from "@/lib/format";
 import type { CheckInView, TourProgressView } from "@/types";
-import { SuccessModal } from "./SuccessModal";
 
 type Phase = "idle" | "explainer" | "locating";
 
@@ -26,14 +26,6 @@ type CheckInEnvelope = ApiEnvelope<{
   progress: TourProgressView;
 }>;
 
-/**
- * The full check-in interaction (Plan.md §8):
- * explainer dialog → GPS fix → POST /api/checkins → success modal / failure toast.
- * The server decides the outcome; the client only renders it.
- *
- * When `variant === "food"`, the button label changes to "Already ate / Check-in"
- * and the success modal uses food-specific copy.
- */
 export function CheckInFlow({
   checkpointId,
   locale,
@@ -47,7 +39,6 @@ export function CheckInFlow({
   checkedIn?: boolean;
   disabled?: boolean;
   onChecked?: (progress: TourProgressView | null) => void;
-  /** "default" for ticketed sites, "food" for food stops. */
   variant?: "default" | "food";
 }) {
   const t = useTranslations("CheckIn");

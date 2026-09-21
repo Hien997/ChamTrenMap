@@ -1,6 +1,5 @@
 export type TravelMode = "WALKING" | "DRIVING";
 
-/** Deep link into the external maps app/site for turn-by-turn navigation. */
 export function googleMapsDirectionsUrl(
   latitude: number,
   longitude: number,

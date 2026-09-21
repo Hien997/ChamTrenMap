@@ -12,7 +12,6 @@ import { Link } from "@/i18n/navigation";
 import type { CheckInView, TourProgressView } from "@/types";
 import type { ApiEnvelope } from "@/lib/api-client";
 
-/** Deterministic confetti pieces (no hydration randomness) — gulf palette. */
 const CONFETTI = [
   { x: -120, y: -140, c: "#2f7d9c" },
   { x: 110, y: -150, c: "#4bab97" },
@@ -28,7 +27,6 @@ const CONFETTI = [
   { x: 130, y: -165, c: "#d98c66" },
 ] as const;
 
-/** Celebration modal (Plan.md §8/§11): spring check, confetti, progress, share. */
 export function SuccessModal({
   open,
   onOpenChange,
@@ -40,7 +38,6 @@ export function SuccessModal({
   onOpenChange: (open: boolean) => void;
   checkIn: CheckInView;
   progress: TourProgressView;
-  /** "default" for ticketed sites, "food" for food stops. */
   variant?: "default" | "food";
 }) {
   const t = useTranslations("CheckIn");
@@ -71,9 +68,9 @@ export function SuccessModal({
         <div className="relative flex flex-col items-center gap-3 pb-1 pt-2 text-center">
           {open &&
             !reduceMotion &&
-            CONFETTI.map((piece, index) => (
+            CONFETTI.map((piece) => (
               <motion.span
-                key={index}
+                key={piece.c}
                 aria-hidden
                 className="absolute left-1/2 top-8 h-2 w-3 rounded-sm"
                 style={{ backgroundColor: piece.c }}

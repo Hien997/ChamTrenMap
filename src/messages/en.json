@@ -8,6 +8,13 @@
     "home": "Home",
     "tours": "Tours"
   },
+  "Weather": {
+    "today": "Today",
+    "weekTitle": "Hà Tiên · next 7 days",
+    "todayLabel": "{temp}°C in Hà Tiên",
+    "loadingLabel": "Loading weather…",
+    "openForecast": "Hà Tiên weather {temp} degrees. Open the 7-day forecast."
+  },
   "Home": {
     "heroBadge": "Hà Tiên, An Giang",
     "heroTitle": "Your digital passport for Hà Tiên",
@@ -49,6 +56,7 @@
     "openingHours": "Opening hours",
     "bestTime": "Best time to visit",
     "gallery": "Gallery",
+    "panoramaHint": "Drag to explore in 360°",
     "openImage": "Open image",
     "close": "Close",
     "prevImage": "Previous image",

@@ -6,11 +6,6 @@ import { getOrCreateSessionUser } from "@/lib/session";
 import { createCheckInSchema, localeQuerySchema } from "@/lib/validations";
 import { createCheckIn } from "@/services/checkins.service";
 
-/**
- * POST /api/checkins — GPS check-in (Plan.md §6/§7).
- * The server computes distance, enforces the sequential lock, accuracy policy,
- * rate limiting and duplicate protection. Clients never dictate the outcome.
- */
 export async function POST(request: NextRequest) {
   try {
     const ip =

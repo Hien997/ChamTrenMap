@@ -1,17 +1,9 @@
 "use client";
 
+import { TrashIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TrashIcon } from "lucide-react";
 
-/**
- * Confirmation for destructive admin actions.
- *
- * Guideline: destructive actions need a confirmation modal or undo window —
- * never immediate. This replaces the bare `window.confirm` used on the list
- * pages with a real modal that can be dismissed with Escape or by clicking
- * the backdrop.
- */
 export function ConfirmDelete({
   open,
   onOpenChange,

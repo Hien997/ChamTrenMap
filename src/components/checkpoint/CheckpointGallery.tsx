@@ -3,28 +3,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
-import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Rotate3DIcon,
+  XIcon,
+} from "lucide-react";
+
+import {
+  PanoramaViewer,
+  usePanoramaStatus,
+} from "@/components/three/PanoramaViewer";
 
 type GalleryImage = { url: string; alt: string | null };
 
 type Props = {
   images: GalleryImage[];
-  /** Fallback alt text when an image has none. */
   name: string;
 };
 
-/**
- * Editorial composition for the photo gallery.
- *
- * Desktop (sm+): 12-col grid — the lead photo spans 8 columns across two
- * rows while supporting photos fill a 4-column rail at a consistent 4:3;
- * extras flow below as thirds, halves, or one full-width panorama.
- * Mobile: full-width lead over a balanced 2-column row.
- */
 function cellClass(index: number, count: number): string {
   if (count === 1) return "col-span-2 aspect-[16/9] sm:col-span-12";
   if (index === 0) {
-    // Two images: asymmetric 7/5 pair with matched heights (7:5 vs square).
     if (count === 2)
       return "col-span-1 aspect-[4/3] sm:col-span-7 sm:aspect-[7/5]";
     return "col-span-2 aspect-[16/10] sm:col-span-8 sm:row-span-2 sm:aspect-auto";
@@ -37,6 +37,98 @@ function cellClass(index: number, count: number): string {
     return "col-span-1 aspect-[4/3] sm:col-span-12 sm:aspect-[21/9]";
   if (extras === 2) return "col-span-1 aspect-[4/3] sm:col-span-6";
   return "col-span-1 aspect-[4/3] sm:col-span-4";
+}
+
+function GalleryCell({
+  image,
+  fallbackAlt,
+  eager,
+  onOpen,
+  buttonRef,
+  cellClassName,
+}: {
+  image: GalleryImage;
+  fallbackAlt: string;
+  eager: boolean;
+  onOpen: () => void;
+  buttonRef: (el: HTMLButtonElement | null) => void;
+  cellClassName: string;
+}) {
+  const t = useTranslations("Checkpoint");
+  const status = usePanoramaStatus(image.url);
+  const alt = image.alt ?? fallbackAlt;
+
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      aria-haspopup="dialog"
+      aria-label={t("openImage")}
+      onClick={onOpen}
+      className={`group relative overflow-hidden rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${cellClassName}`}
+    >
+      <img
+        src={image.url}
+        alt={alt}
+        loading={eager ? "eager" : "lazy"}
+        draggable={false}
+        className="h-full w-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+      />
+      {status === "panorama" && (
+        <span className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+          <Rotate3DIcon aria-hidden className="size-3.5" />
+          360°
+        </span>
+      )}
+    </button>
+  );
+}
+
+function LightboxBody({
+  image,
+  fallbackAlt,
+}: {
+  image: GalleryImage;
+  fallbackAlt: string;
+}) {
+  const t = useTranslations("Checkpoint");
+  const status = usePanoramaStatus(image.url);
+  const alt = image.alt ?? fallbackAlt;
+
+  if (status === "flat") {
+    return (
+      <img
+        src={image.url}
+        alt={alt}
+        draggable={false}
+        className="pointer-events-auto max-h-[78vh] max-w-[92vw] rounded-md object-contain shadow-2xl animate-in fade-in duration-300 motion-reduce:animate-none sm:max-w-[min(72rem,86vw)]"
+      />
+    );
+  }
+
+  if (status === "probing") {
+    return (
+      <div
+        role="status"
+        aria-label={t("gallery")}
+        className="pointer-events-auto h-[60vh] w-[86vw] animate-pulse rounded-md bg-white/10 sm:w-[min(72rem,86vw)]"
+      />
+    );
+  }
+
+  return (
+    <div className="pointer-events-auto relative h-[78vh] w-[92vw] overflow-hidden rounded-md shadow-2xl sm:w-[min(72rem,86vw)]">
+      <PanoramaViewer
+        src={image.url}
+        alt={alt}
+        fit="contain"
+        className="h-full w-full [&_canvas]:rounded-md"
+      />
+      <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium whitespace-nowrap text-white backdrop-blur-sm">
+        {t("panoramaHint")}
+      </p>
+    </div>
+  );
 }
 
 const navButton =
@@ -66,7 +158,6 @@ export function CheckpointGallery({ images, name }: Props) {
     setIndex(i);
   };
 
-  // Unmount after the exit animation finishes, then hand focus back.
   useEffect(() => {
     if (!closing) return;
     const timer = setTimeout(() => {
@@ -77,7 +168,6 @@ export function CheckpointGallery({ images, name }: Props) {
     return () => clearTimeout(timer);
   }, [closing]);
 
-  // Keyboard: Escape closes, arrows navigate (with wrap-around).
   useEffect(() => {
     if (!open || closing) return;
     const onKey = (event: KeyboardEvent) => {
@@ -93,8 +183,6 @@ export function CheckpointGallery({ images, name }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, closing, count, requestClose]);
 
-  // Lock page scroll while open; compensate for the scrollbar so the
-  // layout behind the lightbox never shifts.
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -110,7 +198,6 @@ export function CheckpointGallery({ images, name }: Props) {
     };
   }, [open]);
 
-  // Move focus into the dialog once it opens.
   useEffect(() => {
     if (open) closeBtnRef.current?.focus();
   }, [open]);
@@ -121,25 +208,17 @@ export function CheckpointGallery({ images, name }: Props) {
     <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-12">
         {images.map((image, i) => (
-          <button
+          <GalleryCell
             key={image.url}
-            ref={(el) => {
+            image={image}
+            fallbackAlt={name}
+            eager={i === 0}
+            onOpen={() => openAt(i)}
+            buttonRef={(el) => {
               triggerRefs.current[i] = el;
             }}
-            type="button"
-            aria-haspopup="dialog"
-            aria-label={t("openImage")}
-            onClick={() => openAt(i)}
-            className={`group relative overflow-hidden rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${cellClass(i, count)}`}
-          >
-            <img
-              src={image.url}
-              alt={image.alt ?? name}
-              loading={i === 0 ? "eager" : "lazy"}
-              draggable={false}
-              className="h-full w-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-            />
-          </button>
+            cellClassName={cellClass(i, count)}
+          />
         ))}
       </div>
 
@@ -169,12 +248,10 @@ export function CheckpointGallery({ images, name }: Props) {
                   : "animate-in fade-in zoom-in-95 duration-300"
               }`}
             >
-              <img
+              <LightboxBody
                 key={images[current].url}
-                src={images[current].url}
-                alt={images[current].alt ?? name}
-                draggable={false}
-                className="pointer-events-auto max-h-[78vh] max-w-[92vw] rounded-md object-contain shadow-2xl animate-in fade-in duration-300 motion-reduce:animate-none sm:max-w-[min(72rem,86vw)]"
+                image={images[current]}
+                fallbackAlt={name}
               />
 
               {count > 1 && (

@@ -28,7 +28,6 @@ export default function AdminCheckpointNewPage() {
     setError(null);
     const formData = new FormData(e.currentTarget);
 
-    // Field names and FormData parsing live in the checkpoint-content module.
     const payload = parseCheckpointCreateForm(formData);
 
     startTransition(async () => {

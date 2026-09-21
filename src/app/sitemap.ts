@@ -3,9 +3,8 @@ import { SUPPORTED_LOCALES } from "@/config/constants";
 import { listCheckpoints } from "@/services/checkpoints.service";
 import { listTours } from "@/services/tours.service";
 
-export const dynamic = "force-dynamic"; // DB-driven at request time
+export const dynamic = "force-dynamic";
 
-/** SEO sitemap (spec §31): all locale variants of every tour & checkpoint. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000")
     .replace(/\/$/, "");

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import { updateTourSchema } from "@/lib/validations/admin";
@@ -70,9 +71,6 @@ export async function PATCH(request: NextRequest) {
     data: {
       slug: slug ?? undefined,
       status: status ?? undefined,
-      // Only upsert the locales actually provided — the `create` branch of an
-      // upsert would otherwise need required fields we don't have for the
-      // other locale.
       translations: {
         upsert: [
           ...(vi

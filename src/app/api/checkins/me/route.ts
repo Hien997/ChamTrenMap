@@ -4,7 +4,6 @@ import { getOrCreateSessionUser } from "@/lib/session";
 import { localeQuerySchema } from "@/lib/validations";
 import { listMyCheckIns } from "@/services/checkins.service";
 
-/** GET /api/checkins/me?locale=vi — the session user's check-ins (Plan.md §6). */
 export async function GET(request: NextRequest) {
   try {
     const user = await getOrCreateSessionUser();

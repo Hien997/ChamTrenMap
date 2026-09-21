@@ -1,7 +1,5 @@
 import type { Locale } from "@/config/constants";
 
-/** Shared view-model types returned by services & API routes (Plan.md §6). */
-
 export type { Locale };
 
 export type CheckpointStatus = "completed" | "current" | "locked";
@@ -15,7 +13,6 @@ export interface TourSummaryView {
   description: string;
   coverImageUrl: string;
   checkpointCount: number;
-  /** Sum of checkpoint estimated visit minutes. */
   estimatedMinutes: number;
 }
 
@@ -30,7 +27,6 @@ export interface TourCheckpointView {
   longitude: number;
   thumbnailUrl: string | null;
   estimatedVisitMinutes: number;
-  /** Present on tour detail/progress contexts; null when progress is unknown. */
   status: CheckpointStatus | null;
 }
 
@@ -51,7 +47,6 @@ export interface CheckpointDetailView {
   longitude: number;
   radiusMeters: number;
   estimatedVisitMinutes: number;
-  /** Entrance-ticket or food budget per person, VND; null = free. */
   priceVnd: number | null;
   priceKind: "ticket" | "food";
   name: string;
@@ -86,7 +81,6 @@ export interface CheckInView {
   longitude: number;
   accuracy: number;
   distanceFromCheckpoint: number;
-  /** ISO 8601 timestamp. */
   checkedInAt: string;
 }
 
@@ -96,10 +90,8 @@ export interface ShareLinkView {
   checkIn: CheckInView;
 }
 
-/** Data for the public share page /share/checkin/[shareId] (Plan.md §16). */
 export interface SharePageView {
   shareId: string;
-  /** ISO 8601 timestamp. */
   checkedInAt: string;
   checkpoint: {
     slug: string;
@@ -109,4 +101,3 @@ export interface SharePageView {
   };
   tour: { slug: string; name: string } | null;
 }
-

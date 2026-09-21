@@ -2,13 +2,6 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcrypt";
 import { getSessionUser } from "@/lib/session";
 
-/**
- * Admin authorization (Plan.md admin spec).
- *
- * The session cookie stores only `sessionToken`. The `role` column is read
- * from the DB on each request — never trusted from the client.
- */
-
 export async function getAdminUser() {
   const user = await getSessionUser();
   if (!user || user.role !== "ADMIN") return null;

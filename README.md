@@ -43,15 +43,16 @@ networks — verified on a Vietnamese ISP where `tile.openstreetmap.org` returns
 **NXDOMAIN**:
 
 1. **OSM raster** (`tile.openstreetmap.org`) loads first when no URL is configured.
-2. The map rebuilds **once** on the **CARTO** raster style (same OpenStreetMap
-   data, a different host/CDN) when either trigger fires:
+2. The map rebuilds **once** on the **OpenFreeMap** vector style (same
+   OpenStreetMap data, keyless tiles from a different host/CDN) when
+   either trigger fires:
    - **tiles fail** with none ever rendering (a blocked/NXDOMAIN tile host fails
      fast and silently — tile errors are non-fatal by design), or
    - a load attempt exceeds its **time budget** (`NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS`,
      default 20 s).
 3. If the fallback also fails, a retry UI appears instead of an endless spinner.
 
-Because OSM is unreachable on some networks, a first paint on CARTO after the
+Because OSM is unreachable on some networks, a first paint on OpenFreeMap after the
 fallback is expected there — that is the fallback working, not a bug. See
 [Map tiles](#map-tiles-no-api-key).
 
@@ -116,3 +117,8 @@ prisma/…                schema (11 tables) + idempotent DEMO seed
 ## Phase 2 Backlog
 
 Audio guides · badges & XP · user profile · PWA · analytics · generated share images (next/og) · Upstash-backed rate limiting.
+
+<!-- KILL port -->
+
+lsof -ti tcp:3000 | xargs kill
+npm run dev

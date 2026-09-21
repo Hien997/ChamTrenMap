@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-/** Lucide dropped brand marks — the Facebook "f" as an inline SVG (same API). */
 function FacebookIcon({ className, "aria-hidden": ariaHidden }: {
   className?: string;
   "aria-hidden"?: boolean | "true" | "false";
@@ -22,12 +21,6 @@ function FacebookIcon({ className, "aria-hidden": ariaHidden }: {
   );
 }
 
-/**
- * Platform-aware sharing (spec §15):
- * - Facebook / Zalo: platform web-share endpoints (popup).
- * - Native: Web Share API when available (mobile share sheet).
- * - Copy: clipboard fallback for everything else.
- */
 export function ShareButtons({ url, title }: { url: string; title: string }) {
   const t = useTranslations("Share");
 

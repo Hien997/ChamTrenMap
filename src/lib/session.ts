@@ -7,14 +7,6 @@ import {
 } from "@/config/constants";
 import { prisma } from "@/lib/prisma";
 
-/**
- * Anonymous-first session (Plan.md §7).
- *
- * The user's identity is a random 32-byte token stored in an httpOnly cookie
- * and mirrored in `User.sessionToken`. No login, no PII. Sessions are created
- * lazily by identity-needing API routes — never via a login gate.
- */
-
 export async function getOrCreateSessionUser(): Promise<User> {
   const store = await cookies();
   const existingToken = store.get(SESSION_COOKIE_NAME)?.value;
@@ -40,7 +32,6 @@ export async function getOrCreateSessionUser(): Promise<User> {
   return user;
 }
 
-/** Read-only lookup; returns null when there is no valid session cookie. */
 export async function getSessionUser(): Promise<User | null> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE_NAME)?.value;

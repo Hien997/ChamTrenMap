@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowLeftIcon, ClockIcon, MapIcon, MapPinIcon } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { PanoramaViewer } from "@/components/three/PanoramaViewer";
 import { buttonVariants } from "@/components/ui/button";
 import { TourProgress } from "@/components/tour/TourProgress";
 import { cn } from "@/lib/utils";
@@ -38,7 +39,6 @@ export default async function TourDetailPage({ params }: Props) {
   const t = await getTranslations("Tours");
   const tCommon = await getTranslations("Common");
 
-  // Personalize statuses when the visitor already has an anonymous session.
   const user = await getSessionUser();
   const completedIds = user
     ? await getCompletedCheckpointIds(user.id, slug)
@@ -59,13 +59,13 @@ export default async function TourDetailPage({ params }: Props) {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
-        {/* Cover */}
+        {/* Cover — 360° when the cover photo is equirectangular, flat otherwise. */}
         <div className="relative -mx-4 aspect-[16/7] overflow-hidden rounded-2xl bg-muted sm:-mx-6">
           {tour.coverImageUrl ? (
-            <img
+            <PanoramaViewer
               src={tour.coverImageUrl}
               alt={tour.name}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full"
             />
           ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />

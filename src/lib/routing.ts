@@ -1,15 +1,8 @@
 import type { RouteProfile, RouteResult } from "@/components/map/map.types";
 
-/**
- * Routing abstraction (task §13). The Google Directions dependency is gone;
- * any OSRM-compatible provider can serve routes, selected via
- * `NEXT_PUBLIC_ROUTING_API_URL` without touching application code.
- */
 export interface RouteService {
   getRoute(
-    /** [longitude, latitude] */
     start: [number, number],
-    /** [longitude, latitude] */
     destination: [number, number],
     profile?: RouteProfile,
   ): Promise<RouteResult>;
@@ -24,7 +17,6 @@ interface OsrmResponse {
   }[];
 }
 
-/** OSRM HTTP implementation (`/route/v1/{profile}/…`, GeoJSON geometry). */
 export function createOsrmRouteService(baseUrl: string): RouteService {
   const base = baseUrl.replace(/\/+$/, "");
   return {
@@ -49,11 +41,6 @@ export function createOsrmRouteService(baseUrl: string): RouteService {
   };
 }
 
-/**
- * Public OSRM demo server — light/demo usage only (provider policy:
- * https://github.com/Project-OSRM/osrm-backend/wiki/OSRM-demo-server-policy).
- * Set `NEXT_PUBLIC_ROUTING_API_URL` to your own instance for production.
- */
 const DEFAULT_ROUTING_URL = "https://router.project-osrm.de";
 
 export function getRouteService(): RouteService {

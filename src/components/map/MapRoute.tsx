@@ -4,11 +4,10 @@ import type { GeoJSONSource, Map as MaplibreMap } from "maplibre-gl";
 import { CarFrontIcon, FootprintsIcon } from "lucide-react";
 import { useEffect } from "react";
 
-import { cn } from "@/lib/utils";
 import type { RouteFeatureCollection } from "./map.types";
 import { lineStringFeatureCollection } from "./map.utils";
+import { cn } from "@/lib/utils";
 
-/** GeoJSON source/layer ids managed by the kit (added once, updated via setData). */
 export const ROUTE_SOURCE_ID = "route";
 export const PATH_SOURCE_ID = "tour-path";
 
@@ -17,33 +16,39 @@ export const EMPTY_ROUTE_GEOJSON: RouteFeatureCollection = {
   features: [],
 };
 
-function ensureLineSource(map: MaplibreMap, sourceId: string): void {
+function ensureLineSource(map: MaplibreMap, sourceId: string): boolean {
+  if (!map.isStyleLoaded()) return false;
   if (!map.getSource(sourceId)) {
-    map.addSource(sourceId, { type: "geojson", data: EMPTY_ROUTE_GEOJSON });
+    try {
+      map.addSource(sourceId, { type: "geojson", data: EMPTY_ROUTE_GEOJSON });
+    } catch {
+      return false;
+    }
   }
+  return true;
 }
 
-/**
- * Tour path polyline (previous Google `Polyline`): slate, subtle, drawn only
- * when there is more than one point. Source + layer are created once; data
- * updates go through `setData` (task §14).
- */
-export function ensurePathLayer(map: MaplibreMap): void {
-  ensureLineSource(map, PATH_SOURCE_ID);
+export function ensurePathLayer(map: MaplibreMap): boolean {
+  if (!ensureLineSource(map, PATH_SOURCE_ID)) return false;
   if (!map.getLayer("tour-path-line")) {
-    map.addLayer({
-      id: "tour-path-line",
-      type: "line",
-      source: PATH_SOURCE_ID,
-      layout: { "line-cap": "round", "line-join": "round" },
-      paint: {
-        "line-color": "#379a7f",
-        "line-opacity": 0.6,
-        "line-width": 3,
-        "line-dasharray": [2, 2],
-      },
-    });
+    try {
+      map.addLayer({
+        id: "tour-path-line",
+        type: "line",
+        source: PATH_SOURCE_ID,
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": "#379a7f",
+          "line-opacity": 0.6,
+          "line-width": 3,
+          "line-dasharray": [2, 2],
+        },
+      });
+    } catch {
+      return false;
+    }
   }
+  return true;
 }
 
 export function setPathData(
@@ -59,38 +64,39 @@ export function setPathData(
   (source as GeoJSONSource).setData(data);
 }
 
-/**
- * Directions route (previous Google `DirectionsRenderer`): white casing under a
- * gulf-teal line (#01707e / 0.9 / 5). Created once, data-updated only.
- */
-export function ensureRouteLayers(map: MaplibreMap): void {
-  ensureLineSource(map, ROUTE_SOURCE_ID);
-  if (!map.getLayer("route-line-casing")) {
-    map.addLayer({
-      id: "route-line-casing",
-      type: "line",
-      source: ROUTE_SOURCE_ID,
-      layout: { "line-cap": "round", "line-join": "round" },
-      paint: {
-        "line-color": "#ffffff",
-        "line-opacity": 0.7,
-        "line-width": 7,
-      },
-    });
+export function ensureRouteLayers(map: MaplibreMap): boolean {
+  if (!ensureLineSource(map, ROUTE_SOURCE_ID)) return false;
+  try {
+    if (!map.getLayer("route-line-casing")) {
+      map.addLayer({
+        id: "route-line-casing",
+        type: "line",
+        source: ROUTE_SOURCE_ID,
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": "#ffffff",
+          "line-opacity": 0.7,
+          "line-width": 7,
+        },
+      });
+    }
+    if (!map.getLayer("route-line")) {
+      map.addLayer({
+        id: "route-line",
+        type: "line",
+        source: ROUTE_SOURCE_ID,
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": "#01707e",
+          "line-opacity": 0.9,
+          "line-width": 5,
+        },
+      });
+    }
+  } catch {
+    return false;
   }
-  if (!map.getLayer("route-line")) {
-    map.addLayer({
-      id: "route-line",
-      type: "line",
-      source: ROUTE_SOURCE_ID,
-      layout: { "line-cap": "round", "line-join": "round" },
-      paint: {
-        "line-color": "#01707e",
-        "line-opacity": 0.9,
-        "line-width": 5,
-      },
-    });
-  }
+  return true;
 }
 
 export function setRouteData(
@@ -102,10 +108,6 @@ export function setRouteData(
   (source as GeoJSONSource).setData(route ?? EMPTY_ROUTE_GEOJSON);
 }
 
-/**
- * Standalone route/path renderer for reuse outside `MapLibreMap`.
- * Renders via GeoJSON sources + line layers; never rebuilds them.
- */
 export function MapRoute({
   map,
   route,
@@ -116,21 +118,18 @@ export function MapRoute({
   path?: [number, number][] | null;
 }) {
   useEffect(() => {
-    if (!map) return;
-    ensurePathLayer(map);
-    setPathData(map, path ?? null);
+    if (!map || !map.isStyleLoaded()) return;
+    if (ensurePathLayer(map)) setPathData(map, path ?? null);
   }, [map, path]);
 
   useEffect(() => {
-    if (!map) return;
-    ensureRouteLayers(map);
-    setRouteData(map, route ?? null);
+    if (!map || !map.isStyleLoaded()) return;
+    if (ensureRouteLayers(map)) setRouteData(map, route ?? null);
   }, [map, route]);
 
   return null;
 }
 
-/** Travel-mode toggle used next to the Navigate action (UX unchanged). */
 export function TravelModeToggle({
   value,
   onChange,

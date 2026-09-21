@@ -44,11 +44,6 @@ function toCheckInView(
   };
 }
 
-/**
- * Server-validated check-in (Plan.md §7). Every gate runs here:
- *   exists → sequential lock → accuracy → distance → duplicate (DB constraint)
- * Nothing about the outcome is trusted from the client.
- */
 export async function createCheckIn(
   userId: string,
   input: CreateCheckInInput,
@@ -65,10 +60,6 @@ export async function createCheckIn(
   });
   if (!checkpoint) return { status: "not_found" };
 
-  // MVP data model: a checkpoint belongs to exactly one tour (enforced by seed).
-  // When a checkpoint is present in the DB but not wired to any tour, the
-  // check-in cannot proceed through the sequential tour flow; report that as
-  // its own outcome instead of reusing "locked".
   const tourLink = checkpoint.tourLinks[0];
   if (!tourLink) return { status: "no_tour_link" };
   const tour = tourLink.tour;
@@ -145,7 +136,6 @@ export async function createCheckIn(
 
     return { status: "ok", checkIn: toCheckInView(checkIn, checkpointName), progress };
   } catch (error) {
-    // Lost a race against the DB unique constraint → duplicate check-in.
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
@@ -159,7 +149,6 @@ export async function createCheckIn(
   }
 }
 
-/** Most recent check-ins of the session user (Plan.md §6: GET /api/checkins/me). */
 export async function listMyCheckIns(
   userId: string,
   locale: Locale,

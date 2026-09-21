@@ -95,8 +95,6 @@ describe("parseCheckpointUpdateForm", () => {
 });
 
 describe("parseCheckpointCreateForm", () => {
-  // A valid create form minus the fields that carry create-time defaults:
-  // coordinates and both translations stay mandatory.
   const VALID_CREATE_FIELDS = {
     slug: "chua-phu-dung",
     latitude: "10.3864",
@@ -174,7 +172,6 @@ const ROW: CheckpointContentRow = {
 describe("toCheckpointDetail", () => {
   it("falls back through pickLocalized and maps kinds and thumbnails", () => {
     const view = toCheckpointDetail(ROW, "vi");
-    // No vi row: pickLocalized falls back to whatever exists (the en row).
     expect(view.name).toBe("Phu Dung Pagoda");
     expect(view.priceKind).toBe("food");
     expect(view.thumbnailUrl).toBe("thumb.png");

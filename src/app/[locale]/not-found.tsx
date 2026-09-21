@@ -3,11 +3,11 @@ import { CompassIcon } from "lucide-react";
 
 export default function LocaleNotFound() {
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-3 px-4 text-center">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-3 px-4 text-center">
       <CompassIcon aria-hidden className="size-10 text-primary/70" />
       <h1 className="text-2xl font-bold">404</h1>
       <p className="text-muted-foreground">
-        Trang bạn tìm kiếm không tồn tại. / Page not found.
+        Trang bạn tìm kiếm kong tồn tại. / Page not found.
       </p>
       <Link
         href="/"

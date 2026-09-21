@@ -3,7 +3,6 @@ import { apiError, apiOk, handleApiError } from "@/lib/api";
 import { localeQuerySchema } from "@/lib/validations";
 import { getCheckpointDetail } from "@/services/checkpoints.service";
 
-/** GET /api/checkpoints/[slug]?locale=vi — full checkpoint with guide (Plan.md §6). */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },

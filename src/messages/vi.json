@@ -8,6 +8,13 @@
     "home": "Trang chủ",
     "tours": "Tours"
   },
+  "Weather": {
+    "today": "Hôm nay",
+    "weekTitle": "Hà Tiên · 7 ngày tới",
+    "todayLabel": "{temp}°C tại Hà Tiên",
+    "loadingLabel": "Đang tải thời tiết…",
+    "openForecast": "Thời tiết Hà Tiên {temp} độ. Mở dự báo 7 ngày."
+  },
   "Home": {
     "heroBadge": "Hà Tiên, An Giang",
     "heroTitle": "Sổ tay số khám phá Hà Tiên",
@@ -49,6 +56,7 @@
     "openingHours": "Giờ mở cửa",
     "bestTime": "Thời điểm đẹp nhất",
     "gallery": "Hình ảnh",
+    "panoramaHint": "Kéo để xoay ảnh 360°",
     "openImage": "Xem ảnh lớn",
     "close": "Đóng",
     "prevImage": "Ảnh trước",

@@ -4,18 +4,6 @@ import type { Locale } from "@/config/constants";
 import { pickLocalized } from "@/services/localize";
 import type { CheckpointDetailView, GuideSectionView } from "@/types";
 
-/**
- * The checkpoint-content module — one deep owner of the checkpoint concept:
- * shapes, validation, public view mapping, and form parsing. Field names
- * live here and nowhere else. Server reads/writes live in
- * checkpoint-content.server; routes shrink to auth + envelope + one call.
- *
- * This file is client-safe (no prisma, no node builtins) — client forms
- * import shapes and parsers from it.
- */
-
-// ---------- shapes (the one definition) ----------
-
 export interface AdminGuide {
   id?: string;
   locale: "vi" | "en";
@@ -44,14 +32,9 @@ export interface AdminCheckpoint {
   vi: AdminTranslation | null;
   en: AdminTranslation | null;
   guides: AdminGuide[];
-  /** Tours the checkpoint belongs to (admin list/edit views). */
   tours?: { tourId: string; slug: string; order: number }[];
 }
 
-// ---------- validation (moved from lib/validations/admin) ----------
-
-// Base shape shared by create/update. Fields that have sensible defaults for
-// NEW records are layered on in createCheckpointSchema only.
 const checkpointBaseSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
@@ -94,24 +77,15 @@ export const createCheckpointSchema = checkpointBaseSchema.extend({
   priceKind: z.enum(["TICKET", "FOOD"]).default("TICKET"),
 });
 
-// NOTE: no .default() on any numeric/kind field — an omitted field in PATCH
-// must be a hard 400, not a silent reset to the create-time default.
 export const updateCheckpointSchema = checkpointBaseSchema.extend({
-  // Present for payload symmetry with the edit form; the PATCH handler
-  // resolves the record from the URL slug, which is authoritative.
   slug: z.string().min(1).optional(),
 });
 
-/** Validated shape the write functions accept. */
 export type CreateCheckpointInput = z.output<typeof createCheckpointSchema>;
 export type UpdateCheckpointInput = z.output<typeof updateCheckpointSchema>;
-/** Wire shape a client form posts: every field may be absent; zod decides. */
 export type CreateCheckpointPayload = Partial<CreateCheckpointInput>;
 export type UpdateCheckpointPayload = Partial<UpdateCheckpointInput>;
 
-// ---------- write errors ----------
-
-/** HTTP status rides the error; routes stay dumb. */
 export class CheckpointWriteError extends Error {
   readonly status: number;
 
@@ -125,8 +99,6 @@ export class CheckpointWriteError extends Error {
   }
 }
 
-// ---------- public view mapping (consumed by checkpoints.service) ----------
-
 interface TranslationRow {
   locale: string;
   name: string;
@@ -136,7 +108,6 @@ interface TranslationRow {
   bestTimeToVisit: string | null;
 }
 
-/** Minimal shape of a checkpoint row with translations, images and guides. */
 export interface CheckpointContentRow {
   id: string;
   slug: string;
@@ -161,13 +132,11 @@ export interface CheckpointSummary {
   thumbnailUrl: string | null;
 }
 
-/** Map a checkpoint row onto the public detail view (Plan.md §6). */
 export function toCheckpointDetail(
   row: CheckpointContentRow,
   locale: Locale,
 ): CheckpointDetailView {
   const translation = pickLocalized(row.translations, locale);
-  // One guide row per locale; pick the requested locale (vi fallback).
   const guide = pickLocalized(row.guides, locale);
   const guides: GuideSectionView[] = guide
     ? [
@@ -202,7 +171,6 @@ export function toCheckpointDetail(
   };
 }
 
-/** Map a checkpoint row onto the public list/marker view. */
 export function toCheckpointSummary(
   row: Pick<
     CheckpointContentRow,
@@ -222,13 +190,9 @@ export function toCheckpointSummary(
   };
 }
 
-// ---------- form parsing (the one FormData mapping) ----------
-
 function numberField(formData: FormData, name: string): number | undefined {
   const raw = formData.get(name);
   if (raw === null) return undefined;
-  // Present-but-unparseable becomes NaN so validation rejects it loudly;
-  // absent becomes undefined so create-time defaults can apply.
   return Number.parseFloat(String(raw));
 }
 
@@ -253,7 +217,6 @@ function readFormTranslation(
   };
 }
 
-/** Parse the "new checkpoint" form into a create payload (validate over the wire). */
 export function parseCheckpointCreateForm(
   formData: FormData,
 ): CreateCheckpointPayload {
@@ -273,7 +236,6 @@ export function parseCheckpointCreateForm(
   };
 }
 
-/** Parse the edit form into an update payload; guide docs are read per locale. */
 export function parseCheckpointUpdateForm(
   formData: FormData,
   currentGuides: AdminGuide[],
@@ -282,7 +244,6 @@ export function parseCheckpointUpdateForm(
   for (const locale of ["vi", "en"] as const) {
     const existing = currentGuides.find((g) => g.locale === locale);
     const content = String(formData.get(`guide.${locale}.content`) ?? "").trim();
-    // Skip empty locales so the write doesn't create empty guide rows.
     if (!content) continue;
     guides.push({
       id: existing?.id,

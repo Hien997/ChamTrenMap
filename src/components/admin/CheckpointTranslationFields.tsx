@@ -1,7 +1,7 @@
+import { Field } from "./ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { AdminTranslation } from "@/services/checkpoint-content";
-import { Field } from "./ui";
 
 interface Props {
   locale: string;

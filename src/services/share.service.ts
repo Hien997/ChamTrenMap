@@ -10,10 +10,6 @@ export type CreateShareLinkResult =
   | { status: "not_found" }
   | { status: "forbidden" };
 
-/**
- * Create (or reuse) a share link for one of the session user's check-ins.
- * Ownership is verified — share links can only be minted by the check-in owner.
- */
 export async function createShareLink(
   userId: string,
   checkInId: string,
@@ -38,7 +34,6 @@ export async function createShareLink(
   };
 }
 
-/** Public data for /share/checkin/[shareId] — no session required. */
 export async function getSharePageView(
   shareId: string,
   locale: Locale,

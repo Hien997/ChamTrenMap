@@ -19,11 +19,6 @@ const ALLOWED_TAGS = new Set([
 
 const ALLOWED_ATTRS = new Set(["href", "src", "alt", "title"]);
 
-/**
- * Sanitize HTML content from admin input.
- * Strips script/style tags, event handlers, and javascript: URLs.
- * Only allows a safe subset of HTML tags and attributes.
- */
 export function sanitizeHtml(raw: string): string {
   let cleaned = raw
     .replace(/<script[\s\S]*?<\/script>/gi, "")

@@ -1,6 +1,5 @@
 import type { CheckpointStatus } from "@/types";
 
-/** A checkpoint as rendered on the tour map (status merged from progress). */
 export interface MapCheckpoint {
   id: string;
   slug: string;

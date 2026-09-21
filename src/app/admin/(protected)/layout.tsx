@@ -1,6 +1,6 @@
-import { requireAdmin } from "@/lib/admin";
 import Link from "next/link";
 import { LogOutIcon, WaypointsIcon } from "lucide-react";
+import { requireAdmin } from "@/lib/admin";
 import { AdminNav } from "@/components/admin/AdminNav";
 
 function Brand() {

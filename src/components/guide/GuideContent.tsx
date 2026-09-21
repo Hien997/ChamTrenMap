@@ -1,6 +1,5 @@
 import { sanitizeHtml } from "@/lib/sanitize";
 
-/** Single guide-content renderer: sanitized HTML, shared by public page + admin preview. */
 export function GuideContentRenderer({ content }: { content: string }) {
   if (!content.trim()) return null;
   return (

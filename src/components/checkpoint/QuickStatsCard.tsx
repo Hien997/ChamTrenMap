@@ -15,11 +15,6 @@ type QuickStatsCardProps = {
   priceVnd?: number | null;
 };
 
-/**
- * Quick-stats card for food checkpoints: distance, opening hours, price range.
- * Distance is live from the user's GPS position (gracefully degrades to "—"
- * if location permission is denied or unavailable).
- */
 export function QuickStatsCard({
   checkpoint,
   openingHours,
@@ -78,7 +73,7 @@ function Stat({
 }
 
 function formatDistance(meters: number | null): string {
-  if (meters == null) return "—";
+  if (meters === null) return "—";
   if (meters < 1000) return `${Math.round(meters)} m`;
   return `${(meters / 1000).toFixed(1)} km`;
 }

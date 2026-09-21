@@ -2,12 +2,11 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { Button } from "@/components/ui/button";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { buttonVariants , Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader, StatusChip } from "@/components/admin/ui";
 import { ConfirmDelete } from "@/components/admin/ConfirmDelete";
-import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 
 type TPaginatedTour = {
   id: string;

@@ -2,16 +2,16 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  parseCheckpointUpdateForm,
-  type AdminCheckpoint,
-} from "@/services/checkpoint-content";
 import { TranslationFields } from "./CheckpointTranslationFields";
 import { CheckpointFields } from "./CheckpointFields";
 import { GuideSection } from "./GuideSection";
 import { BackLink, PageHeader, Panel } from "./ui";
+import {
+  parseCheckpointUpdateForm,
+  type AdminCheckpoint,
+} from "@/services/checkpoint-content";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 export default function CheckpointEditForm({ checkpoint }: { checkpoint: AdminCheckpoint }) {
   const router = useRouter();
@@ -27,7 +27,6 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: AdminCh
     setError(null);
     const formData = new FormData(e.currentTarget);
 
-    // Field names and FormData parsing live in the checkpoint-content module.
     const payload = {
       ...parseCheckpointUpdateForm(formData, checkpoint.guides),
       id: checkpoint.id,

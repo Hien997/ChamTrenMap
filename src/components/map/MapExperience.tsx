@@ -11,10 +11,9 @@ import {
   NavigationIcon,
   RulerIcon,
   XIcon,
-} from "lucide-react";
+ MapPinIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { MapPinIcon } from "lucide-react";
 import { CheckInFlow } from "@/components/checkin/CheckInFlow";
 import { Link } from "@/i18n/navigation";
 import { MapLibreMap } from "@/components/map/MapLibreMap";
@@ -45,7 +44,6 @@ import { applyProgress, distanceTo, isNear } from "@/lib/tour-progress";
 import { getRouteService } from "@/lib/routing";
 import type { TourProgressView } from "@/types";
 
-/** Full-screen tour map experience (Plan.md §4/§8/§10) on the MapLibre kit. */
 export function MapExperience({
   tourSlug,
   locale,

@@ -7,7 +7,6 @@ import {
 } from "@/services/checkpoint-content";
 import type { CheckpointDetailView } from "@/types";
 
-/** Full checkpoint with localized guide sections & gallery (Plan.md §6). */
 export async function getCheckpointDetail(
   slug: string,
   locale: Locale,
@@ -25,7 +24,6 @@ export async function getCheckpointDetail(
   return toCheckpointDetail(checkpoint, locale);
 }
 
-/** All published checkpoints (marker data), localized. */
 export async function listCheckpoints(locale: Locale) {
   const checkpoints = await prisma.checkpoint.findMany({
     include: {
@@ -36,7 +34,6 @@ export async function listCheckpoints(locale: Locale) {
   return checkpoints.map((cp) => toCheckpointSummary(cp, locale));
 }
 
-/** The published tour a checkpoint belongs to (for "on tour" badges & CTAs). */
 export async function getTourForCheckpoint(
   checkpointSlug: string,
   locale: Locale,

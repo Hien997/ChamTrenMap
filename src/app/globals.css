@@ -55,7 +55,6 @@
 }
 
 :root {
-  /* Voyage palette — cool cartographic paper, Gulf of Thailand tones. */
   --background: oklch(0.975 0.007 175);
   --foreground: oklch(0.25 0.025 235);
   --card: oklch(0.995 0.003 175);
@@ -88,7 +87,6 @@
   --sidebar-accent-foreground: oklch(0.3 0.03 220);
   --sidebar-border: oklch(0.9 0.015 195);
   --sidebar-ring: oklch(0.5 0.085 210);
-  /* Checkpoint voyage status: sea glass / sunset coral / limestone. */
   --status-completed: oklch(0.62 0.1 172);
   --status-completed-ink: oklch(0.42 0.075 172);
   --status-current: oklch(0.66 0.155 38);
@@ -98,7 +96,6 @@
 }
 
 .dark {
-  /* Gulf night — deep navy, not black. */
   --background: oklch(0.17 0.02 230);
   --foreground: oklch(0.95 0.008 180);
   --card: oklch(0.21 0.022 228);
@@ -149,7 +146,6 @@
     @apply font-sans;
   }
 
-  /* Distinctive type scale — larger display, tighter tracking for headlines */
   h1,
   h2,
   h3 {

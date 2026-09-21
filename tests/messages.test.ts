@@ -11,7 +11,6 @@ function loadCatalog(name: string): Record<string, unknown> {
   ) as Record<string, unknown>;
 }
 
-/** Leaf key paths, e.g. "Map.loadingMap". */
 function flattenKeys(node: unknown, prefix = ""): string[] {
   if (typeof node !== "object" || node === null) {
     return prefix ? [prefix] : [];

@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { deriveStatuses } from "@/services/progress-status";
 import type { TourProgressView } from "@/types";
 
-/** Build the progress view for a user on a tour (Plan.md §6 TourProgressView). */
 export async function buildProgressView(
   userId: string,
   tourSlug: string,
@@ -42,7 +41,6 @@ export async function buildProgressView(
   };
 }
 
-/** Mark a tour as started for this user (idempotent). */
 export async function ensureTourStarted(
   userId: string,
   tourId: string,
@@ -54,7 +52,6 @@ export async function ensureTourStarted(
   });
 }
 
-/** Checkpoint ids the user has checked in on a specific tour. */
 export async function getCompletedCheckpointIds(
   userId: string,
   tourSlug: string,

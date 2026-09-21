@@ -9,7 +9,7 @@ A mobile-first tourism web app for Hà Tiên, An Giang. Tourists follow the Hà 
 **Phase 1 scope (approved):** ~~Google Maps~~ **MapLibre GL + OpenStreetMap tiles** · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share link · VN/EN i18n.
 **Deferred to Phase 2:** audio guides, badges/XP, user profile, admin dashboard, PWA, analytics, generated share images (next/og). Database-driven content means admin CRUD can be added without schema changes.
 
-> **⚠️ Revision — map stack changed (implemented).** The map is **MapLibre GL + OpenStreetMap tiles**, not Google Maps: no API key, no billing account. Sections below that name Google Maps (`§1` scope, `§2` map row, `§3`, `§10`, `§12`) describe the *original* plan and are kept for the record; the shipped behaviour lives in `src/components/map/` and the README's *Map tiles* section. Key differences: a raster OSM style instead of the vector `<Map>`; custom marker DOM instead of `AdvancedMarker`; **OSRM** routing (`src/lib/routing.ts`, configurable base URL) instead of the Directions API; and a cross-host fallback style (OSM → CARTO) instead of a Google key fallback. The "Open in Google Maps" *deep link* (`maps/dir/?api=1&…`) is retained — it's an outbound link, not the SDK. Admin CRUD (originally Phase 2) has also shipped.
+> **⚠️ Revision — map stack changed (implemented).** The map is **MapLibre GL + OpenStreetMap tiles**, not Google Maps: no API key, no billing account. Sections below that name Google Maps (`§1` scope, `§2` map row, `§3`, `§10`, `§12`) describe the *original* plan and are kept for the record; the shipped behaviour lives in `src/components/map/` and the README's *Map tiles* section. Key differences: a raster OSM style instead of the vector `<Map>`; custom marker DOM instead of `AdvancedMarker`; **OSRM** routing (`src/lib/routing.ts`, configurable base URL) instead of the Directions API; and a cross-host keyless fallback style (OSM → OpenFreeMap) instead of a Google key fallback. The "Open in Google Maps" *deep link* (`maps/dir/?api=1&…`) is retained — it's an outbound link, not the SDK. Admin CRUD (originally Phase 2) has also shipped.
 
 ## 2. Decisions Log
 
@@ -274,7 +274,7 @@ interface TourProgressView {
 - Markers by status: ✅ completed · ⭐ current/available · 🔒 locked; click → bottom sheet preview card (spec §7 layout).
 - Polyline connecting checkpoints in order; user location via `navigator.geolocation.watchPosition`.
 - **Shipped (revised):** routing via OSRM (`src/lib/routing.ts`, `/route/v1/{profile}/…`) instead of `DirectionsService`/`DirectionsRenderer`, with the same **Walking/Driving** toggle, plus the retained "Open in Google Maps" deep link (`maps/dir/?api=1&destination=lat,lng&travelmode=`).
-- Load robustness: a per-attempt time budget, plus tile-failure escalation, swaps in the CARTO-hosted fallback style once before showing a retry UI.
+- Load robustness: a per-attempt time budget, plus tile-failure escalation, swaps in the keyless OpenFreeMap vector fallback style once before showing a retry UI.
 
 ## 11. Seed Data (DEMO — admin must verify before production)
 

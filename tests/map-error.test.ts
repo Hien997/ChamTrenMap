@@ -17,7 +17,6 @@ import {
   styleUsesTileSources,
 } from "@/components/map/map.utils";
 
-/** Just enough of a MapLibre raster source to assert on. */
 interface RasterSource {
   type: string;
   tiles: string[];
@@ -26,7 +25,6 @@ interface RasterSource {
   attribution: string;
 }
 
-/** Mimics a MapLibre ErrorEvent: extra payload props are assigned onto it. */
 function makeErrorEvent(data?: Record<string, unknown>): object {
   return Object.assign(new Error("boom"), data);
 }
@@ -108,8 +106,6 @@ describe("isTileDataEvent", () => {
   });
 
   it("ignores events that only report source metadata", () => {
-    // The `content` source event fires from TileJSON metadata, before any tile
-    // is requested — it must not be mistaken for a rendered tile.
     expect(
       isTileDataEvent({
         isSourceLoaded: true,
@@ -199,8 +195,6 @@ describe("styleUsesTileSources", () => {
   });
 
   it("is false when no source fetches tiles", () => {
-    // A geojson-only style renders no tiles by design, so a missing tile must
-    // not be mistaken for a broken host.
     expect(
       styleUsesTileSources({ sources: { stops: { type: "geojson" } } }),
     ).toBe(false);
@@ -226,11 +220,8 @@ describe("built-in (key-free) map styles", () => {
     expect(source.tileSize).toBe(256);
     expect(source.maxzoom).toBe(OSM_RASTER_MAX_ZOOM);
     expect(OSM_RASTER_MAX_ZOOM).toBe(19);
-    // OSM's tile policy requires attribution wherever its tiles render.
     expect(source.attribution).toBe(OSM_ATTRIBUTION);
     expect(source.attribution).toContain("openstreetmap.org/copyright");
-    // The layer carries no maxzoom, so MapLibre overzooms past 19 instead of
-    // blanking the map.
     expect(style.layers).toEqual([
       { id: "osm", type: "raster", source: "osm" },
     ]);
@@ -246,7 +237,6 @@ describe("built-in (key-free) map styles", () => {
 
       process.env[STYLE_URL_KEY] = "https://example.test/style.json";
       expect(resolveMapStyle()).toBe("https://example.test/style.json");
-      // An explicit prop still wins over the env var.
       expect(resolveMapStyle("https://prop.test/style.json")).toBe(
         "https://prop.test/style.json",
       );
@@ -256,17 +246,23 @@ describe("built-in (key-free) map styles", () => {
     }
   });
 
-  it("falls back to a different host that still credits OpenStreetMap", () => {
+  it("falls back to the vendored keyless OpenFreeMap style on a different host", () => {
     const style = fallbackMapStyle();
-    const source = style.sources["carto-tiles"] as unknown as RasterSource;
-    expect(source.type).toBe("raster");
-    // A different host is the whole point: the primary may be unreachable.
-    expect(source.tiles.every((t) => !t.includes("tile.openstreetmap.org"))).toBe(
-      true,
-    );
-    expect(source.attribution).toContain(OSM_ATTRIBUTION);
-    expect(style.layers).toEqual([
-      { id: "carto-tiles", type: "raster", source: "carto-tiles" },
-    ]);
+    const styleJson = JSON.stringify(style);
+    expect(styleJson).not.toContain("cartocdn.com");
+    expect(styleJson).not.toContain("mapbox.com");
+    expect(styleJson).not.toContain("maptiler");
+    expect(styleJson).not.toMatch(/[?&](key|token|api_key)=/i);
+    expect(styleJson).not.toContain("tile.openstreetmap.org");
+    expect(style.sources.openmaptiles).toMatchObject({
+      type: "vector",
+      url: "https://tiles.openfreemap.org/planet",
+    });
+    expect(style.glyphs).toContain("tiles.openfreemap.org");
+    expect(style.sprite).toContain("tiles.openfreemap.org");
+    expect(style.version).toBe(8);
+    expect(style.layers.length).toBeGreaterThan(50);
+    expect(fallbackMapStyle()).toEqual(style);
+    expect(fallbackMapStyle()).not.toBe(style);
   });
 });

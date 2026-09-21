@@ -1,18 +1,13 @@
+import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { GuideContentRenderer } from "@/components/guide/GuideContent";
 import type { AdminGuide } from "@/services/checkpoint-content";
-import { useState } from "react";
 
 interface Props {
   locale: "vi" | "en";
-  /** All guide documents of the checkpoint; the locale's row is picked here. */
   guides: AdminGuide[];
 }
 
-/**
- * One guide document per locale: a single HTML `content` field.
- * Headings inside the HTML are structure, not DB fields.
- */
 export function GuideSection({ locale, guides }: Props) {
   const base = `guide.${locale}`;
   const contentId = `${base}.content`;
@@ -51,4 +46,3 @@ export function GuideSection({ locale, guides }: Props) {
     </div>
   );
 }
-

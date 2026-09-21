@@ -19,10 +19,6 @@ const LABELS: Record<CheckpointStatus, string> = {
   locked: "Locked",
 };
 
-/**
- * Sequential tour status mark: sea-glass check (done), coral pin (next stop),
- * limestone lock (not yet reached). Scales with the caller's font size.
- */
 export function CheckpointStatusIcon({
   status,
   className,
