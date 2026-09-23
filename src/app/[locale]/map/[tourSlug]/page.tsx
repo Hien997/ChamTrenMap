@@ -4,7 +4,7 @@ import { setRequestLocale } from "next-intl/server";
 import { MapExperience } from "@/components/map/MapExperience";
 import type { MapCheckpoint } from "@/components/map/types";
 import type { Locale } from "@/config/constants";
-import { getSessionUser } from "@/lib/session";
+import { getSessionVisitor } from "@/lib/visitor-session";
 import { deriveStatuses } from "@/services/progress-status";
 import { getCompletedCheckpointIds } from "@/services/progress.service";
 import { getTourDetail } from "@/services/tours.service";
@@ -24,7 +24,7 @@ export default async function TourMapPage({ params }: Props) {
   const { locale, tourSlug } = await params;
   setRequestLocale(locale);
 
-  const user = await getSessionUser();
+  const user = await getSessionVisitor();
   const completedIds = user
     ? await getCompletedCheckpointIds(user.id, tourSlug)
     : [];

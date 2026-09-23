@@ -1,38 +1,45 @@
-import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import type { NextRequest } from "next/server";
+import { ADMIN_COOKIE_NAME, ADMIN_SESSION_MAX_AGE_SECONDS } from "@/config/constants";
+import { adminError, adminOk, parseAdminBody } from "@/lib/api";
+import { checkLoginRate, issueAdminSession, verifyPassword } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { SESSION_COOKIE_NAME } from "@/config/constants";
-import { verifyPassword } from "@/lib/admin";
-
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
+import { loginSchema } from "@/lib/validations/admin";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const result = schema.safeParse(body);
-  if (!result.success) {
-    return NextResponse.json({ ok: false, error: "Invalid input" }, { status: 400 });
+  // S3: throttle before doing any parsing or DB work.
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const limit = checkLoginRate(ip);
+  if (!limit.ok) {
+    return adminError("Too many login attempts. Try again later.", 429, {
+      init: { headers: { "Retry-After": String(limit.retryAfterSec) } },
+    });
   }
 
-  const user = await prisma.user.findUnique({ where: { email: result.data.email } });
+  const parsed = parseAdminBody(loginSchema, await request.json());
+  if (!parsed.ok) return parsed.response;
+
+  const user = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
+  });
   if (!user || !user.passwordHash) {
-    return NextResponse.json({ ok: false, error: "Invalid credentials" }, { status: 401 });
+    return adminError("Invalid credentials", 401);
   }
 
-  const valid = await verifyPassword(result.data.password, user.passwordHash);
+  const valid = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!valid) {
-    return NextResponse.json({ ok: false, error: "Invalid credentials" }, { status: 401 });
+    return adminError("Invalid credentials", 401);
   }
 
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set(SESSION_COOKIE_NAME, user.sessionToken, {
+  // S7: rotate the token on every login; cookie lifetime matches the DB expiry.
+  const token = await issueAdminSession(user.id);
+  const response = adminOk();
+  response.cookies.set(ADMIN_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
+    maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
   });
   return response;
 }

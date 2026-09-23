@@ -33,4 +33,24 @@ describe("sanitizeHtml", () => {
     expect(sanitizeHtml("<div>Hello</div>")).toContain("Hello");
     expect(sanitizeHtml("<div>Hello</div>")).not.toContain("<div>");
   });
+
+  // S2 PoC corpus — the three grammar bypasses that defeated the old
+  // regex implementation (see docs/security-review.md).
+  it("strips unquoted event handlers in '/'-separated tags", () => {
+    expect(sanitizeHtml("<img/src=x onerror=alert(1)>")).not.toContain(
+      "onerror",
+    );
+  });
+
+  it("strips single-quoted javascript: URLs", () => {
+    expect(sanitizeHtml("<a href='javascript:alert(1)'>click</a>")).not.toContain(
+      "javascript:",
+    );
+  });
+
+  it("strips handlers on unterminated tags", () => {
+    expect(sanitizeHtml("<img src=x onerror=alert(1)")).not.toContain(
+      "onerror",
+    );
+  });
 });

@@ -1,19 +1,17 @@
 import type { NextRequest } from "next/server";
-import { apiError, apiOk, handleApiError } from "@/lib/api";
-import { getOrCreateSessionUser } from "@/lib/session";
+import { apiError, apiOk, handleApiError, parseBody } from "@/lib/api";
+import { getSessionVisitor } from "@/lib/visitor-session";
 import { createShareLinkSchema } from "@/lib/validations";
 import { createShareLink } from "@/services/share.service";
 
 export async function POST(request: NextRequest) {
   try {
-    const parsed = createShareLinkSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return apiError("BAD_REQUEST", "Invalid request body", 400, {
-        issues: parsed.error.issues,
-      });
-    }
+    const parsed = parseBody(createShareLinkSchema, await request.json());
+    if (!parsed.ok) return parsed.response;
 
-    const user = await getOrCreateSessionUser();
+    // Read-only: sharing requires an existing visitor who owns the check-in.
+    const user = await getSessionVisitor();
+    if (!user) return apiError("UNAUTHORIZED", "Not your check-in", 403);
     const origin =
       process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
     const result = await createShareLink(user.id, parsed.data.checkInId, origin);

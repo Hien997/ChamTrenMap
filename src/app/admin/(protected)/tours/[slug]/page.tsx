@@ -2,13 +2,20 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import TourEditForm from "@/components/admin/TourEditForm";
 
+type TTourStop = {
+  /** `Checkpoint.id` — what the PATCH route stores in `TourCheckpoint`. */
+  checkpointId: string;
+  slug: string;
+  name: string;
+};
+
 type TTour = {
   id: string;
   slug: string;
   status: "DRAFT" | "PUBLISHED";
   vi: { name: string; tagline: string; description: string; coverImageUrl?: string | null } | null;
   en: { name: string; tagline: string; description: string; coverImageUrl?: string | null } | null;
-  checkpoints: { id: string; slug: string; name: string; order: number }[];
+  checkpoints: TTourStop[];
 };
 
 export const dynamic = "force-dynamic";
@@ -20,16 +27,22 @@ export default async function AdminTourEditPageRoute({
 }) {
   const { slug } = await params;
 
-  const tour = await prisma.tour.findUnique({
-    where: { slug },
-    include: {
-      translations: true,
-      checkpoints: {
-        orderBy: { order: "asc" },
-        include: { checkpoint: { include: { translations: true } } },
+  const [tour, allCheckpoints] = await Promise.all([
+    prisma.tour.findUnique({
+      where: { slug },
+      include: {
+        translations: true,
+        checkpoints: {
+          orderBy: { order: "asc" },
+          include: { checkpoint: { include: { translations: true } } },
+        },
       },
-    },
-  });
+    }),
+    prisma.checkpoint.findMany({
+      include: { translations: true },
+      orderBy: { slug: "asc" },
+    }),
+  ]);
 
   if (!tour) notFound();
 
@@ -57,14 +70,23 @@ export default async function AdminTourEditPageRoute({
         }
       : null,
     checkpoints: tour.checkpoints.map((tc) => ({
-      id: tc.id,
+      checkpointId: tc.checkpoint.id,
       slug: tc.checkpoint.slug,
       name:
         tc.checkpoint.translations.find((t) => t.locale === "vi")?.name ||
         tc.checkpoint.slug,
-      order: tc.order,
     })),
   };
 
-  return <TourEditForm tour={typedTour} />;
+  const availableCheckpoints = allCheckpoints.map((checkpoint) => ({
+    id: checkpoint.id,
+    slug: checkpoint.slug,
+    name:
+      checkpoint.translations.find((t) => t.locale === "vi")?.name ||
+      checkpoint.slug,
+  }));
+
+  return (
+    <TourEditForm tour={typedTour} availableCheckpoints={availableCheckpoints} />
+  );
 }

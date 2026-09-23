@@ -1,9 +1,9 @@
 import type { NextRequest } from "next/server";
-import { apiError, apiOk, handleApiError } from "@/lib/api";
+import { apiError, apiOk, handleApiError, parseBody, parseLocale } from "@/lib/api";
 import { CHECKIN_RATE_LIMIT } from "@/config/constants";
 import { rateLimit } from "@/lib/rate-limit";
-import { getOrCreateSessionUser } from "@/lib/session";
-import { createCheckInSchema, localeQuerySchema } from "@/lib/validations";
+import { ensureVisitorWithCookie } from "@/lib/visitor-session";
+import { createCheckInSchema } from "@/lib/validations";
 import { createCheckIn } from "@/services/checkins.service";
 
 export async function POST(request: NextRequest) {
@@ -17,17 +17,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const parsed = createCheckInSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return apiError("BAD_REQUEST", "Invalid request body", 400, {
-        issues: parsed.error.issues,
-      });
-    }
+    const parsed = parseBody(createCheckInSchema, await request.json());
+    if (!parsed.ok) return parsed.response;
 
-    const user = await getOrCreateSessionUser();
-    const locale = localeQuerySchema.parse(
-      request.nextUrl.searchParams.get("locale") ?? undefined,
-    );
+    // Write-lazy identity (ADR-0001): the visitor row appears here, on the
+    // first check-in attempt — the rate limit above already bounds growth.
+    const user = await ensureVisitorWithCookie();
+    const locale = parseLocale(request.nextUrl.searchParams);
     const result = await createCheckIn(user.id, parsed.data, locale);
 
     switch (result.status) {

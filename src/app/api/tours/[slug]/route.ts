@@ -1,6 +1,5 @@
 import type { NextRequest } from "next/server";
-import { apiError, apiOk, handleApiError } from "@/lib/api";
-import { localeQuerySchema } from "@/lib/validations";
+import { apiError, apiOk, handleApiError, parseLocale } from "@/lib/api";
 import { getTourDetail } from "@/services/tours.service";
 
 export async function GET(
@@ -9,9 +8,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const locale = localeQuerySchema.parse(
-      request.nextUrl.searchParams.get("locale") ?? undefined,
-    );
+    const locale = parseLocale(request.nextUrl.searchParams);
     const tour = await getTourDetail(slug, locale);
     if (!tour) return apiError("NOT_FOUND", "Tour not found", 404);
     return apiOk(tour);

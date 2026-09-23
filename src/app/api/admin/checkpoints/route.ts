@@ -1,7 +1,6 @@
 import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin";
-import { writeErrorResponse } from "@/lib/http";
+import { adminOk, parseAdminBody, writeErrorResponse } from "@/lib/api";
+import { requireAdminApi } from "@/lib/admin-auth";
 import { createCheckpointSchema } from "@/services/checkpoint-content";
 import {
   createCheckpoint,
@@ -9,25 +8,21 @@ import {
 } from "@/services/checkpoint-content.server";
 
 export async function GET() {
-  await requireAdmin();
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   const checkpoints = await listCheckpointsForAdmin();
-  return NextResponse.json({ ok: true, checkpoints });
+  return adminOk({ checkpoints });
 }
 
 export async function POST(request: NextRequest) {
-  await requireAdmin();
-  const body = await request.json();
-  const result = createCheckpointSchema.safeParse(body);
-  if (!result.success) {
-    return NextResponse.json(
-      { ok: false, error: "Invalid input" },
-      { status: 400 },
-    );
-  }
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
+  const parsed = parseAdminBody(createCheckpointSchema, await request.json());
+  if (!parsed.ok) return parsed.response;
 
   try {
-    const checkpoint = await createCheckpoint(result.data);
-    return NextResponse.json({ ok: true, checkpoint });
+    const checkpoint = await createCheckpoint(parsed.data);
+    return adminOk({ checkpoint });
   } catch (error) {
     return writeErrorResponse(error);
   }

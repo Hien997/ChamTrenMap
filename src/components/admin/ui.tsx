@@ -83,23 +83,57 @@ export function StatusChip({ status }: { status: string }) {
   );
 }
 
+/** Legend for the red asterisk that `Field` renders on required labels. */
+export function RequiredNote() {
+  return (
+    <p className="text-xs text-muted-foreground">
+      <span aria-hidden className="text-destructive">
+        *
+      </span>{" "}
+      required
+    </p>
+  );
+}
+
 export function Field({
   label,
   htmlFor,
   children,
   hint,
+  error,
+  required,
 }: {
   label: string;
   htmlFor?: string;
   children: ReactNode;
   hint?: string;
+  error?: string;
+  required?: boolean;
 }) {
   const hintId = htmlFor ? `${htmlFor}-hint` : undefined;
+  const errorId = htmlFor ? `${htmlFor}-error` : undefined;
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={htmlFor}>{label}</Label>
+      <Label htmlFor={htmlFor}>
+        {label}
+        {required ? (
+          // Red asterisk so users can tell required fields at a glance;
+          // aria-hidden keeps screen readers on the input's own `required`.
+          <span aria-hidden className="ml-0.5 text-destructive">
+            *
+          </span>
+        ) : null}
+      </Label>
       {children}
-      {hint ? (
+      {error ? (
+        <p
+          id={errorId}
+          className="text-xs text-destructive"
+          aria-live="polite"
+        >
+          {error}
+        </p>
+      ) : hint ? (
         <p id={hintId} className="text-xs text-muted-foreground">
           {hint}
         </p>

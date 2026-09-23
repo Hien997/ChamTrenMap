@@ -35,25 +35,65 @@ export interface AdminCheckpoint {
   tours?: { tourId: string; slug: string; order: number }[];
 }
 
+/** Shared so every required text field reports the same, human, inline message. */
+const requiredText = (label: string) =>
+  z.string().min(1, { message: `${label} is required.` });
+
+// Defined once so the create schema can re-use them with a `.default(...)`
+// without repeating every rule (and every message).
+const latitudeField = z
+  .number({ message: "Enter a latitude." })
+  .min(-90, { message: "Latitude must be between -90 and 90." })
+  .max(90, { message: "Latitude must be between -90 and 90." });
+
+const longitudeField = z
+  .number({ message: "Enter a longitude." })
+  .min(-180, { message: "Longitude must be between -180 and 180." })
+  .max(180, { message: "Longitude must be between -180 and 180." });
+
+const radiusMetersField = z
+  .number({ message: "Enter a check-in radius." })
+  .int({ message: "Radius must be a whole number of metres." })
+  .min(1, { message: "Radius must be at least 1 metre." });
+
+const estimatedVisitMinutesField = z
+  .number({ message: "Enter a visit length." })
+  .int({ message: "Visit length must be a whole number of minutes." })
+  .min(1, { message: "Visit length must be at least 1 minute." });
+
+const sortOrderHintField = z
+  .number({ message: "Enter a sort order." })
+  .int({ message: "Sort order must be a whole number." })
+  .min(0, { message: "Sort order cannot be negative." });
+
+const priceKindField = z.enum(["TICKET", "FOOD"], {
+  message: "Choose a price kind.",
+});
+
 const checkpointBaseSchema = z.object({
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
-  radiusMeters: z.number().int().min(1),
-  estimatedVisitMinutes: z.number().int().min(1),
-  sortOrderHint: z.number().int().min(0),
-  priceVnd: z.number().int().nonnegative().nullable().optional(),
-  priceKind: z.enum(["TICKET", "FOOD"]),
+  latitude: latitudeField,
+  longitude: longitudeField,
+  radiusMeters: radiusMetersField,
+  estimatedVisitMinutes: estimatedVisitMinutesField,
+  sortOrderHint: sortOrderHintField,
+  priceVnd: z
+    .number({ message: "Enter a price in VND." })
+    .int({ message: "Price must be a whole number of VND." })
+    .nonnegative({ message: "Price cannot be negative." })
+    .nullable()
+    .optional(),
+  priceKind: priceKindField,
   vi: z.object({
-    name: z.string().min(1),
-    summary: z.string().min(1),
-    address: z.string().min(1),
+    name: requiredText("Name"),
+    summary: requiredText("Summary"),
+    address: requiredText("Address"),
     openingHours: z.string().optional().nullable(),
     bestTimeToVisit: z.string().optional().nullable(),
   }),
   en: z.object({
-    name: z.string().min(1),
-    summary: z.string().min(1),
-    address: z.string().min(1),
+    name: requiredText("Name"),
+    summary: requiredText("Summary"),
+    address: requiredText("Address"),
     openingHours: z.string().optional().nullable(),
     bestTimeToVisit: z.string().optional().nullable(),
   }),
@@ -62,7 +102,7 @@ const checkpointBaseSchema = z.object({
       z.object({
         id: z.string().optional(),
         locale: z.enum(["vi", "en"]),
-        content: z.string().min(1),
+        content: z.string().min(1, { message: "Guide content is required." }),
         contentType: z.literal("HTML").default("HTML"),
       }),
     )
@@ -70,11 +110,11 @@ const checkpointBaseSchema = z.object({
 });
 
 export const createCheckpointSchema = checkpointBaseSchema.extend({
-  slug: z.string().min(1),
-  radiusMeters: z.number().int().min(1).default(100),
-  estimatedVisitMinutes: z.number().int().min(1).default(30),
-  sortOrderHint: z.number().int().min(0).default(0),
-  priceKind: z.enum(["TICKET", "FOOD"]).default("TICKET"),
+  slug: requiredText("Slug"),
+  radiusMeters: radiusMetersField.default(100),
+  estimatedVisitMinutes: estimatedVisitMinutesField.default(30),
+  sortOrderHint: sortOrderHintField.default(0),
+  priceKind: priceKindField.default("TICKET"),
 });
 
 export const updateCheckpointSchema = checkpointBaseSchema.extend({

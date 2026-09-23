@@ -9,7 +9,7 @@ import { TourProgress } from "@/components/tour/TourProgress";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/config/constants";
 import { Link } from "@/i18n/navigation";
-import { getSessionUser } from "@/lib/session";
+import { getSessionVisitor } from "@/lib/visitor-session";
 import { getCompletedCheckpointIds } from "@/services/progress.service";
 import { getTourDetail } from "@/services/tours.service";
 
@@ -39,7 +39,7 @@ export default async function TourDetailPage({ params }: Props) {
   const t = await getTranslations("Tours");
   const tCommon = await getTranslations("Common");
 
-  const user = await getSessionUser();
+  const user = await getSessionVisitor();
   const completedIds = user
     ? await getCompletedCheckpointIds(user.id, slug)
     : [];

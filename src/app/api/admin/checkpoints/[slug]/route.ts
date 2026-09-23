@@ -1,7 +1,6 @@
 import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin";
-import { writeErrorResponse } from "@/lib/http";
+import { adminError, adminOk, parseAdminBody, writeErrorResponse } from "@/lib/api";
+import { requireAdminApi } from "@/lib/admin-auth";
 import { updateCheckpointSchema } from "@/services/checkpoint-content";
 import {
   deleteCheckpoint,
@@ -15,41 +14,38 @@ function slugFromRequest(request: NextRequest): string {
 }
 
 export async function GET(request: NextRequest) {
-  await requireAdmin();
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   const checkpoint = await getCheckpointForEdit(slugFromRequest(request));
   if (!checkpoint) {
-    return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
+    return adminError("Not found", 404);
   }
-  return NextResponse.json({ ok: true, checkpoint });
+  return adminOk({ checkpoint });
 }
 
 export async function PATCH(request: NextRequest) {
-  await requireAdmin();
-  const body = await request.json();
-  const result = updateCheckpointSchema.safeParse(body);
-  if (!result.success) {
-    return NextResponse.json(
-      { ok: false, error: "Invalid input" },
-      { status: 400 },
-    );
-  }
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
+  const parsed = parseAdminBody(updateCheckpointSchema, await request.json());
+  if (!parsed.ok) return parsed.response;
 
   try {
     const checkpoint = await updateCheckpoint(
       slugFromRequest(request),
-      result.data,
+      parsed.data,
     );
-    return NextResponse.json({ ok: true, checkpoint });
+    return adminOk({ checkpoint });
   } catch (error) {
     return writeErrorResponse(error);
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  await requireAdmin();
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     await deleteCheckpoint(slugFromRequest(request));
-    return NextResponse.json({ ok: true });
+    return adminOk();
   } catch (error) {
     return writeErrorResponse(error);
   }

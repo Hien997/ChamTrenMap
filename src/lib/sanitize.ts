@@ -1,4 +1,18 @@
-const ALLOWED_TAGS = new Set([
+import sanitizeHtmlLib from "sanitize-html";
+
+/**
+ * The single stored-XSS defense (S2): guide HTML is the only content rendered
+ * through `dangerouslySetInnerHTML`, and it passes through this seam on write
+ * (`checkpoint-content.server`) and again on read (`GuideContent`).
+ *
+ * The original regex implementation had grammar bypasses — `/`-separated tags
+ * (`<img/src=x onerror=…>`), single-quoted `javascript:` URLs, and unterminated
+ * tags — so the body is delegated to `sanitize-html`, a maintained allowlist
+ * parser. The public interface stays `sanitizeHtml(raw): string`.
+ */
+
+// Editorial set for guide articles — deliberately no layout/scripting tags.
+const ALLOWED_TAGS = [
   "p",
   "br",
   "strong",
@@ -15,36 +29,20 @@ const ALLOWED_TAGS = new Set([
   "h6",
   "img",
   "blockquote",
-]);
-
-const ALLOWED_ATTRS = new Set(["href", "src", "alt", "title"]);
+];
 
 export function sanitizeHtml(raw: string): string {
-  let cleaned = raw
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "");
-
-  cleaned = cleaned.replace(/\son\w+="[^"]*"/gi, "");
-  cleaned = cleaned.replace(/href\s*=\s*"javascript:[^"]*"/gi, "");
-
-  cleaned = cleaned.replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, (match, tag) => {
-    return ALLOWED_TAGS.has(tag.toLowerCase()) ? match : "";
+  return sanitizeHtmlLib(raw, {
+    allowedTags: ALLOWED_TAGS,
+    // Same attribute allowlist as before, applied to every allowed tag.
+    allowedAttributes: { "*": ["href", "src", "alt", "title"] },
+    // Scheme allowlist kills `javascript:`/`data:` URLs regardless of quoting.
+    allowedSchemes: ["http", "https", "mailto"],
+    allowProtocolRelative: false,
+    // `<script>`/`<style>` bodies must vanish with the tag, not become text.
+    nonTextTags: ["script", "style", "textarea", "option"],
+    // Disallowed wrappers (e.g. `<div>`) are dropped but keep their content.
+    disallowedTagsMode: "discard",
   });
-
-  cleaned = cleaned.replace(
-    /<([a-z][a-z0-9]*)\s+([^>]*)>/gi,
-    (match, tag, attrs) => {
-      if (!ALLOWED_TAGS.has(tag.toLowerCase())) return match;
-      const safeAttrs = attrs
-        .split(/\s+/)
-        .filter((attr: string) => {
-          const name = attr.split("=")[0].toLowerCase();
-          return ALLOWED_ATTRS.has(name);
-        })
-        .join(" ");
-      return safeAttrs ? `<${tag} ${safeAttrs}>` : `<${tag}>`;
-    },
-  );
-
-  return cleaned;
 }
+

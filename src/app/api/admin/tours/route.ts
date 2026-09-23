@@ -1,11 +1,12 @@
 import type { NextRequest} from "next/server";
-import { NextResponse } from "next/server";
+import { adminError, adminOk, parseAdminBody } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminApi } from "@/lib/admin-auth";
 import { createTourSchema } from "@/lib/validations/admin";
 
 export async function GET() {
-  await requireAdmin();
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   const tours = await prisma.tour.findMany({
     include: {
       translations: true,
@@ -14,8 +15,7 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({
-    ok: true,
+  return adminOk({
     tours: tours.map((tour) => {
       const vi = tour.translations.find((t) => t.locale === "vi");
       const en = tour.translations.find((t) => t.locale === "en");
@@ -48,43 +48,36 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  await requireAdmin();
-  const body = await request.json();
-  const result = createTourSchema.safeParse(body);
-  if (!result.success) {
-    return NextResponse.json(
-      { ok: false, error: "Invalid input" },
-      { status: 400 },
-    );
-  }
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
+  const parsed = parseAdminBody(createTourSchema, await request.json());
+  if (!parsed.ok) return parsed.response;
+  const data = parsed.data;
 
   try {
     const tour = await prisma.tour.create({
       data: {
-        slug: result.data.slug,
-        status: result.data.status,
+        slug: data.slug,
+        status: data.status,
         translations: {
           create: [
             {
               locale: "vi",
-              ...result.data.vi,
-              coverImageUrl: result.data.vi.coverImageUrl ?? "",
+              ...data.vi,
+              coverImageUrl: data.vi.coverImageUrl ?? "",
             },
             {
               locale: "en",
-              ...result.data.en,
-              coverImageUrl: result.data.en.coverImageUrl ?? "",
+              ...data.en,
+              coverImageUrl: data.en.coverImageUrl ?? "",
             },
           ],
         },
       },
     });
 
-    return NextResponse.json({ ok: true, tour: { id: tour.id, slug: tour.slug } });
+    return adminOk({ tour: { id: tour.id, slug: tour.slug } });
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "Tour already exists or database error" },
-      { status: 409 },
-    );
+    return adminError("Tour already exists or database error", 409);
   }
 }

@@ -23,7 +23,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { Locale } from "@/config/constants";
 import { Link } from "@/i18n/navigation";
-import { getSessionUser } from "@/lib/session";
+import { getSessionVisitor } from "@/lib/visitor-session";
+import { serializeJsonLd } from "@/lib/jsonld";
 import { formatVnd } from "@/lib/format";
 import { googleMapsDirectionsUrl } from "@/components/map/map-links";
 import {
@@ -83,7 +84,7 @@ export default async function CheckpointPage({ params }: Props) {
 
   const tour = await getTourForCheckpoint(slug, locale as Locale);
 
-  const user = await getSessionUser();
+  const user = await getSessionVisitor();
   const completedIds =
     user && tour ? await getCompletedCheckpointIds(user.id, tour.slug) : [];
   const checkedIn = completedIds.includes(checkpoint.id);
@@ -276,10 +277,10 @@ export default async function CheckpointPage({ params }: Props) {
         )}
       </main>
 
-      {/* Structured data (spec §31) */}
+      {/* Structured data (spec §31) — serialized breakout-safe (S4) */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
     </div>
   );

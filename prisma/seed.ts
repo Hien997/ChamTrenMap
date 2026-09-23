@@ -148,7 +148,7 @@ async function main() {
         email: adminEmail,
         role: "ADMIN",
         passwordHash,
-        sessionToken: crypto.randomUUID(),
+        // No pre-baked session token: the admin token is issued on first login (ADR-0001).
       },
     });
     console.log(`✅ Admin user ready: ${adminEmail}`);

@@ -116,7 +116,9 @@ export function parseHatienWeather(
     highC: Math.round(highs[i]),
     lowC: Math.round(lows[i]),
     rainChance:
-      rains === null || rains[i] === null ? null : Math.round(rains[i] as number),
+      rains === null || rains[i] === null
+        ? null
+        : Math.round(rains[i] as number),
   }));
 
   return {
@@ -140,7 +142,10 @@ export function buildWeatherUrl(): string {
   return `${WEATHER_API_URL}?${params.toString()}`;
 }
 
-function readStoredPayload(): { parsed: HatienWeather; fetchedAt: number } | null {
+function readStoredPayload(): {
+  parsed: HatienWeather;
+  fetchedAt: number;
+} | null {
   try {
     if (typeof window === "undefined" || !window.localStorage) return null;
     const raw = window.localStorage.getItem(WEATHER_CACHE_KEY);

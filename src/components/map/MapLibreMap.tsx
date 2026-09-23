@@ -9,6 +9,7 @@ import {
   type MapSourceDataEvent,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import "./maplibre-worker-config";
 import {
   useEffect,
   useImperativeHandle,

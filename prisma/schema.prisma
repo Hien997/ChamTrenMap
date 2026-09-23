@@ -118,14 +118,18 @@ model TourCheckpoint {
 }
 
 model User {
-  id           String         @id @default(cuid())
-  sessionToken String         @unique
-  role         Role           @default(ANONYMOUS)
-  email        String?        @unique
-  passwordHash String?
-  createdAt    DateTime       @default(now())
-  checkIns     CheckIn[]
-  progress     TourProgress[]
+  id                    String    @id @default(cuid())
+  /// Anonymous visitor identity key (ctm_visitor cookie); null for seeded admin until first visit action.
+  visitorKey            String?   @unique
+  role                  Role      @default(ANONYMOUS)
+  email                 String?   @unique
+  passwordHash          String?
+  /// SHA-256 of the rotating admin session token (ctm_admin cookie) — ADR-0001.
+  adminSessionTokenHash String?   @unique
+  adminSessionExpiresAt DateTime?
+  createdAt             DateTime  @default(now())
+  checkIns              CheckIn[]
+  progress              TourProgress[]
 }
 
 model TourProgress {

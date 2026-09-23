@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { LogOutIcon, WaypointsIcon } from "lucide-react";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdminPage } from "@/lib/admin-auth";
 import { AdminNav } from "@/components/admin/AdminNav";
 
 function Brand() {
@@ -23,7 +23,7 @@ export default async function AdminProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireAdmin();
+  const user = await requireAdminPage();
 
   return (
     <div className="min-h-screen bg-background text-foreground">

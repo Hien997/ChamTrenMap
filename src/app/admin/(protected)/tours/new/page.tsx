@@ -1,125 +1,174 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { FormProvider, useForm, type FieldPath, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { BackLink, Field, PageHeader, Panel } from "@/components/admin/ui";
+import {
+  BackLink,
+  PageHeader,
+  Panel,
+  RequiredNote,
+} from "@/components/admin/ui";
+import { InputField, TextAreaField, RadioField } from "@/components/form";
+import { formatApiError, type AdminWriteResponse } from "@/lib/admin-form";
+import { createTourSchema } from "@/lib/validations/admin";
+import type { z } from "zod";
+
+/** Input shape accepted by the form (status optional thanks to `.default()`). */
+type FormInput = z.input<typeof createTourSchema>;
+/** Output shape produced by the resolver after Zod parses/defaults. */
+type FormData = z.output<typeof createTourSchema>;
 
 export default function AdminTourNewPage() {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    const formData = new FormData(e.currentTarget);
-
-    const payload = {
-      slug: formData.get("slug") as string,
-      status: formData.get("status") as "DRAFT" | "PUBLISHED",
+  const form = useForm<FormInput, unknown, FormData>({
+    resolver: zodResolver(createTourSchema),
+    defaultValues: {
+      slug: "",
+      status: "DRAFT",
       vi: {
-        name: formData.get("vi.name") as string,
-        tagline: formData.get("vi.tagline") as string,
-        description: formData.get("vi.description") as string,
-        coverImageUrl: (formData.get("vi.coverImageUrl") as string) || undefined,
+        name: "",
+        tagline: "",
+        description: "",
+        coverImageUrl: "",
       },
       en: {
-        name: formData.get("en.name") as string,
-        tagline: formData.get("en.tagline") as string,
-        description: formData.get("en.description") as string,
-        coverImageUrl: (formData.get("en.coverImageUrl") as string) || undefined,
+        name: "",
+        tagline: "",
+        description: "",
+        coverImageUrl: "",
       },
-    };
+    },
+    mode: "onChange",
+  });
+  const {
+    handleSubmit,
+    formState: { isSubmitting, errors },
+    setError,
+  } = form;
 
-    startTransition(async () => {
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    try {
       const res = await fetch("/api/admin/tours", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       });
 
-      const json = await res.json();
+      const json: AdminWriteResponse = await res.json();
+
       if (json.ok) {
-        router.push(`/admin/tours/${payload.slug}`);
+        toast.success("Tour created successfully!");
+        router.push(`/admin/tours/${data.slug}`);
       } else {
-        setError(json.error || "Create failed");
+        toast.error(formatApiError(json.error, json.details));
+        if (json.details) {
+          for (const detail of json.details) {
+            setError(detail.path as FieldPath<FormInput>, {
+              message: detail.message,
+            });
+          }
+        }
       }
-    });
+    } catch {
+      toast.error("Network error. Please try again.");
+    }
   };
 
   return (
     <div>
       <BackLink href="/admin/tours">Back to tours</BackLink>
       <PageHeader title="New tour" />
+      <RequiredNote />
 
-      {error && (
-        <p role="alert" className="mb-4 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-
-      <form onSubmit={onSubmit} className="space-y-6">
+      <FormProvider {...form}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
         <Panel title="URL slug">
-          <Field
+          <InputField
+            name="slug"
             label="Slug"
-            htmlFor="slug"
+            required
             hint="Shown in the public URL, e.g. ha-tien-discovery."
-          >
-            <Input
-              id="slug"
-              name="slug"
-              placeholder="ha-tien-discovery"
-              required
-              autoComplete="off"
-            />
-          </Field>
+            placeholder="ha-tien-discovery"
+            serverError={errors.slug?.message}
+          />
+
+          <RadioField
+            name="status"
+            label="Status"
+            required
+            hint="Draft hides the tour from public view."
+            options={[
+              { value: "DRAFT", label: "Draft" },
+              { value: "PUBLISHED", label: "Published" },
+            ]}
+            serverError={errors.status?.message}
+          />
         </Panel>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <Panel title="Tiếng Việt (vi)">
             <div className="space-y-4">
-              <Field label="Name" htmlFor="vi.name">
-                <Input id="vi.name" name="vi.name" placeholder="Tên tour" required />
-              </Field>
-              <Field label="Tagline" htmlFor="vi.tagline">
-                <Input id="vi.tagline" name="vi.tagline" required />
-              </Field>
-              <Field label="Description" htmlFor="vi.description">
-                <Textarea id="vi.description" name="vi.description" rows={3} required />
-              </Field>
-              <Field label="Cover image URL" htmlFor="vi.coverImageUrl">
-                <Input
-                  id="vi.coverImageUrl"
-                  name="vi.coverImageUrl"
-                  type="url"
-                  placeholder="https://…"
-                />
-              </Field>
+              <InputField
+                name="vi.name"
+                label="Name"
+                required
+                placeholder="Tên tour"
+                serverError={errors.vi?.name?.message}
+              />
+              <InputField
+                name="vi.tagline"
+                label="Tagline"
+                serverError={errors.vi?.tagline?.message}
+              />
+              <TextAreaField
+                name="vi.description"
+                label="Description"
+                required
+                rows={3}
+                serverError={errors.vi?.description?.message}
+              />
+              <InputField
+                name="vi.coverImageUrl"
+                label="Cover image URL"
+                type="url"
+                placeholder="https://…"
+                serverError={errors.vi?.coverImageUrl?.message}
+              />
             </div>
           </Panel>
 
           <Panel title="English (en)">
             <div className="space-y-4">
-              <Field label="Name" htmlFor="en.name">
-                <Input id="en.name" name="en.name" placeholder="Tour name" required />
-              </Field>
-              <Field label="Tagline" htmlFor="en.tagline">
-                <Input id="en.tagline" name="en.tagline" required />
-              </Field>
-              <Field label="Description" htmlFor="en.description">
-                <Textarea id="en.description" name="en.description" rows={3} required />
-              </Field>
-              <Field label="Cover image URL" htmlFor="en.coverImageUrl">
-                <Input
-                  id="en.coverImageUrl"
-                  name="en.coverImageUrl"
-                  type="url"
-                  placeholder="https://…"
-                />
-              </Field>
+              <InputField
+                name="en.name"
+                label="Name"
+                required
+                placeholder="Tour name"
+                serverError={errors.en?.name?.message}
+              />
+              <InputField
+                name="en.tagline"
+                label="Tagline"
+                serverError={errors.en?.tagline?.message}
+              />
+              <TextAreaField
+                name="en.description"
+                label="Description"
+                required
+                rows={3}
+                serverError={errors.en?.description?.message}
+              />
+              <InputField
+                name="en.coverImageUrl"
+                label="Cover image URL"
+                type="url"
+                placeholder="https://…"
+                serverError={errors.en?.coverImageUrl?.message}
+              />
             </div>
           </Panel>
         </div>
@@ -129,15 +178,16 @@ export default function AdminTourNewPage() {
             type="button"
             variant="outline"
             onClick={() => router.push("/admin/tours")}
-            disabled={isPending}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "Creating…" : "Create tour"}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating…" : "Create tour"}
           </Button>
         </div>
-      </form>
+        </form>
+      </FormProvider>
     </div>
   );
 }

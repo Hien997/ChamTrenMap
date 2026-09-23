@@ -2,21 +2,24 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { TranslationFields } from "./CheckpointTranslationFields";
 import { CheckpointFields } from "./CheckpointFields";
 import { GuideSection } from "./GuideSection";
-import { BackLink, PageHeader, Panel } from "./ui";
+import { BackLink, PageHeader, Panel, RequiredNote } from "./ui";
 import {
   parseCheckpointUpdateForm,
+  updateCheckpointSchema,
   type AdminCheckpoint,
 } from "@/services/checkpoint-content";
+import { formatApiError, toFieldErrors, type AdminWriteResponse } from "@/lib/admin-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
 export default function CheckpointEditForm({ checkpoint }: { checkpoint: AdminCheckpoint }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const vi = checkpoint.vi || { name: "", summary: "", address: "", openingHours: null, bestTimeToVisit: null };
   const en = checkpoint.en || { name: "", summary: "", address: "", openingHours: null, bestTimeToVisit: null };
@@ -24,7 +27,7 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: AdminCh
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isPending) return;
-    setError(null);
+    setErrors({});
     const formData = new FormData(e.currentTarget);
 
     const payload = {
@@ -33,15 +36,39 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: AdminCh
       slug: checkpoint.slug,
     };
 
+    // Client-side validation
+    const parsed = updateCheckpointSchema.safeParse(payload);
+    if (!parsed.success) {
+      setErrors(
+        toFieldErrors(
+          parsed.error.issues.map((issue) => ({
+            path: issue.path.join("."),
+            message: issue.message,
+          })),
+        ),
+      );
+      toast.error("Please fix the errors in the form.");
+      return;
+    }
+
     startTransition(async () => {
-      const res = await fetch(`/api/admin/checkpoints/${checkpoint.slug}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const json = await res.json();
-      if (json.ok) router.push("/admin/checkpoints");
-      else setError(json.error || "Save failed");
+      try {
+        const res = await fetch(`/api/admin/checkpoints/${checkpoint.slug}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json: AdminWriteResponse = await res.json();
+        if (json.ok) {
+          toast.success("Checkpoint saved successfully!");
+          router.push("/admin/checkpoints");
+        } else {
+          toast.error(formatApiError(json.error, json.details));
+          setErrors(toFieldErrors(json.details));
+        }
+      } catch {
+        toast.error("Network error. Please try again.");
+      }
     });
   };
 
@@ -52,25 +79,30 @@ export default function CheckpointEditForm({ checkpoint }: { checkpoint: AdminCh
         title={vi.name || checkpoint.slug}
         sub={`/${checkpoint.slug}`}
       />
+      <RequiredNote />
 
-      <form onSubmit={onSubmit} className="space-y-6">
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
-
+      <form onSubmit={onSubmit} noValidate className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
           <Panel title="Tiếng Việt (vi)">
-            <TranslationFields locale="vi" defaultValue={vi} prefix="vi" />
+            <TranslationFields
+              locale="vi"
+              defaultValue={vi}
+              prefix="vi"
+              errors={errors}
+            />
           </Panel>
           <Panel title="English (en)">
-            <TranslationFields locale="en" defaultValue={en} prefix="en" />
+            <TranslationFields
+              locale="en"
+              defaultValue={en}
+              prefix="en"
+              errors={errors}
+            />
           </Panel>
         </div>
 
         <Panel title="Location & visit">
-          <CheckpointFields checkpoint={checkpoint} />
+          <CheckpointFields checkpoint={checkpoint} errors={errors} />
         </Panel>
 
         <Panel title="Guide content">

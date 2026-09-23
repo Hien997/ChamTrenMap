@@ -141,6 +141,44 @@ describe("parseCheckpointCreateForm", () => {
       ).success,
     ).toBe(false);
   });
+
+  it("reports a readable message per field so the form can show it inline", () => {
+    const payload = parseCheckpointCreateForm(
+      formData({
+        slug: "",
+        latitude: "abc",
+        longitude: "104.4835",
+        "vi.name": "",
+        "vi.summary": "tóm tắt",
+        "vi.address": "Hà Tiên",
+        "en.name": "Phu Dung Pagoda",
+        "en.summary": "summary",
+        "en.address": "Ha Tien",
+      }),
+    );
+    const result = createCheckpointSchema.safeParse(payload);
+    expect(result.success).toBe(false);
+    if (result.success) return;
+
+    const messages = Object.fromEntries(
+      result.error.issues.map((issue) => [issue.path.join("."), issue.message]),
+    );
+    expect(messages.slug).toBe("Slug is required.");
+    expect(messages.latitude).toBe("Enter a latitude.");
+    expect(messages["vi.name"]).toBe("Name is required.");
+  });
+
+  it("rejects an out-of-range coordinate with a readable message", () => {
+    const payload = parseCheckpointCreateForm(
+      formData({ ...VALID_CREATE_FIELDS, latitude: "120" }),
+    );
+    const result = createCheckpointSchema.safeParse(payload);
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0].message).toBe(
+      "Latitude must be between -90 and 90.",
+    );
+  });
 });
 
 const ROW: CheckpointContentRow = {
