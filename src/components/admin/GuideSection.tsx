@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useFormContext, useWatch } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { GuideContentRenderer } from "@/components/guide/GuideContent";
-import type { AdminGuide } from "@/services/checkpoint-content";
 
 interface Props {
   locale: "vi" | "en";
-  guides: AdminGuide[];
 }
 
-export function GuideSection({ locale, guides }: Props) {
-  const base = `guide.${locale}`;
-  const contentId = `${base}.content`;
-  const existing = guides.find((g) => g.locale === locale);
-  const [preview, setPreview] = useState(existing?.content ?? "");
+/**
+ * One locale's guide editor. The textarea registers through the page's
+ * FormProvider and the preview derives from the watched value, so
+ * defaultValues seed both at once — no local state, and the unregistered
+ * hidden contentType input is gone (the field readers always emit "HTML").
+ */
+export function GuideSection({ locale }: Props) {
+  const { register } = useFormContext();
+  const contentId = `guide.${locale}.content`;
+  const preview = String(useWatch({ name: contentId }) ?? "");
 
   return (
     <div className="space-y-3">
@@ -22,14 +25,10 @@ export function GuideSection({ locale, guides }: Props) {
         </label>
         <Textarea
           id={contentId}
-          name={contentId}
-          defaultValue={existing?.content ?? ""}
-          onChange={(e) => setPreview(e.target.value)}
           rows={14}
-          autoComplete="off"
           placeholder="<h2>Introduction</h2><p>...</p>"
+          {...register(contentId)}
         />
-        <input type="hidden" name={`${base}.contentType`} value="HTML" />
         <p className="text-xs text-muted-foreground">
           One HTML document. Use headings (h2/h3) to create sections freely.
         </p>

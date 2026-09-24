@@ -1,144 +1,122 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import {
+  FormProvider,
+  useForm,
+  type FieldPath,
+  type SubmitHandler,
+} from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { TranslationFields } from "./CheckpointTranslationFields";
 import { CheckpointFields } from "./CheckpointFields";
-import { GuideSection } from "./GuideSection";
+import { GuideContentPanel } from "./GuideContentPanel";
 import { BackLink, PageHeader, Panel, RequiredNote } from "./ui";
 import {
-  parseCheckpointUpdateForm,
-  updateCheckpointSchema,
-  type AdminCheckpoint,
-} from "@/services/checkpoint-content";
-import { formatApiError, toFieldErrors, type AdminWriteResponse } from "@/lib/admin-form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  editDefaultValues,
+  isCheckpointFormPath,
+  updateCheckpointFormSchema,
+  type CheckpointUpdateFormValues,
+  type CheckpointUpdateSubmit,
+} from "@/lib/checkpoint-form";
+import type { AdminCheckpoint } from "@/services/checkpoint-content";
+import { formatApiError, type AdminWriteResponse } from "@/lib/admin-form";
 import { Button } from "@/components/ui/button";
 
-export default function CheckpointEditForm({ checkpoint }: { checkpoint: AdminCheckpoint }) {
+export default function CheckpointEditForm({
+  checkpoint,
+}: {
+  checkpoint: AdminCheckpoint;
+}) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const vi = checkpoint.vi || { name: "", summary: "", address: "", openingHours: null, bestTimeToVisit: null };
-  const en = checkpoint.en || { name: "", summary: "", address: "", openingHours: null, bestTimeToVisit: null };
+  const form = useForm<
+    CheckpointUpdateFormValues,
+    unknown,
+    CheckpointUpdateSubmit
+  >({
+    resolver: zodResolver(updateCheckpointFormSchema(checkpoint)),
+    defaultValues: editDefaultValues(checkpoint),
+    mode: "onChange",
+  });
+  const {
+    handleSubmit,
+    setError,
+    formState: { isSubmitting },
+  } = form;
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isPending) return;
-    setErrors({});
-    const formData = new FormData(e.currentTarget);
-
-    const payload = {
-      ...parseCheckpointUpdateForm(formData, checkpoint.guides),
-      id: checkpoint.id,
-      slug: checkpoint.slug,
-    };
-
-    // Client-side validation
-    const parsed = updateCheckpointSchema.safeParse(payload);
-    if (!parsed.success) {
-      setErrors(
-        toFieldErrors(
-          parsed.error.issues.map((issue) => ({
-            path: issue.path.join("."),
-            message: issue.message,
-          })),
-        ),
-      );
-      toast.error("Please fix the errors in the form.");
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        const res = await fetch(`/api/admin/checkpoints/${checkpoint.slug}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const json: AdminWriteResponse = await res.json();
-        if (json.ok) {
-          toast.success("Checkpoint saved successfully!");
-          router.push("/admin/checkpoints");
-        } else {
-          toast.error(formatApiError(json.error, json.details));
-          setErrors(toFieldErrors(json.details));
+  const onSubmit: SubmitHandler<CheckpointUpdateSubmit> = async (data) => {
+    try {
+      const res = await fetch(`/api/admin/checkpoints/${checkpoint.slug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json: AdminWriteResponse = await res.json();
+      if (json.ok) {
+        toast.success("Checkpoint saved successfully!");
+        router.push("/admin/checkpoints");
+      } else {
+        toast.error(formatApiError(json.error, json.details));
+        if (json.details) {
+          for (const detail of json.details) {
+            // Only roots with a registered input get an inline error; the
+            // toast covers everything else (grill Q5).
+            if (isCheckpointFormPath(detail.path)) {
+              setError(detail.path as FieldPath<CheckpointUpdateFormValues>, {
+                message: detail.message,
+              });
+            }
+          }
         }
-      } catch {
-        toast.error("Network error. Please try again.");
       }
-    });
+    } catch {
+      toast.error("Network error. Please try again.");
+    }
   };
 
   return (
     <div>
       <BackLink href="/admin/checkpoints">Back to checkpoints</BackLink>
       <PageHeader
-        title={vi.name || checkpoint.slug}
+        title={checkpoint.vi?.name || checkpoint.slug}
         sub={`/${checkpoint.slug}`}
       />
       <RequiredNote />
 
-      <form onSubmit={onSubmit} noValidate className="space-y-6">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Panel title="Tiếng Việt (vi)">
-            <TranslationFields
-              locale="vi"
-              defaultValue={vi}
-              prefix="vi"
-              errors={errors}
-            />
+      <FormProvider {...form}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Panel title="Tiếng Việt (vi)">
+              <TranslationFields locale="vi" />
+            </Panel>
+            <Panel title="English (en)">
+              <TranslationFields locale="en" />
+            </Panel>
+          </div>
+
+          <Panel title="Location & visit">
+            <CheckpointFields />
           </Panel>
-          <Panel title="English (en)">
-            <TranslationFields
-              locale="en"
-              defaultValue={en}
-              prefix="en"
-              errors={errors}
-            />
-          </Panel>
-        </div>
 
-        <Panel title="Location & visit">
-          <CheckpointFields checkpoint={checkpoint} errors={errors} />
-        </Panel>
+          <GuideContentPanel />
 
-        <Panel title="Guide content">
-          {/* keepMounted on both panels: the hidden locale's fields must stay in
-              the DOM so they still appear in FormData. Without it the inactive
-              locale submitted no guide fields at all, and because the PATCH
-              route replaces every guide row (deleteMany + createMany) that
-              silently wiped the other locale's guides on each save. */}
-          <Tabs defaultValue="vi">
-            <TabsList>
-              <TabsTrigger value="vi">Tiếng Việt</TabsTrigger>
-              <TabsTrigger value="en">English</TabsTrigger>
-            </TabsList>
-            <TabsContent value="vi" keepMounted className="mt-4">
-              <GuideSection locale="vi" guides={checkpoint.guides} />
-            </TabsContent>
-            <TabsContent value="en" keepMounted className="mt-4">
-              <GuideSection locale="en" guides={checkpoint.guides} />
-            </TabsContent>
-          </Tabs>
-        </Panel>
-
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/admin/checkpoints")}
-            disabled={isPending}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "Saving…" : "Save changes"}
-          </Button>
-        </div>
-      </form>
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/admin/checkpoints")}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving…" : "Save changes"}
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </div>
   );
 }

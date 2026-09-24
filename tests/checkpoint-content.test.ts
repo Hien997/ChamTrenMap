@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   createCheckpointSchema,
   parseCheckpointCreateForm,
+  parseCheckpointCreateValues,
   parseCheckpointUpdateForm,
+  parseCheckpointUpdateValues,
   toCheckpointDetail,
   toCheckpointSummary,
   updateCheckpointSchema,
@@ -177,6 +179,132 @@ describe("parseCheckpointCreateForm", () => {
     if (result.success) return;
     expect(result.error.issues[0].message).toBe(
       "Latitude must be between -90 and 90.",
+    );
+  });
+
+  it("collects guide content per locale, trimmed, skipping blank locales", () => {
+    const payload = parseCheckpointCreateForm(
+      formData({
+        ...VALID_CREATE_FIELDS,
+        "guide.vi.content": "  <h2>Giới thiệu</h2>  ",
+        "guide.en.content": "   ",
+      }),
+    );
+    expect(payload.guides).toEqual([
+      { locale: "vi", content: "<h2>Giới thiệu</h2>", contentType: "HTML" },
+    ]);
+  });
+
+  it("emits an empty guides array when both locales are blank and the schema still accepts it", () => {
+    const payload = parseCheckpointCreateForm(formData(VALID_CREATE_FIELDS));
+    expect(payload.guides).toEqual([]);
+    expect(createCheckpointSchema.safeParse(payload).success).toBe(true);
+  });
+});
+
+/** The same data the flat fixtures carry, nested the way RHF stores it. */
+const NESTED_CREATE_VALUES = {
+  slug: "chua-phu-dung",
+  latitude: "10.3864",
+  longitude: "104.4835",
+  radiusMeters: "100",
+  estimatedVisitMinutes: "30",
+  sortOrderHint: "0",
+  priceVnd: "",
+  priceKind: "TICKET",
+  vi: {
+    name: "Chùa Phù Dung",
+    summary: "tóm tắt",
+    address: "Hà Tiên",
+    openingHours: "",
+    bestTimeToVisit: "",
+  },
+  en: {
+    name: "Phu Dung Pagoda",
+    summary: "summary",
+    address: "Ha Tien",
+    openingHours: "",
+    bestTimeToVisit: "",
+  },
+  guide: { vi: { content: "  <h2>Giới thiệu</h2>  " }, en: { content: "   " } },
+};
+
+describe("parseCheckpointCreateValues", () => {
+  it("builds exactly the payload the FormData twin builds", () => {
+    expect(parseCheckpointCreateValues(NESTED_CREATE_VALUES)).toEqual(
+      parseCheckpointCreateForm(
+        formData({
+          slug: "chua-phu-dung",
+          latitude: "10.3864",
+          longitude: "104.4835",
+          radiusMeters: "100",
+          estimatedVisitMinutes: "30",
+          sortOrderHint: "0",
+          priceVnd: "",
+          priceKind: "TICKET",
+          "vi.name": "Chùa Phù Dung",
+          "vi.summary": "tóm tắt",
+          "vi.address": "Hà Tiên",
+          "en.name": "Phu Dung Pagoda",
+          "en.summary": "summary",
+          "en.address": "Ha Tien",
+          "guide.vi.content": "  <h2>Giới thiệu</h2>  ",
+          "guide.en.content": "   ",
+        }),
+      ),
+    );
+  });
+
+  it("treats absent numeric/kind keys like absent FormData fields (create defaults apply)", () => {
+    const payload = parseCheckpointCreateValues({
+      ...NESTED_CREATE_VALUES,
+      radiusMeters: undefined,
+      estimatedVisitMinutes: undefined,
+      sortOrderHint: undefined,
+      priceKind: undefined,
+    });
+    expect(createCheckpointSchema.safeParse(payload).success).toBe(true);
+  });
+});
+
+describe("parseCheckpointUpdateValues", () => {
+  const currentGuides: AdminGuide[] = [
+    { id: "g1", locale: "vi", content: "<h2>old</h2>", contentType: "HTML" },
+  ];
+
+  it("matches the FormData twin, including guide id re-attachment", () => {
+    expect(
+      parseCheckpointUpdateValues(
+        {
+          latitude: "10.3864",
+          longitude: "104.4835",
+          radiusMeters: "100",
+          estimatedVisitMinutes: "30",
+          sortOrderHint: "0",
+          priceKind: "TICKET",
+          vi: {
+            name: "Chùa Phù Dung",
+            summary: "tóm tắt",
+            address: "Hà Tiên",
+            openingHours: "",
+            bestTimeToVisit: "",
+          },
+          en: {
+            name: "Phu Dung Pagoda",
+            summary: "summary",
+            address: "Ha Tien",
+            openingHours: "",
+            bestTimeToVisit: "",
+          },
+          guide: { vi: { content: "  <h2>Giới thiệu</h2>  " }, en: { content: "" } },
+        },
+        currentGuides,
+      ),
+    ).toEqual(
+      parseCheckpointUpdateForm(
+        formData({ ...FULL_PATCH_FIELDS, "guide.vi.content": "  <h2>Giới thiệu</h2>  " }),
+        currentGuides,
+      ),
     );
   });
 });

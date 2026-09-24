@@ -230,60 +230,70 @@ export function toCheckpointSummary(
   };
 }
 
-function numberField(formData: FormData, name: string): number | undefined {
-  const raw = formData.get(name);
+/**
+ * Minimal read surface shared by `FormData` (flat dotted keys) and
+ * react-hook-form's values object (nested, because `register("vi.name")`
+ * builds `{ vi: { name } }`). Every rule below is written once against this
+ * getter, so the FormData parsers and the RHF resolvers cannot drift apart.
+ */
+type FormValueReader = (name: string) => unknown;
+
+function fromFormData(formData: FormData): FormValueReader {
+  return (name) => formData.get(name);
+}
+
+function fromFormValues(values: Record<string, unknown>): FormValueReader {
+  return (name) => {
+    let node: unknown = values;
+    for (const key of name.split(".")) {
+      if (node === null || node === undefined || typeof node !== "object") {
+        return null;
+      }
+      node = (node as Record<string, unknown>)[key];
+    }
+    return node ?? null;
+  };
+}
+
+function numberField(read: FormValueReader, name: string): number | undefined {
+  const raw = read(name);
   if (raw === null) return undefined;
   return Number.parseFloat(String(raw));
 }
 
-function intField(formData: FormData, name: string): number | undefined {
-  const raw = formData.get(name);
+function intField(read: FormValueReader, name: string): number | undefined {
+  const raw = read(name);
   if (raw === null) return undefined;
   return Number.parseInt(String(raw), 10);
 }
 
 function readFormTranslation(
-  formData: FormData,
+  read: FormValueReader,
   prefix: string,
 ): AdminTranslation {
   return {
-    name: String(formData.get(`${prefix}.name`) ?? ""),
-    summary: String(formData.get(`${prefix}.summary`) ?? ""),
-    address: String(formData.get(`${prefix}.address`) ?? ""),
-    openingHours:
-      (formData.get(`${prefix}.openingHours`) as string | null) || null,
-    bestTimeToVisit:
-      (formData.get(`${prefix}.bestTimeToVisit`) as string | null) || null,
+    name: String(read(`${prefix}.name`) ?? ""),
+    summary: String(read(`${prefix}.summary`) ?? ""),
+    address: String(read(`${prefix}.address`) ?? ""),
+    openingHours: (read(`${prefix}.openingHours`) as string | null) || null,
+    bestTimeToVisit: (read(`${prefix}.bestTimeToVisit`) as string | null) || null,
   };
 }
 
-export function parseCheckpointCreateForm(
-  formData: FormData,
-): CreateCheckpointPayload {
-  return {
-    slug: String(formData.get("slug") ?? ""),
-    latitude: numberField(formData, "latitude"),
-    longitude: numberField(formData, "longitude"),
-    radiusMeters: intField(formData, "radiusMeters"),
-    estimatedVisitMinutes: intField(formData, "estimatedVisitMinutes"),
-    sortOrderHint: intField(formData, "sortOrderHint"),
-    priceVnd: formData.get("priceVnd")
-      ? (numberField(formData, "priceVnd") ?? null)
-      : null,
-    priceKind: (formData.get("priceKind") as "TICKET" | "FOOD" | null) ?? undefined,
-    vi: readFormTranslation(formData, "vi"),
-    en: readFormTranslation(formData, "en"),
-  };
-}
-
-export function parseCheckpointUpdateForm(
-  formData: FormData,
-  currentGuides: AdminGuide[],
-): UpdateCheckpointPayload {
-  const guides: NonNullable<UpdateCheckpointPayload["guides"]> = [];
+/**
+ * Reads `guide.<locale>.content` fields. Blank locales are skipped, content
+ * is trimmed, and existing ids are re-attached so an update replaces rows
+ * instead of duplicating them. An empty result means "no guide content":
+ * create stores none, update clears all (its replace-all semantics).
+ */
+function readGuidesFromForm(
+  read: FormValueReader,
+  currentGuides: AdminGuide[] = [],
+): NonNullable<CreateCheckpointPayload["guides"]> {
+  const guides: NonNullable<CreateCheckpointPayload["guides"]> = [];
   for (const locale of ["vi", "en"] as const) {
     const existing = currentGuides.find((g) => g.locale === locale);
-    const content = String(formData.get(`guide.${locale}.content`) ?? "").trim();
+    const content = String(read(`guide.${locale}.content`) ?? "").trim();
     if (!content) continue;
     guides.push({
       id: existing?.id,
@@ -292,19 +302,71 @@ export function parseCheckpointUpdateForm(
       contentType: "HTML",
     });
   }
+  return guides;
+}
 
+function collectCreatePayload(read: FormValueReader): CreateCheckpointPayload {
   return {
-    latitude: numberField(formData, "latitude"),
-    longitude: numberField(formData, "longitude"),
-    radiusMeters: intField(formData, "radiusMeters"),
-    estimatedVisitMinutes: intField(formData, "estimatedVisitMinutes"),
-    sortOrderHint: intField(formData, "sortOrderHint"),
-    priceVnd: formData.get("priceVnd")
-      ? (numberField(formData, "priceVnd") ?? null)
-      : null,
-    priceKind: (formData.get("priceKind") as "TICKET" | "FOOD" | null) ?? undefined,
-    vi: readFormTranslation(formData, "vi"),
-    en: readFormTranslation(formData, "en"),
-    guides,
+    slug: String(read("slug") ?? ""),
+    latitude: numberField(read, "latitude"),
+    longitude: numberField(read, "longitude"),
+    radiusMeters: intField(read, "radiusMeters"),
+    estimatedVisitMinutes: intField(read, "estimatedVisitMinutes"),
+    sortOrderHint: intField(read, "sortOrderHint"),
+    priceVnd: read("priceVnd") ? (numberField(read, "priceVnd") ?? null) : null,
+    priceKind: (read("priceKind") as "TICKET" | "FOOD" | null) ?? undefined,
+    vi: readFormTranslation(read, "vi"),
+    en: readFormTranslation(read, "en"),
+    guides: readGuidesFromForm(read),
   };
+}
+
+function collectUpdatePayload(
+  read: FormValueReader,
+  currentGuides: AdminGuide[],
+): UpdateCheckpointPayload {
+  return {
+    latitude: numberField(read, "latitude"),
+    longitude: numberField(read, "longitude"),
+    radiusMeters: intField(read, "radiusMeters"),
+    estimatedVisitMinutes: intField(read, "estimatedVisitMinutes"),
+    sortOrderHint: intField(read, "sortOrderHint"),
+    priceVnd: read("priceVnd") ? (numberField(read, "priceVnd") ?? null) : null,
+    priceKind: (read("priceKind") as "TICKET" | "FOOD" | null) ?? undefined,
+    vi: readFormTranslation(read, "vi"),
+    en: readFormTranslation(read, "en"),
+    guides: readGuidesFromForm(read, currentGuides),
+  };
+}
+
+export function parseCheckpointCreateForm(
+  formData: FormData,
+): CreateCheckpointPayload {
+  return collectCreatePayload(fromFormData(formData));
+}
+
+/**
+ * react-hook-form twin of {@link parseCheckpointCreateForm}: the resolver's
+ * nested values object goes through the exact same rules, so the two paths
+ * can never disagree on what the form means.
+ */
+export function parseCheckpointCreateValues(
+  values: Record<string, unknown>,
+): CreateCheckpointPayload {
+  return collectCreatePayload(fromFormValues(values));
+}
+
+export function parseCheckpointUpdateForm(
+  formData: FormData,
+  currentGuides: AdminGuide[],
+): UpdateCheckpointPayload {
+  return collectUpdatePayload(fromFormData(formData), currentGuides);
+}
+
+/** react-hook-form twin of {@link parseCheckpointUpdateForm}. */
+export function parseCheckpointUpdateValues(
+  values: Record<string, unknown>,
+  currentGuides: AdminGuide[],
+): UpdateCheckpointPayload {
+  return collectUpdatePayload(fromFormValues(values), currentGuides);
 }

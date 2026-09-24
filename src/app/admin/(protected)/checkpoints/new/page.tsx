@@ -1,70 +1,83 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import {
+  FormProvider,
+  useForm,
+  type FieldPath,
+  type SubmitHandler,
+} from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { BackLink, Field, PageHeader, Panel, RequiredNote } from "@/components/admin/ui";
+import {
+  BackLink,
+  PageHeader,
+  Panel,
+  RequiredNote,
+} from "@/components/admin/ui";
 import { TranslationFields } from "@/components/admin/CheckpointTranslationFields";
 import { CheckpointFields } from "@/components/admin/CheckpointFields";
-import { formatApiError, toFieldErrors, type AdminWriteResponse } from "@/lib/admin-form";
+import { GuideContentPanel } from "@/components/admin/GuideContentPanel";
+import { InputField } from "@/components/form";
+import { formatApiError, type AdminWriteResponse } from "@/lib/admin-form";
 import {
-  createCheckpointSchema,
-  parseCheckpointCreateForm,
-} from "@/services/checkpoint-content";
+  CREATE_DEFAULT_VALUES,
+  createCheckpointFormSchema,
+  isCheckpointFormPath,
+  type CheckpointCreateFormValues,
+} from "@/lib/checkpoint-form";
+import type { CreateCheckpointPayload } from "@/services/checkpoint-content";
 
-const emptyTranslation = {
-  name: "",
-  summary: "",
-  address: "",
-  openingHours: null,
-  bestTimeToVisit: null,
-};
+/** What the form registers: everything is a string until the resolver parses. */
+type FormInput = CheckpointCreateFormValues;
+/** What the resolver hands `onSubmit`: the validated API payload. */
+type FormOutput = CreateCheckpointPayload;
 
 export default function AdminCheckpointNewPage() {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isPending) return;
-    setErrors({});
-    const formData = new FormData(e.currentTarget);
+  const form = useForm<FormInput, unknown, FormOutput>({
+    resolver: zodResolver(createCheckpointFormSchema),
+    defaultValues: CREATE_DEFAULT_VALUES,
+    mode: "onChange",
+  });
+  const {
+    handleSubmit,
+    setError,
+    formState: { isSubmitting, errors },
+  } = form;
 
-    const payload = parseCheckpointCreateForm(formData);
-
-    // Client-side validation
-    const parsed = createCheckpointSchema.safeParse(payload);
-    if (!parsed.success) {
-      setErrors(
-        toFieldErrors(
-          parsed.error.issues.map((issue) => ({
-            path: issue.path.join("."),
-            message: issue.message,
-          })),
-        ),
-      );
-      toast.error("Please fix the errors in the form.");
-      return;
-    }
-
-    startTransition(async () => {
+  const onSubmit: SubmitHandler<FormOutput> = async (data) => {
+    try {
       const res = await fetch("/api/admin/checkpoints", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       });
+
       const json: AdminWriteResponse = await res.json();
+
       if (json.ok) {
         toast.success("Checkpoint created successfully!");
-        router.push(`/admin/checkpoints/${payload.slug}`);
+        router.push(`/admin/checkpoints/${data.slug}`);
       } else {
         toast.error(formatApiError(json.error, json.details));
-        setErrors(toFieldErrors(json.details));
+        if (json.details) {
+          for (const detail of json.details) {
+            // Paths without a registered input (guides.*, general) have no
+            // inline slot — the toast above is their only surface (grill Q5).
+            if (isCheckpointFormPath(detail.path)) {
+              setError(detail.path as FieldPath<FormInput>, {
+                message: detail.message,
+              });
+            }
+          }
+        }
       }
-    });
+    } catch {
+      toast.error("Network error. Please try again.");
+    }
   };
 
   return (
@@ -73,63 +86,49 @@ export default function AdminCheckpointNewPage() {
       <PageHeader title="New checkpoint" />
       <RequiredNote />
 
-      <form onSubmit={onSubmit} noValidate className="space-y-6">
-        <Panel title="URL slug">
-          <Field
-            label="Slug"
-            htmlFor="slug"
-            required
-            hint="Shown in the public URL, e.g. chua-phu-dung."
-            error={errors.slug}
-          >
-            <Input
-              id="slug"
+      <FormProvider {...form}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+          <Panel title="URL slug">
+            <InputField
               name="slug"
-              placeholder="chua-phu-dung"
+              label="Slug"
               required
-              autoComplete="off"
-              aria-invalid={!!errors.slug}
-            />
-          </Field>
-        </Panel>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Panel title="Tiếng Việt (vi)">
-            <TranslationFields
-              locale="vi"
-              defaultValue={emptyTranslation}
-              prefix="vi"
-              errors={errors}
+              hint="Shown in the public URL, e.g. chua-phu-dung."
+              placeholder="chua-phu-dung"
+              serverError={errors.slug?.message}
             />
           </Panel>
-          <Panel title="English (en)">
-            <TranslationFields
-              locale="en"
-              defaultValue={emptyTranslation}
-              prefix="en"
-              errors={errors}
-            />
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Panel title="Tiếng Việt (vi)">
+              <TranslationFields locale="vi" />
+            </Panel>
+            <Panel title="English (en)">
+              <TranslationFields locale="en" />
+            </Panel>
+          </div>
+
+          <Panel title="Location & visit">
+            <CheckpointFields />
           </Panel>
-        </div>
 
-        <Panel title="Location & visit">
-          <CheckpointFields errors={errors} />
-        </Panel>
+          <GuideContentPanel />
 
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/admin/checkpoints")}
-            disabled={isPending}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "Creating…" : "Create checkpoint"}
-          </Button>
-        </div>
-      </form>
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/admin/checkpoints")}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating…" : "Create checkpoint"}
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </div>
   );
 }
