@@ -22,6 +22,18 @@ const tourTranslationSchema = z.object({
   coverImageUrl: coverImageUrlSchema,
 });
 
+/**
+ * The ordered ids of a tour's stops. Order in the array *is* the visit order,
+ * so duplicates are rejected rather than silently collapsed. Shared by the
+ * create and update schemas so both enforce the exact same stops contract.
+ */
+const checkpointIdsSchema = z
+  .array(z.string().min(1), { message: "Checkpoint ids must be a list." })
+  .max(100, { message: "A tour can have at most 100 stops." })
+  .refine((ids) => new Set(ids).size === ids.length, {
+    message: "A checkpoint can only appear once on a tour.",
+  });
+
 export const createTourSchema = z.object({
   slug: requiredText("Slug"),
   status: z
@@ -29,6 +41,8 @@ export const createTourSchema = z.object({
     .default("DRAFT"),
   vi: tourTranslationSchema,
   en: tourTranslationSchema,
+  /** Optional (empty allowed) so a tour can be created before its stops — mirrors PATCH. */
+  checkpointIds: checkpointIdsSchema.optional(),
 });
 
 export const loginSchema = z.object({
@@ -38,17 +52,6 @@ export const loginSchema = z.object({
     .email({ message: "Enter a valid email address." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
-
-/**
- * The ordered ids of a tour's stops. Order in the array *is* the visit order,
- * so duplicates are rejected rather than silently collapsed.
- */
-const checkpointIdsSchema = z
-  .array(z.string().min(1), { message: "Checkpoint ids must be a list." })
-  .max(100, { message: "A tour can have at most 100 stops." })
-  .refine((ids) => new Set(ids).size === ids.length, {
-    message: "A checkpoint can only appear once on a tour.",
-  });
 
 export const updateTourSchema = z.object({
   id: z.string().min(1).optional(),

@@ -71,6 +71,60 @@ describe("createTourSchema", () => {
   });
 });
 
+describe("createTourSchema checkpointIds", () => {
+  it("accepts an ordered list of stop ids", () => {
+    const result = createTourSchema.safeParse({
+      ...VALID_CREATE,
+      checkpointIds: ["cp_1", "cp_2", "cp_3"],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.checkpointIds).toEqual(["cp_1", "cp_2", "cp_3"]);
+    }
+  });
+
+  it("accepts an empty list so a tour can be created before its stops", () => {
+    const result = createTourSchema.safeParse({
+      ...VALID_CREATE,
+      checkpointIds: [],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.checkpointIds).toEqual([]);
+  });
+
+  it("rejects duplicates instead of silently collapsing them", () => {
+    const result = createTourSchema.safeParse({
+      ...VALID_CREATE,
+      checkpointIds: ["cp_1", "cp_1"],
+    });
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0].path.join(".")).toBe("checkpointIds");
+    expect(result.error.issues[0].message).toBe(
+      "A checkpoint can only appear once on a tour.",
+    );
+  });
+
+  it("rejects more stops than the cap allows", () => {
+    const tooMany = Array.from({ length: 101 }, (_, i) => `cp_${i}`);
+    const result = createTourSchema.safeParse({
+      ...VALID_CREATE,
+      checkpointIds: tooMany,
+    });
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues[0].message).toBe(
+      "A tour can have at most 100 stops.",
+    );
+  });
+
+  it("stays optional so a stops-less create payload still validates", () => {
+    const result = createTourSchema.safeParse(VALID_CREATE);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.checkpointIds).toBeUndefined();
+  });
+});
+
 describe("updateTourSchema", () => {
   it("accepts an empty cover image URL so the field can be cleared", () => {
     const result = updateTourSchema.safeParse({

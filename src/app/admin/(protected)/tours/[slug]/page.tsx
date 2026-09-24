@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import TourEditForm from "@/components/admin/TourEditForm";
+import { listCheckpointOptions } from "@/services/checkpoints.service";
 
 type TTourStop = {
   /** `Checkpoint.id` — what the PATCH route stores in `TourCheckpoint`. */
@@ -27,7 +28,7 @@ export default async function AdminTourEditPageRoute({
 }) {
   const { slug } = await params;
 
-  const [tour, allCheckpoints] = await Promise.all([
+  const [tour, availableCheckpoints] = await Promise.all([
     prisma.tour.findUnique({
       where: { slug },
       include: {
@@ -38,10 +39,7 @@ export default async function AdminTourEditPageRoute({
         },
       },
     }),
-    prisma.checkpoint.findMany({
-      include: { translations: true },
-      orderBy: { slug: "asc" },
-    }),
+    listCheckpointOptions(),
   ]);
 
   if (!tour) notFound();
@@ -77,14 +75,6 @@ export default async function AdminTourEditPageRoute({
         tc.checkpoint.slug,
     })),
   };
-
-  const availableCheckpoints = allCheckpoints.map((checkpoint) => ({
-    id: checkpoint.id,
-    slug: checkpoint.slug,
-    name:
-      checkpoint.translations.find((t) => t.locale === "vi")?.name ||
-      checkpoint.slug,
-  }));
 
   return (
     <TourEditForm tour={typedTour} availableCheckpoints={availableCheckpoints} />

@@ -68,26 +68,60 @@ export async function POST(request: NextRequest) {
   if (!parsed.ok) return parsed.response;
   const data = parsed.data;
 
+  // Reject unknown ids before creating anything, so a stale tab cannot create
+  // a tour whose stops silently fail (mirrors the PATCH route's pre-check).
+  const { checkpointIds } = data;
+  if (checkpointIds) {
+    const found = await prisma.checkpoint.count({
+      where: { id: { in: checkpointIds } },
+    });
+    if (found !== checkpointIds.length) {
+      return adminError("Invalid input", 400, {
+        details: [
+          {
+            path: "checkpointIds",
+            message: "One or more of those checkpoints no longer exists.",
+          },
+        ],
+      });
+    }
+  }
+
   try {
-    const tour = await prisma.tour.create({
-      data: {
-        slug: data.slug,
-        status: data.status,
-        translations: {
-          create: [
-            {
-              locale: "vi",
-              ...data.vi,
-              coverImageUrl: data.vi.coverImageUrl ?? "",
-            },
-            {
-              locale: "en",
-              ...data.en,
-              coverImageUrl: data.en.coverImageUrl ?? "",
-            },
-          ],
+    const tour = await prisma.$transaction(async (tx) => {
+      const created = await tx.tour.create({
+        data: {
+          slug: data.slug,
+          status: data.status,
+          translations: {
+            create: [
+              {
+                locale: "vi",
+                ...data.vi,
+                coverImageUrl: data.vi.coverImageUrl ?? "",
+              },
+              {
+                locale: "en",
+                ...data.en,
+                coverImageUrl: data.en.coverImageUrl ?? "",
+              },
+            ],
+          },
         },
-      },
+      });
+
+      // `order` is 1-based and unique per tour — same contract as PATCH.
+      if (checkpointIds && checkpointIds.length > 0) {
+        await tx.tourCheckpoint.createMany({
+          data: checkpointIds.map((checkpointId, index) => ({
+            tourId: created.id,
+            checkpointId,
+            order: index + 1,
+          })),
+        });
+      }
+
+      return created;
     });
 
     return adminOk({ tour: { id: tour.id, slug: tour.slug } });

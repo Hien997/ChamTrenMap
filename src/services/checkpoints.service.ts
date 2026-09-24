@@ -54,3 +54,26 @@ export async function getTourForCheckpoint(
     order: link.order,
   };
 }
+
+/**
+ * All checkpoints as picker options for the tour stop editor: id/slug plus
+ * the vi display name (falling back to the slug), ordered by slug.
+ *
+ * Deliberately unbounded — the admin list endpoint caps `take` at 50, which
+ * would silently truncate the picker on larger datasets.
+ */
+export async function listCheckpointOptions(): Promise<
+  { id: string; slug: string; name: string }[]
+> {
+  const checkpoints = await prisma.checkpoint.findMany({
+    include: { translations: true },
+    orderBy: { slug: "asc" },
+  });
+  return checkpoints.map((checkpoint) => ({
+    id: checkpoint.id,
+    slug: checkpoint.slug,
+    name:
+      checkpoint.translations.find((t) => t.locale === "vi")?.name ||
+      checkpoint.slug,
+  }));
+}

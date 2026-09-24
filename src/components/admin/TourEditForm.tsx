@@ -2,24 +2,6 @@
 
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVerticalIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   BackLink,
@@ -29,17 +11,9 @@ import {
   RequiredNote,
   StatusChip,
 } from "./ui";
+import StopsEditor, { type CheckpointOption } from "./StopsEditor";
 import { Button } from "@/components/ui/button";
-import {
-  Combobox,
-  ComboboxCollection,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-} from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -54,13 +28,6 @@ import {
   type AdminWriteResponse,
 } from "@/lib/admin-form";
 import { updateTourSchema } from "@/lib/validations/admin";
-import { InputField } from "../form";
-
-type TCheckpointOption = {
-  id: string;
-  slug: string;
-  name: string;
-};
 
 type TTour = {
   id: string;
@@ -81,82 +48,12 @@ type TTour = {
   checkpoints: { checkpointId: string; slug: string; name: string }[];
 };
 
-/**
- * One draggable stop row. Lives at module scope (not inside the form) so
- * React keeps a stable component type across renders — an inline definition
- * would remount every row on each keystroke/drag and reset the drag gesture.
- *
- * Drag rows into a new visit order; the row order *is* the saved order.
- */
-function StopRow({
-  stop,
-  index,
-  onRemove,
-}: {
-  stop: TCheckpointOption;
-  index: number;
-  onRemove: (id: string) => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: stop.id });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-  };
-
-  return (
-    <li
-      ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-3 rounded-md border bg-background/60 px-3 py-2 ${
-        isDragging ? "z-10 shadow-md" : ""
-      }`}
-    >
-      {/* The grip owns the drag sensor: the rest of the row stays clickable.
-          Keyboard drag works out of the box through the same listeners, plus
-          the Space key lifts and the arrow keys move the row. */}
-      <button
-        type="button"
-        {...listeners}
-        {...attributes}
-        aria-label={`Reorder ${stop.name} — drag, or press Space then use the arrow keys`}
-        className="cursor-grab touch-none rounded p-0.5 text-muted-foreground/60 hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:cursor-grabbing"
-      >
-        <GripVerticalIcon aria-hidden className="size-4" />
-      </button>
-      <span className="w-5 shrink-0 text-sm tabular-nums text-muted-foreground">
-        {index + 1}
-      </span>
-      <span className="min-w-0 flex-1 truncate text-sm">{stop.name}</span>
-      <span className="hidden text-xs text-muted-foreground sm:inline">
-        /{stop.slug}
-      </span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => onRemove(stop.id)}
-        aria-label={`Remove ${stop.name} from this tour`}
-      >
-        <XIcon aria-hidden className="size-4 text-destructive" />
-      </Button>
-    </li>
-  );
-}
-
 export default function AdminTourEditPage({
   tour,
   availableCheckpoints,
 }: {
   tour: TTour;
-  availableCheckpoints: TCheckpointOption[];
+  availableCheckpoints: CheckpointOption[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -171,50 +68,13 @@ export default function AdminTourEditPage({
     tour.checkpoints.map((stop) => stop.checkpointId),
   );
 
-  // A stop already on the tour is always in `availableCheckpoints`, but falling
-  // back to the tour's own data keeps the row renderable if it ever is not.
-  const stopInfo = new Map<string, TCheckpointOption>();
-  for (const checkpoint of availableCheckpoints)
-    stopInfo.set(checkpoint.id, checkpoint);
-  for (const stop of tour.checkpoints) {
-    if (!stopInfo.has(stop.checkpointId)) {
-      stopInfo.set(stop.checkpointId, {
-        id: stop.checkpointId,
-        slug: stop.slug,
-        name: stop.name,
-      });
-    }
-  }
-
-  const remainingCheckpoints = availableCheckpoints.filter(
-    (checkpoint) => !stopIds.includes(checkpoint.id),
-  );
-
-  // Pointer drags start after a small movement so clicks still land on the
-  // row; the keyboard sensor mirrors the same gesture with Space + arrows.
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
-  // dnd-kit reports which id landed where; the array order *is* the visit
-  // order, so one arrayMove here is the whole reorder.
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over || active.id === over.id) return;
-    setStopIds((current) => {
-      const from = current.indexOf(String(active.id));
-      const to = current.indexOf(String(over.id));
-      if (from < 0 || to < 0) return current;
-      return arrayMove(current, from, to);
-    });
-  };
-
-  const removeStop = (id: string) =>
-    setStopIds((current) => current.filter((stopId) => stopId !== id));
+  // Rows the picker may not know about (e.g. a stop missing from
+  // `availableCheckpoints`) still need slug/name to render.
+  const extraStopOptions = tour.checkpoints.map((stop) => ({
+    id: stop.checkpointId,
+    slug: stop.slug,
+    name: stop.name,
+  }));
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -310,7 +170,20 @@ export default function AdminTourEditPage({
         <div className="grid gap-6 lg:grid-cols-2">
           <Panel title="Tiếng Việt (vi)">
             <div className="space-y-4">
-              <InputField name="vi.name" label="Name" required />
+              <Field
+                label="Name"
+                htmlFor="vi.name"
+                error={errors["vi.name"]}
+                required
+              >
+                <Input
+                  id="vi.name"
+                  name="vi.name"
+                  defaultValue={vi.name}
+                  required
+                  aria-invalid={!!errors["vi.name"]}
+                />
+              </Field>
 
               <Field
                 label="Tagline"
@@ -418,93 +291,14 @@ export default function AdminTourEditPage({
         </div>
 
         <Panel title={`Stops on this tour (${stopIds.length})`}>
-          {stopIds.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No stops yet. Add checkpoints below — visitors walk them in the
-              order listed here.
-            </p>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={stopIds}
-                strategy={verticalListSortingStrategy}
-              >
-                <ol className="flex flex-col gap-2">
-                  {stopIds.map((id, index) => {
-                    const stop = stopInfo.get(id);
-                    if (!stop) return null;
-                    return (
-                      <StopRow
-                        key={id}
-                        stop={stop}
-                        index={index}
-                        onRemove={removeStop}
-                      />
-                    );
-                  })}
-                </ol>
-              </SortableContext>
-            </DndContext>
-          )}
-
-          <div className="mt-4 space-y-1.5">
-            <Label>Add a stop</Label>
-            <Combobox<TCheckpointOption>
-              items={remainingCheckpoints}
-              value={null}
-              onValueChange={(checkpoint) => {
-                if (!checkpoint) return;
-                setStopIds((current) =>
-                  current.includes(checkpoint.id)
-                    ? current
-                    : [...current, checkpoint.id],
-                );
-              }}
-              itemToStringLabel={(checkpoint) => checkpoint?.name ?? ""}
-              isItemEqualToValue={(a, b) => (a?.id ?? null) === (b?.id ?? null)}
-            >
-              <ComboboxInput
-                placeholder={
-                  remainingCheckpoints.length === 0
-                    ? "Every checkpoint is already on this tour"
-                    : "Search checkpoints by name or slug…"
-                }
-                disabled={remainingCheckpoints.length === 0}
-                autoComplete="off"
-                aria-invalid={!!errors.checkpointIds}
-              />
-              <ComboboxContent>
-                <ComboboxCollection>
-                  {(checkpoint: TCheckpointOption) => (
-                    <ComboboxItem key={checkpoint.id} value={checkpoint}>
-                      <span className="min-w-0 flex-1 truncate">
-                        {checkpoint.name}
-                      </span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        /{checkpoint.slug}
-                      </span>
-                    </ComboboxItem>
-                  )}
-                </ComboboxCollection>
-                <ComboboxEmpty>No checkpoints match that search.</ComboboxEmpty>
-              </ComboboxContent>
-            </Combobox>
-          </div>
-
-          {errors.checkpointIds ? (
-            <p className="mt-3 text-xs text-destructive" aria-live="polite">
-              {errors.checkpointIds}
-            </p>
-          ) : (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Drag the grip to reorder, or focus it and use the arrow keys. Save
-              changes to apply.
-            </p>
-          )}
+          <StopsEditor
+            value={stopIds}
+            onChange={setStopIds}
+            availableCheckpoints={availableCheckpoints}
+            extraOptions={extraStopOptions}
+            error={errors.checkpointIds}
+            hint="Drag the grip to reorder, or focus it and use the arrow keys. Save changes to apply."
+          />
         </Panel>
 
         <div className="flex justify-end gap-3">
