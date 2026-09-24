@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import Link from "next/link";
-import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, SearchIcon, TrashIcon } from "lucide-react";
 import { buttonVariants , Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/admin/ui";
 import { ConfirmDelete } from "@/components/admin/ConfirmDelete";
 import { formatVnd } from "@/lib/format";
+import { usePaginatedAdminList } from "@/hooks/usePaginatedAdminList";
 
 type TCheckpoint = {
   id: string;
@@ -20,51 +22,36 @@ type TCheckpoint = {
   en: { name: string } | null;
 };
 
-function fetchCheckpoints(): Promise<TCheckpoint[]> {
-  return fetch("/api/admin/checkpoints", { cache: "no-store" })
-    .then((res) => res.json())
-    .then((json) => {
-      if (!json.ok) throw new Error(json.error || "Failed to load");
-      return json.checkpoints as TCheckpoint[];
-    });
-}
-
 export default function AdminCheckpointsListPage() {
-  const [checkpoints, setCheckpoints] = useState<TCheckpoint[] | null>(null);
-  const [error, setError] = useState(false);
+  const {
+    items: checkpoints,
+    total,
+    search,
+    setSearch,
+    appliedQuery,
+    clearSearch,
+    error,
+    retry,
+    hasMore,
+    loadMore,
+    loadingMore,
+    moreError,
+    removeItem,
+    sentinelRef,
+  } = usePaginatedAdminList<TCheckpoint>("/api/admin/checkpoints");
+
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchCheckpoints()
-      .then((data) => {
-        if (!cancelled) setCheckpoints(data);
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmTarget, setConfirmTarget] = useState<{ slug: string; name: string } | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<{
+    id: string;
+    slug: string;
+    name: string;
+  } | null>(null);
 
-  const retry = () => {
-    setError(false);
-    fetchCheckpoints()
-      .then(setCheckpoints)
-      .catch(() => setError(true));
-  };
-
-  const onDelete = useCallback(
-    (slug: string, name: string) => {
-      setConfirmTarget({ slug, name });
-      setConfirmOpen(true);
-    },
-    []
-  );
+  const onDelete = useCallback((id: string, slug: string, name: string) => {
+    setConfirmTarget({ id, slug, name });
+    setConfirmOpen(true);
+  }, []);
 
   const confirmDelete = useCallback(() => {
     const target = confirmTarget;
@@ -73,11 +60,9 @@ export default function AdminCheckpointsListPage() {
     startTransition(async () => {
       const res = await fetch(`/api/admin/checkpoints/${target.slug}`, { method: "DELETE" });
       const json = await res.json();
-      if (json.ok) {
-        setCheckpoints((prev) => prev?.filter((c) => c.slug !== target.slug) ?? null);
-      }
+      if (json.ok) removeItem(target.id);
     });
-  }, [confirmTarget, setConfirmOpen, setCheckpoints]);
+  }, [confirmTarget, removeItem]);
 
   return (
     <div>
@@ -93,6 +78,29 @@ export default function AdminCheckpointsListPage() {
           </Link>
         }
       />
+
+      <div className="relative mb-4">
+        <SearchIcon
+          aria-hidden
+          className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search checkpoints by name or slug…"
+          aria-label="Search checkpoints"
+          className="pl-8"
+        />
+      </div>
+
+      {checkpoints !== null && total > 0 && (
+        <p className="mb-2 text-sm text-muted-foreground">
+          Showing {checkpoints.length} of {total}{" "}
+          {total === 1 ? "checkpoint" : "checkpoints"}
+          {appliedQuery !== "" ? ` for “${appliedQuery}”` : ""}
+        </p>
+      )}
 
       {error ? (
         <div className="rounded-lg border bg-card px-6 py-12 text-center">
@@ -110,7 +118,22 @@ export default function AdminCheckpointsListPage() {
           <Skeleton className="h-20 rounded-lg" />
           <Skeleton className="h-20 rounded-lg" />
         </div>
-      ) : checkpoints.length === 0 ? (
+      ) : checkpoints.length === 0 && appliedQuery !== "" ? (
+        <div className="rounded-lg border border-dashed bg-card/50 px-6 py-12 text-center">
+          <p className="font-medium">No checkpoints match “{appliedQuery}”</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Try a different name or slug.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            onClick={clearSearch}
+          >
+            Clear search
+          </Button>
+        </div>
+      ) : total === 0 ? (
         <div className="rounded-lg border border-dashed bg-card/50 px-6 py-12 text-center">
           <p className="font-medium">No checkpoints yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -159,7 +182,7 @@ export default function AdminCheckpointsListPage() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => onDelete(cp.slug, name)}
+                    onClick={() => onDelete(cp.id, cp.slug, name)}
                     disabled={isPending}
                     aria-label={`Delete ${name}`}
                     className={buttonVariants({ variant: "ghost", size: "icon" })}
@@ -172,6 +195,25 @@ export default function AdminCheckpointsListPage() {
           })}
         </ul>
       )}
+
+      {checkpoints !== null && hasMore && (
+        <div className="py-6 text-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? "Loading…" : moreError ? "Try again" : "Load more"}
+          </Button>
+          {moreError && (
+            <p className="mt-2 text-sm text-destructive">
+              Couldn&apos;t load more rows.
+            </p>
+          )}
+        </div>
+      )}
+      <div ref={sentinelRef} aria-hidden className="h-px" />
 
       <ConfirmDelete
         open={confirmOpen}

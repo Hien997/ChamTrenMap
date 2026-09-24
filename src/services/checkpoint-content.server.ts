@@ -7,6 +7,7 @@ import {
   type CreateCheckpointInput,
   type UpdateCheckpointInput,
 } from "@/services/checkpoint-content";
+import { buildCheckpointSearchWhere } from "@/services/search";
 
 function toAdminTranslation(
   rows: {
@@ -31,15 +32,31 @@ function toAdminTranslation(
     : null;
 }
 
-export async function listCheckpointsForAdmin(): Promise<AdminCheckpoint[]> {
-  const checkpoints = await prisma.checkpoint.findMany({
-    include: {
-      translations: true,
-      tourLinks: { include: { tour: true } },
-    },
-    orderBy: { slug: "asc" },
-  });
-  return checkpoints.map((cp) => ({
+/**
+ * One page of checkpoints for the admin list: `q` search + offset paging.
+ * Returns the page's rows plus the full match count so the client knows
+ * whether more pages exist.
+ */
+export async function listCheckpointsForAdmin(params: {
+  q: string;
+  take: number;
+  offset: number;
+}): Promise<{ items: AdminCheckpoint[]; total: number }> {
+  const where = buildCheckpointSearchWhere(params.q);
+  const [checkpoints, total] = await Promise.all([
+    prisma.checkpoint.findMany({
+      where,
+      include: {
+        translations: true,
+        tourLinks: { include: { tour: true } },
+      },
+      orderBy: { slug: "asc" },
+      skip: params.offset,
+      take: params.take,
+    }),
+    prisma.checkpoint.count({ where }),
+  ]);
+  const items = checkpoints.map((cp) => ({
     id: cp.id,
     slug: cp.slug,
     latitude: cp.latitude,
@@ -58,6 +75,7 @@ export async function listCheckpointsForAdmin(): Promise<AdminCheckpoint[]> {
       order: tl.order,
     })),
   }));
+  return { items, total };
 }
 
 export async function getCheckpointForEdit(

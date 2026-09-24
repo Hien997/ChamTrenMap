@@ -1,5 +1,5 @@
 import type { NextRequest} from "next/server";
-import { adminOk, parseAdminBody, writeErrorResponse } from "@/lib/api";
+import { adminOk, parseAdminBody, parseAdminListQuery, writeErrorResponse } from "@/lib/api";
 import { requireAdminApi } from "@/lib/admin-auth";
 import { createCheckpointSchema } from "@/services/checkpoint-content";
 import {
@@ -7,11 +7,13 @@ import {
   listCheckpointsForAdmin,
 } from "@/services/checkpoint-content.server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
-  const checkpoints = await listCheckpointsForAdmin();
-  return adminOk({ checkpoints });
+  const query = parseAdminListQuery(request.nextUrl.searchParams);
+  if (!query.ok) return query.response;
+  const { items, total } = await listCheckpointsForAdmin(query.data);
+  return adminOk({ items, total });
 }
 
 export async function POST(request: NextRequest) {

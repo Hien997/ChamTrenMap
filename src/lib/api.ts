@@ -3,6 +3,7 @@ import type { ZodError, ZodType } from "zod";
 
 import type { Locale } from "@/config/constants";
 import { localeQuerySchema } from "@/lib/validations";
+import { adminListQuerySchema, type AdminListQuery } from "@/lib/validations/admin";
 import { CheckpointWriteError } from "@/services/checkpoint-content";
 
 /**
@@ -139,6 +140,24 @@ export function parseAdminBody<T>(
   return {
     ok: false,
     response: adminError("Invalid input", 400, {
+      details: validationDetails(result.error),
+    }),
+  };
+}
+
+/** Read and validate `?q=&take=&offset=` for the admin list routes. */
+export function parseAdminListQuery(
+  searchParams: URLSearchParams,
+): Parsed<AdminListQuery> {
+  const result = adminListQuerySchema.safeParse({
+    q: searchParams.get("q") ?? undefined,
+    take: searchParams.get("take") ?? undefined,
+    offset: searchParams.get("offset") ?? undefined,
+  });
+  if (result.success) return { ok: true, data: result.data };
+  return {
+    ok: false,
+    response: adminError("Invalid list query", 400, {
       details: validationDetails(result.error),
     }),
   };

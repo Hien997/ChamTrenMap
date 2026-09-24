@@ -1,22 +1,35 @@
 import type { NextRequest} from "next/server";
-import { adminError, adminOk, parseAdminBody } from "@/lib/api";
+import { adminError, adminOk, parseAdminBody, parseAdminListQuery } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/admin-auth";
+import { buildTourSearchWhere } from "@/services/search";
 import { createTourSchema } from "@/lib/validations/admin";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
-  const tours = await prisma.tour.findMany({
-    include: {
-      translations: true,
-      checkpoints: { include: { checkpoint: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const query = parseAdminListQuery(request.nextUrl.searchParams);
+  if (!query.ok) return query.response;
+  const { q, take, offset } = query.data;
+
+  const where = buildTourSearchWhere(q);
+  const [tours, total] = await Promise.all([
+    prisma.tour.findMany({
+      where,
+      include: {
+        translations: true,
+        _count: { select: { checkpoints: true } },
+      },
+      // `id` breaks createdAt ties so offset paging can't repeat or skip rows.
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+      skip: offset,
+      take,
+    }),
+    prisma.tour.count({ where }),
+  ]);
 
   return adminOk({
-    tours: tours.map((tour) => {
+    items: tours.map((tour) => {
       const vi = tour.translations.find((t) => t.locale === "vi");
       const en = tour.translations.find((t) => t.locale === "en");
       return {
@@ -41,9 +54,10 @@ export async function GET() {
               coverImageUrl: en.coverImageUrl,
             }
           : null,
-        checkpointCount: tour.checkpoints.length,
+        checkpointCount: tour._count.checkpoints,
       };
     }),
+    total,
   });
 }
 

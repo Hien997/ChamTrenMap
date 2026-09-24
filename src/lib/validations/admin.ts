@@ -58,3 +58,22 @@ export const updateTourSchema = z.object({
   en: tourTranslationSchema.optional(),
   checkpointIds: checkpointIdsSchema.optional(),
 });
+
+/**
+ * `?q=&take=&offset=` shared by the admin list endpoints. Every part is
+ * optional on the wire and parses to a concrete first page: no filter
+ * (`q`), 10 rows (`take`), from the top (`offset`). Values arrive as
+ * strings from `URLSearchParams`, hence `coerce`; the bounds keep a
+ * hand-edited URL from requesting something silly.
+ */
+export const adminListQuerySchema = z.object({
+  q: z
+    .string()
+    .trim()
+    .max(100, { message: "Search is limited to 100 characters." })
+    .default(""),
+  take: z.coerce.number().int().min(1).max(50).default(10),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+export type AdminListQuery = z.infer<typeof adminListQuerySchema>;

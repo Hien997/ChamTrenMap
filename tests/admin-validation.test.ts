@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { formatApiError, toFieldErrors } from "@/lib/admin-form";
-import { createTourSchema, loginSchema, updateTourSchema } from "@/lib/validations/admin";
+import {
+  adminListQuerySchema,
+  createTourSchema,
+  loginSchema,
+  updateTourSchema,
+} from "@/lib/validations/admin";
 
 const VALID_CREATE = {
   slug: "ha-tien-discovery",
@@ -216,5 +221,42 @@ describe("loginSchema", () => {
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.issues[0].message).toBe("Enter a valid email address.");
+  });
+});
+
+describe("adminListQuerySchema", () => {
+  it("defaults to an unfiltered first page: q '', take 10, offset 0", () => {
+    const result = adminListQuerySchema.safeParse({});
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data).toEqual({ q: "", take: 10, offset: 0 });
+  });
+
+  it("trims the search text so ' cafe ' and 'cafe' behave alike", () => {
+    const result = adminListQuerySchema.safeParse({ q: "  cafe  " });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.q).toBe("cafe");
+  });
+
+  it("coerces numeric strings, as they arrive from the query string", () => {
+    const result = adminListQuerySchema.safeParse({ take: "25", offset: "50" });
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data).toEqual({ q: "", take: 25, offset: 50 });
+  });
+
+  it("rejects out-of-range paging values instead of trusting them", () => {
+    expect(adminListQuerySchema.safeParse({ take: 0 }).success).toBe(false);
+    expect(adminListQuerySchema.safeParse({ take: 51 }).success).toBe(false);
+    expect(adminListQuerySchema.safeParse({ offset: -1 }).success).toBe(false);
+  });
+
+  it("rejects a non-numeric limit", () => {
+    expect(adminListQuerySchema.safeParse({ take: "many" }).success).toBe(false);
+  });
+
+  it("caps the search text at 100 characters", () => {
+    const result = adminListQuerySchema.safeParse({ q: "a".repeat(101) });
+    expect(result.success).toBe(false);
   });
 });
