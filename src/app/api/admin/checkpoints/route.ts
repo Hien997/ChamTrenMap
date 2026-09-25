@@ -1,5 +1,10 @@
-import type { NextRequest} from "next/server";
-import { adminOk, parseAdminBody, parseAdminListQuery, writeErrorResponse } from "@/lib/api";
+import type { NextRequest } from "next/server";
+import {
+  adminOk,
+  parseAdminBody,
+  parseAdminListQuery,
+  writeErrorResponse,
+} from "@/lib/api";
 import { requireAdminApi } from "@/lib/admin-auth";
 import { createCheckpointSchema } from "@/services/checkpoint-content";
 import {

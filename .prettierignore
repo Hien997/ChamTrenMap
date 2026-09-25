@@ -1,0 +1,28 @@
+node_modules/
+.next/
+out/
+build/
+coverage/
+.git/
+
+package-lock.json
+skills-lock.json
+next-env.d.ts
+*.tsbuildinfo
+
+*.md
+*.sql
+*.svg
+.env
+.env.*
+.agents/
+
+# Vendored MapLibre worker assets.
+public/
+
+# Imported, minified map style data.
+src/components/map/openfreemap-liberty.json
+
+# Prisma migration SQL is managed separately from application formatting.
+prisma/migrations/
+

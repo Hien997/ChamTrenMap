@@ -3,15 +3,21 @@ import { sanitizeHtml } from "@/lib/sanitize";
 
 describe("sanitizeHtml", () => {
   it("strips script tags", () => {
-    expect(sanitizeHtml("<script>alert(1)</script>Hello")).not.toContain("<script>");
+    expect(sanitizeHtml("<script>alert(1)</script>Hello")).not.toContain(
+      "<script>",
+    );
   });
 
   it("strips event handlers", () => {
-    expect(sanitizeHtml('<img src=x onerror="alert(1)">')).not.toContain("onerror");
+    expect(sanitizeHtml('<img src=x onerror="alert(1)">')).not.toContain(
+      "onerror",
+    );
   });
 
   it("strips javascript: URLs", () => {
-    expect(sanitizeHtml('<a href="javascript:alert(1)">click</a>')).not.toContain("javascript:");
+    expect(
+      sanitizeHtml('<a href="javascript:alert(1)">click</a>'),
+    ).not.toContain("javascript:");
   });
 
   it("allows safe tags", () => {
@@ -26,7 +32,9 @@ describe("sanitizeHtml", () => {
   });
 
   it("strips style tags", () => {
-    expect(sanitizeHtml("<style>body{color:red}</style>Hello")).not.toContain("<style>");
+    expect(sanitizeHtml("<style>body{color:red}</style>Hello")).not.toContain(
+      "<style>",
+    );
   });
 
   it("strips disallowed tags but keeps content", () => {
@@ -43,9 +51,9 @@ describe("sanitizeHtml", () => {
   });
 
   it("strips single-quoted javascript: URLs", () => {
-    expect(sanitizeHtml("<a href='javascript:alert(1)'>click</a>")).not.toContain(
-      "javascript:",
-    );
+    expect(
+      sanitizeHtml("<a href='javascript:alert(1)'>click</a>"),
+    ).not.toContain("javascript:");
   });
 
   it("strips handlers on unterminated tags", () => {

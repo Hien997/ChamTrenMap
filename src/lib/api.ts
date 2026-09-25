@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
-import type { ZodError, ZodType } from "zod";
+import { ZodError, type ZodType } from "zod";
 
 import type { Locale } from "@/config/constants";
 import { localeQuerySchema } from "@/lib/validations";
-import { adminListQuerySchema, type AdminListQuery } from "@/lib/validations/admin";
+import {
+  adminListQuerySchema,
+  type AdminListQuery,
+} from "@/lib/validations/admin";
 import { CheckpointWriteError } from "@/services/checkpoint-content";
 
 /**
@@ -39,8 +42,7 @@ export type ApiErrorCode =
 // ---------------------------------------------------------------------------
 
 export type Parsed<T> =
-  | { ok: true; data: T }
-  | { ok: false; response: NextResponse };
+  { ok: true; data: T } | { ok: false; response: NextResponse };
 
 /** Dotted-path validation detail, as consumed by `toFieldErrors`. */
 export interface ValidationDetail {
@@ -76,15 +78,17 @@ export function apiError(
 }
 
 export function handleApiError(context: string, error: unknown): NextResponse {
+  if (error instanceof ZodError) {
+    return apiError("BAD_REQUEST", "Invalid request", 400, {
+      issues: error.issues,
+    });
+  }
   console.error(`[api] ${context}:`, error);
   return apiError("INTERNAL", "Internal server error", 500);
 }
 
 /** Parse a request body against a schema; failure yields the public 400 shape. */
-export function parseBody<T>(
-  schema: ZodType<T>,
-  raw: unknown,
-): Parsed<T> {
+export function parseBody<T>(schema: ZodType<T>, raw: unknown): Parsed<T> {
   const result = schema.safeParse(raw);
   if (result.success) return { ok: true, data: result.data };
   return {
@@ -131,10 +135,7 @@ export function adminError(
 }
 
 /** Like `parseBody`, but failure yields the admin flat 400 shape. */
-export function parseAdminBody<T>(
-  schema: ZodType<T>,
-  raw: unknown,
-): Parsed<T> {
+export function parseAdminBody<T>(schema: ZodType<T>, raw: unknown): Parsed<T> {
   const result = schema.safeParse(raw);
   if (result.success) return { ok: true, data: result.data };
   return {
@@ -177,4 +178,3 @@ export function writeErrorResponse(error: unknown): NextResponse {
   console.error("[api] admin write:", error);
   return adminError("Internal server error", 500);
 }
-

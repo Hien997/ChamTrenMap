@@ -3,7 +3,7 @@
 import { useCallback, useState, useTransition } from "react";
 import Link from "next/link";
 import { PencilIcon, PlusIcon, SearchIcon, TrashIcon } from "lucide-react";
-import { buttonVariants , Button } from "@/components/ui/button";
+import { buttonVariants, Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader, StatusChip } from "@/components/admin/ui";
@@ -55,7 +55,9 @@ export default function AdminToursListPage() {
     setConfirmOpen(false);
     if (!target) return;
     startTransition(async () => {
-      const res = await fetch(`/api/admin/tours/${target.slug}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/tours/${target.slug}`, {
+        method: "DELETE",
+      });
       const json = await res.json();
       if (json.ok) removeItem(target.id);
     });
@@ -93,8 +95,7 @@ export default function AdminToursListPage() {
 
       {tours !== null && total > 0 && (
         <p className="mb-2 text-sm text-muted-foreground">
-          Showing {tours.length} of {total}{" "}
-          {total === 1 ? "tour" : "tours"}
+          Showing {tours.length} of {total} {total === 1 ? "tour" : "tours"}
           {appliedQuery !== "" ? ` for “${appliedQuery}”` : ""}
         </p>
       )}
@@ -170,7 +171,10 @@ export default function AdminToursListPage() {
                   <Link
                     href={`/admin/tours/${tour.slug}`}
                     aria-label={`Edit ${name}`}
-                    className={buttonVariants({ variant: "ghost", size: "icon" })}
+                    className={buttonVariants({
+                      variant: "ghost",
+                      size: "icon",
+                    })}
                   >
                     <PencilIcon aria-hidden className="size-4" />
                   </Link>
@@ -179,9 +183,15 @@ export default function AdminToursListPage() {
                     onClick={() => onDelete(tour.id, tour.slug, name)}
                     disabled={isPending}
                     aria-label={`Delete ${name}`}
-                    className={buttonVariants({ variant: "ghost", size: "icon" })}
+                    className={buttonVariants({
+                      variant: "ghost",
+                      size: "icon",
+                    })}
                   >
-                    <TrashIcon aria-hidden className="size-4 text-destructive" />
+                    <TrashIcon
+                      aria-hidden
+                      className="size-4 text-destructive"
+                    />
                   </button>
                 </div>
               </li>

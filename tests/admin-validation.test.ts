@@ -135,7 +135,9 @@ describe("updateTourSchema", () => {
   });
 
   it("accepts a status-only patch", () => {
-    expect(updateTourSchema.safeParse({ status: "PUBLISHED" }).success).toBe(true);
+    expect(updateTourSchema.safeParse({ status: "PUBLISHED" }).success).toBe(
+      true,
+    );
   });
 
   it("rejects an unknown status with a readable message", () => {
@@ -188,13 +190,15 @@ describe("formatApiError", () => {
         { path: "slug", message: "Slug is required." },
         { path: "vi.name", message: "Name is required." },
       ]),
-    ).toBe("Invalid input — slug: Slug is required.; vi.name: Name is required.");
+    ).toBe(
+      "Invalid input — slug: Slug is required.; vi.name: Name is required.",
+    );
   });
 
   it("uses only the details when the envelope carries no error", () => {
-    expect(formatApiError(undefined, [{ path: "slug", message: "Taken" }])).toBe(
-      "slug: Taken",
-    );
+    expect(
+      formatApiError(undefined, [{ path: "slug", message: "Taken" }]),
+    ).toBe("slug: Taken");
   });
 
   it("falls back to a generic message when the envelope is empty", () => {
@@ -221,7 +225,9 @@ describe("updateTourSchema checkpointIds", () => {
   });
 
   it("rejects duplicates instead of silently collapsing them", () => {
-    const result = updateTourSchema.safeParse({ checkpointIds: ["cp_1", "cp_1"] });
+    const result = updateTourSchema.safeParse({
+      checkpointIds: ["cp_1", "cp_1"],
+    });
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.issues[0].path.join(".")).toBe("checkpointIds");
@@ -261,10 +267,14 @@ describe("loginSchema", () => {
     if (result.success) return;
 
     // Both checks fire per field; `toFieldErrors` keeps the first.
-    expect(toFieldErrors(result.error.issues.map((issue) => ({
-      path: issue.path.join("."),
-      message: issue.message,
-    })))).toEqual({
+    expect(
+      toFieldErrors(
+        result.error.issues.map((issue) => ({
+          path: issue.path.join("."),
+          message: issue.message,
+        })),
+      ),
+    ).toEqual({
       email: "Email is required.",
       password: "Password is required.",
     });
@@ -306,7 +316,9 @@ describe("adminListQuerySchema", () => {
   });
 
   it("rejects a non-numeric limit", () => {
-    expect(adminListQuerySchema.safeParse({ take: "many" }).success).toBe(false);
+    expect(adminListQuerySchema.safeParse({ take: "many" }).success).toBe(
+      false,
+    );
   });
 
   it("caps the search text at 100 characters", () => {

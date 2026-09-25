@@ -37,7 +37,7 @@ export const InputField = forwardRef<
   const { ref: registerRef, ...registerProps } = register(name);
   const { ref: inputRef, ...inputPropsRest } = inputProps;
 
-  return (  
+  return (
     <CommonField
       label={label}
       name={name}

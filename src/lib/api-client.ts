@@ -4,7 +4,10 @@ export interface ApiEnvelope<TData> {
   error?: { code: string; message: string; details?: unknown };
 }
 
-export type ApiEnvelopeError = Extract<ApiEnvelope<never>, { ok: false }>["error"];
+export type ApiEnvelopeError = Extract<
+  ApiEnvelope<never>,
+  { ok: false }
+>["error"];
 
 export async function fetchApiOk<TData>(
   url: string,

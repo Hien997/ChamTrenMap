@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
-
 import { probePanoramaImage } from "./PanoramaProbe";
 import type {
   PanoramaImageSource,
@@ -48,7 +47,8 @@ function FlatPhoto({
       loading="lazy"
       draggable={false}
       className={
-        className ?? `h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`
+        className ??
+        `h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`
       }
     />
   );

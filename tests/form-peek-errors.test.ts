@@ -32,9 +32,7 @@ describe("peekErrors", () => {
     const form = fakeForm({
       options: [{ label: { message: "First option is invalid" } }],
     });
-    expect(peekErrors(form, "options.0.label")).toBe(
-      "First option is invalid",
-    );
+    expect(peekErrors(form, "options.0.label")).toBe("First option is invalid");
   });
 
   it("returns undefined when the field has no error", () => {

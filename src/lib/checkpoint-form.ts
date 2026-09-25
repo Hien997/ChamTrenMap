@@ -103,7 +103,10 @@ export function editDefaultValues(
     priceKind: checkpoint.priceKind,
     vi: translation(checkpoint.vi),
     en: translation(checkpoint.en),
-    guide: { vi: { content: guideContent("vi") }, en: { content: guideContent("en") } },
+    guide: {
+      vi: { content: guideContent("vi") },
+      en: { content: guideContent("en") },
+    },
   };
 }
 

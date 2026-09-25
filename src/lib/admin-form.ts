@@ -41,7 +41,9 @@ function firstMessagePerField(details: AdminFieldError[]): AdminFieldError[] {
 }
 
 /** Turn the API `details` list into a `field name -> message` map for inline errors. */
-export function toFieldErrors(details?: AdminFieldError[]): Record<string, string> {
+export function toFieldErrors(
+  details?: AdminFieldError[],
+): Record<string, string> {
   const fieldErrors: Record<string, string> = {};
   for (const detail of firstMessagePerField(details ?? [])) {
     fieldErrors[detail.path] = detail.message;
@@ -50,11 +52,12 @@ export function toFieldErrors(details?: AdminFieldError[]): Record<string, strin
 }
 
 /** Flatten the envelope into one human-readable line for a toast. */
-export function formatApiError(error?: string, details?: AdminFieldError[]): string {
+export function formatApiError(
+  error?: string,
+  details?: AdminFieldError[],
+): string {
   const detailMessage = firstMessagePerField(details ?? [])
     .map((detail) => `${detail.path}: ${detail.message}`)
     .join("; ");
   return [error, detailMessage].filter(Boolean).join(" — ") || "Request failed";
 }
-
-

@@ -169,8 +169,8 @@ export default function StopsEditor({
     <>
       {value.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No stops yet. Add checkpoints below — visitors walk them in the
-          order listed here.
+          No stops yet. Add checkpoints below — visitors walk them in the order
+          listed here.
         </p>
       ) : (
         <DndContext
@@ -178,10 +178,7 @@ export default function StopsEditor({
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <SortableContext
-            items={value}
-            strategy={verticalListSortingStrategy}
-          >
+          <SortableContext items={value} strategy={verticalListSortingStrategy}>
             <ol className="flex flex-col gap-2">
               {value.map((id, index) => {
                 const stop = stopInfo.get(id);

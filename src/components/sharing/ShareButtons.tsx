@@ -5,7 +5,10 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-function FacebookIcon({ className, "aria-hidden": ariaHidden }: {
+function FacebookIcon({
+  className,
+  "aria-hidden": ariaHidden,
+}: {
   className?: string;
   "aria-hidden"?: boolean | "true" | "false";
 }) {

@@ -214,7 +214,9 @@ describe("checkLoginRate (S3)", () => {
     vi.setSystemTime(start);
     for (let i = 0; i < LOGIN_RATE_LIMIT.max; i++) checkLoginRate("9.9.9.9");
     expect(checkLoginRate("9.9.9.9").ok).toBe(false);
-    vi.setSystemTime(new Date(start.getTime() + LOGIN_RATE_LIMIT.windowMs + 1_000));
+    vi.setSystemTime(
+      new Date(start.getTime() + LOGIN_RATE_LIMIT.windowMs + 1_000),
+    );
     expect(checkLoginRate("9.9.9.9").ok).toBe(true);
   });
 });

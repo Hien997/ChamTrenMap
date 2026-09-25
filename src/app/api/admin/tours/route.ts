@@ -1,5 +1,10 @@
-import type { NextRequest} from "next/server";
-import { adminError, adminOk, parseAdminBody, parseAdminListQuery } from "@/lib/api";
+import type { NextRequest } from "next/server";
+import {
+  adminError,
+  adminOk,
+  parseAdminBody,
+  parseAdminListQuery,
+} from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/admin-auth";
 import { buildTourSearchWhere } from "@/services/search";

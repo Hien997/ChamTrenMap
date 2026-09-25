@@ -153,7 +153,9 @@ async function main() {
     });
     console.log(`✅ Admin user ready: ${adminEmail}`);
   } else {
-    console.log("⚠️  ADMIN_EMAIL / ADMIN_PASSWORD not set — skipping admin seed.");
+    console.log(
+      "⚠️  ADMIN_EMAIL / ADMIN_PASSWORD not set — skipping admin seed.",
+    );
   }
 }
 

@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "prisma db seed",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,mjs,json,css}\" \"tests/**/*.{ts,tsx,js,mjs,json,css}\" \"prisma/**/*.{ts,tsx,js,mjs,json,css}\" \"scripts/**/*.{ts,tsx,js,mjs,json,css}\" \"*.{ts,tsx,js,mjs,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,mjs,json,css}\" \"tests/**/*.{ts,tsx,js,mjs,json,css}\" \"prisma/**/*.{ts,tsx,js,mjs,json,css}\" \"scripts/**/*.{ts,tsx,js,mjs,json,css}\" \"*.{ts,tsx,js,mjs,json}\"",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -53,6 +55,7 @@
     "@types/three": "^0.186.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "prettier": "^3.9.9",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",

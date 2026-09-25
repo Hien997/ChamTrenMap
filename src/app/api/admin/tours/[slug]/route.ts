@@ -1,4 +1,4 @@
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { adminError, adminOk, parseAdminBody } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/admin-auth";
@@ -39,7 +39,9 @@ export async function GET(request: NextRequest) {
         order: tc.order,
         checkpointId: tc.checkpoint.id,
         checkpointSlug: tc.checkpoint.slug,
-        name: tc.checkpoint.translations.find((t) => t.locale === "vi")?.name ?? tc.checkpoint.slug,
+        name:
+          tc.checkpoint.translations.find((t) => t.locale === "vi")?.name ??
+          tc.checkpoint.slug,
       })),
     },
   });
@@ -92,7 +94,11 @@ export async function PATCH(request: NextRequest) {
                   {
                     where: { tourId_locale: { tourId, locale: "vi" } },
                     update: vi,
-                    create: { locale: "vi", ...vi, coverImageUrl: vi.coverImageUrl ?? "" },
+                    create: {
+                      locale: "vi",
+                      ...vi,
+                      coverImageUrl: vi.coverImageUrl ?? "",
+                    },
                   },
                 ]
               : []),
@@ -101,7 +107,11 @@ export async function PATCH(request: NextRequest) {
                   {
                     where: { tourId_locale: { tourId, locale: "en" } },
                     update: en,
-                    create: { locale: "en", ...en, coverImageUrl: en.coverImageUrl ?? "" },
+                    create: {
+                      locale: "en",
+                      ...en,
+                      coverImageUrl: en.coverImageUrl ?? "",
+                    },
                   },
                 ]
               : []),

@@ -44,10 +44,7 @@ import {
   resolveMapStyle,
   styleUsesTileSources,
 } from "./map.utils";
-import {
-  createDefaultPin,
-  createUserLocationElement,
-} from "./marker-elements";
+import { createDefaultPin, createUserLocationElement } from "./marker-elements";
 import { cn } from "@/lib/utils";
 
 export interface MapLibreMapProps<T extends MapLocation = MapLocation> {

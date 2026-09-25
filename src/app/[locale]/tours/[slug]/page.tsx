@@ -72,7 +72,9 @@ export default async function TourDetailPage({ params }: Props) {
         </div>
 
         <div className="mt-6 flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{tour.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            {tour.name}
+          </h1>
           <p className="text-lg text-muted-foreground">{tour.tagline}</p>
           <p className="text-muted-foreground">{tour.description}</p>
         </div>

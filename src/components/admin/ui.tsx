@@ -29,7 +29,13 @@ export function PageHeader({
   );
 }
 
-export function BackLink({ href, children }: { href: string; children: ReactNode }) {
+export function BackLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -51,7 +57,9 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`overflow-hidden rounded-lg border bg-card ${className}`}>
+    <section
+      className={`overflow-hidden rounded-lg border bg-card ${className}`}
+    >
       {title ? (
         <div className="border-b px-5 py-3">
           <h2 className="text-sm font-medium">{title}</h2>
@@ -126,11 +134,7 @@ export function Field({
       </Label>
       {children}
       {error ? (
-        <p
-          id={errorId}
-          className="text-xs text-destructive"
-          aria-live="polite"
-        >
+        <p id={errorId} className="text-xs text-destructive" aria-live="polite">
           {error}
         </p>
       ) : hint ? (

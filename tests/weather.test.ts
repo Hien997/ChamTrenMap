@@ -55,14 +55,20 @@ describe("parseHatienWeather", () => {
       fetchedAt: 1000,
     });
     expect(parsed?.days).toEqual([
-      { date: "2026-09-18", kind: "partly-cloudy", highC: 32, lowC: 25, rainChance: 10 },
+      {
+        date: "2026-09-18",
+        kind: "partly-cloudy",
+        highC: 32,
+        lowC: 25,
+        rainChance: 10,
+      },
       { date: "2026-09-19", kind: "rain", highC: 30, lowC: 25, rainChance: 80 },
     ]);
   });
 
   it("tolerates a missing rain array (null chances)", () => {
-    const { precipitation_probability_max: _drop, ...rest } =
-      payload().daily as Record<string, unknown>;
+    const { precipitation_probability_max: _drop, ...rest } = payload()
+      .daily as Record<string, unknown>;
     void _drop;
     const parsed = parseHatienWeather({ ...payload(), daily: rest });
     expect(parsed?.days[0].rainChance).toBeNull();
@@ -84,7 +90,9 @@ describe("parseHatienWeather", () => {
 describe("buildWeatherUrl", () => {
   it("pins the Hà Tiên request contract", () => {
     const url = new URL(buildWeatherUrl());
-    expect(url.origin + url.pathname).toBe("https://api.open-meteo.com/v1/forecast");
+    expect(url.origin + url.pathname).toBe(
+      "https://api.open-meteo.com/v1/forecast",
+    );
     expect(url.searchParams.get("latitude")).toBe("10.3836");
     expect(url.searchParams.get("longitude")).toBe("104.4835");
     expect(url.searchParams.get("current")).toBe("temperature_2m,weather_code");

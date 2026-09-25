@@ -12,9 +12,12 @@ export async function POST(request: NextRequest) {
     // Read-only: sharing requires an existing visitor who owns the check-in.
     const user = await getSessionVisitor();
     if (!user) return apiError("UNAUTHORIZED", "Not your check-in", 403);
-    const origin =
-      process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
-    const result = await createShareLink(user.id, parsed.data.checkInId, origin);
+    const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    const result = await createShareLink(
+      user.id,
+      parsed.data.checkInId,
+      origin,
+    );
 
     switch (result.status) {
       case "ok":

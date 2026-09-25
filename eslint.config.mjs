@@ -92,9 +92,7 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: [
-      "src/components/three/PanoramaViewer.tsx",
-    ],
+    files: ["src/components/three/PanoramaViewer.tsx"],
     rules: {
       "@next/next/no-img-element": "off",
     },
@@ -106,7 +104,7 @@ const eslintConfig = defineConfig([
         "error",
         { blankLine: "any", prev: ["return"], next: ["return"] },
       ],
-      "eqeqeq": ["error", "always", { "null": "ignore" }],
+      eqeqeq: ["error", "always", { null: "ignore" }],
       "no-console": "warn",
       "react/self-closing-comp": "error",
       "react/no-array-index-key": "warn",
@@ -122,4 +120,3 @@ const eslintConfig = defineConfig([
 ]);
 
 export default eslintConfig;
-

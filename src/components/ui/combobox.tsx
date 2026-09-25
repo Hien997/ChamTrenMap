@@ -7,10 +7,7 @@ import { CheckIcon } from "lucide-react";
 
 const Combobox = ComboboxPrimitive.Root;
 
-function ComboboxInput({
-  className,
-  ...props
-}: ComboboxPrimitive.Input.Props) {
+function ComboboxInput({ className, ...props }: ComboboxPrimitive.Input.Props) {
   return (
     <ComboboxPrimitive.Input
       data-slot="combobox-input"
@@ -73,7 +70,9 @@ function ComboboxItem({
     >
       {children}
       <ComboboxPrimitive.ItemIndicator
-        render={<span className="ml-auto flex size-4 items-center justify-center" />}
+        render={
+          <span className="ml-auto flex size-4 items-center justify-center" />
+        }
       >
         <CheckIcon className="size-4" />
       </ComboboxPrimitive.ItemIndicator>
@@ -93,21 +92,18 @@ function ComboboxCollection<TItem>({
 }: {
   children: (item: TItem, index: number) => React.ReactNode;
 }) {
-  const render = children as (
-    item: unknown,
-    index: number,
-  ) => React.ReactNode;
+  const render = children as (item: unknown, index: number) => React.ReactNode;
   return <ComboboxPrimitive.Collection>{render}</ComboboxPrimitive.Collection>;
 }
 
-function ComboboxEmpty({
-  className,
-  ...props
-}: ComboboxPrimitive.Empty.Props) {
+function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
   return (
     <ComboboxPrimitive.Empty
       data-slot="combobox-empty"
-      className={cn("px-2 py-6 text-center text-sm text-muted-foreground", className)}
+      className={cn(
+        "px-2 py-6 text-center text-sm text-muted-foreground",
+        className,
+      )}
       {...props}
     />
   );

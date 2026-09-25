@@ -276,7 +276,8 @@ function readFormTranslation(
     summary: String(read(`${prefix}.summary`) ?? ""),
     address: String(read(`${prefix}.address`) ?? ""),
     openingHours: (read(`${prefix}.openingHours`) as string | null) || null,
-    bestTimeToVisit: (read(`${prefix}.bestTimeToVisit`) as string | null) || null,
+    bestTimeToVisit:
+      (read(`${prefix}.bestTimeToVisit`) as string | null) || null,
   };
 }
 

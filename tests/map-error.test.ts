@@ -104,9 +104,9 @@ describe("reduceMapLoad — timeout budget", () => {
 
   it("ignores the budget once any tile has rendered", () => {
     const state: MapLoadState = { ...readyState, anyTileRendered: true };
-    expect(
-      reduceMapLoad(state, { type: "timeout", styleHasTiles: true }),
-    ).toBe(state);
+    expect(reduceMapLoad(state, { type: "timeout", styleHasTiles: true })).toBe(
+      state,
+    );
   });
 
   it("falls back when a loaded style still awaits its first tile", () => {
@@ -286,9 +286,7 @@ describe("reduceMapLoad — style errors, load, restarts", () => {
       ...initialMapLoadState,
       status: "error",
     };
-    expect(reduceMapLoad(errored, { type: "constructorFailed" })).toBe(
-      errored,
-    );
+    expect(reduceMapLoad(errored, { type: "constructorFailed" })).toBe(errored);
   });
 
   it("records tile rendering once (idempotent)", () => {

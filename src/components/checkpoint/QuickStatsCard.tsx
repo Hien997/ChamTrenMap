@@ -45,7 +45,9 @@ export function QuickStatsCard({
           value={openingHours ?? "—"}
         />
         <Stat
-          icon={<UtensilsCrossedIcon aria-hidden className="size-4 text-primary" />}
+          icon={
+            <UtensilsCrossedIcon aria-hidden className="size-4 text-primary" />
+          }
           label="Tầm giá"
           value={priceVnd != null ? formatVnd(priceVnd) : "—"}
         />

@@ -1,7 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormProvider, useForm, type FieldPath, type SubmitHandler } from "react-hook-form";
+import {
+  FormProvider,
+  useForm,
+  type FieldPath,
+  type SubmitHandler,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -97,118 +102,122 @@ export default function TourNewForm({
       <RequiredNote />
 
       <FormProvider {...form}>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
-        <Panel title="URL slug">
-          <InputField
-            name="slug"
-            label="Slug"
-            required
-            hint="Shown in the public URL, e.g. ha-tien-discovery."
-            placeholder="ha-tien-discovery"
-            serverError={errors.slug?.message}
-          />
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="space-y-6"
+        >
+          <Panel title="URL slug">
+            <InputField
+              name="slug"
+              label="Slug"
+              required
+              hint="Shown in the public URL, e.g. ha-tien-discovery."
+              placeholder="ha-tien-discovery"
+              serverError={errors.slug?.message}
+            />
 
-          <RadioField
-            name="status"
-            label="Status"
-            required
-            hint="Draft hides the tour from public view."
-            options={[
-              { value: "DRAFT", label: "Draft" },
-              { value: "PUBLISHED", label: "Published" },
-            ]}
-            serverError={errors.status?.message}
-          />
-        </Panel>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Panel title="Tiếng Việt (vi)">
-            <div className="space-y-4">
-              <InputField
-                name="vi.name"
-                label="Name"
-                required
-                placeholder="Tên tour"
-                serverError={errors.vi?.name?.message}
-              />
-              <InputField
-                name="vi.tagline"
-                label="Tagline"
-                serverError={errors.vi?.tagline?.message}
-              />
-              <TextAreaField
-                name="vi.description"
-                label="Description"
-                required
-                rows={3}
-                serverError={errors.vi?.description?.message}
-              />
-              <InputField
-                name="vi.coverImageUrl"
-                label="Cover image URL"
-                type="url"
-                placeholder="https://…"
-                serverError={errors.vi?.coverImageUrl?.message}
-              />
-            </div>
+            <RadioField
+              name="status"
+              label="Status"
+              required
+              hint="Draft hides the tour from public view."
+              options={[
+                { value: "DRAFT", label: "Draft" },
+                { value: "PUBLISHED", label: "Published" },
+              ]}
+              serverError={errors.status?.message}
+            />
           </Panel>
 
-          <Panel title="English (en)">
-            <div className="space-y-4">
-              <InputField
-                name="en.name"
-                label="Name"
-                required
-                placeholder="Tour name"
-                serverError={errors.en?.name?.message}
-              />
-              <InputField
-                name="en.tagline"
-                label="Tagline"
-                serverError={errors.en?.tagline?.message}
-              />
-              <TextAreaField
-                name="en.description"
-                label="Description"
-                required
-                rows={3}
-                serverError={errors.en?.description?.message}
-              />
-              <InputField
-                name="en.coverImageUrl"
-                label="Cover image URL"
-                type="url"
-                placeholder="https://…"
-                serverError={errors.en?.coverImageUrl?.message}
-              />
-            </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Panel title="Tiếng Việt (vi)">
+              <div className="space-y-4">
+                <InputField
+                  name="vi.name"
+                  label="Name"
+                  required
+                  placeholder="Tên tour"
+                  serverError={errors.vi?.name?.message}
+                />
+                <InputField
+                  name="vi.tagline"
+                  label="Tagline"
+                  serverError={errors.vi?.tagline?.message}
+                />
+                <TextAreaField
+                  name="vi.description"
+                  label="Description"
+                  required
+                  rows={3}
+                  serverError={errors.vi?.description?.message}
+                />
+                <InputField
+                  name="vi.coverImageUrl"
+                  label="Cover image URL"
+                  type="url"
+                  placeholder="https://…"
+                  serverError={errors.vi?.coverImageUrl?.message}
+                />
+              </div>
+            </Panel>
+
+            <Panel title="English (en)">
+              <div className="space-y-4">
+                <InputField
+                  name="en.name"
+                  label="Name"
+                  required
+                  placeholder="Tour name"
+                  serverError={errors.en?.name?.message}
+                />
+                <InputField
+                  name="en.tagline"
+                  label="Tagline"
+                  serverError={errors.en?.tagline?.message}
+                />
+                <TextAreaField
+                  name="en.description"
+                  label="Description"
+                  required
+                  rows={3}
+                  serverError={errors.en?.description?.message}
+                />
+                <InputField
+                  name="en.coverImageUrl"
+                  label="Cover image URL"
+                  type="url"
+                  placeholder="https://…"
+                  serverError={errors.en?.coverImageUrl?.message}
+                />
+              </div>
+            </Panel>
+          </div>
+
+          <Panel title={`Stops on this tour (${stopIds.length})`}>
+            <StopsEditor
+              value={stopIds}
+              onChange={(ids) =>
+                setValue("checkpointIds", ids, { shouldValidate: true })
+              }
+              availableCheckpoints={availableCheckpoints}
+              error={errors.checkpointIds?.message}
+            />
           </Panel>
-        </div>
 
-        <Panel title={`Stops on this tour (${stopIds.length})`}>
-          <StopsEditor
-            value={stopIds}
-            onChange={(ids) =>
-              setValue("checkpointIds", ids, { shouldValidate: true })
-            }
-            availableCheckpoints={availableCheckpoints}
-            error={errors.checkpointIds?.message}
-          />
-        </Panel>
-
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/admin/tours")}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating…" : "Create tour"}
-          </Button>
-        </div>
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/admin/tours")}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating…" : "Create tour"}
+            </Button>
+          </div>
         </form>
       </FormProvider>
     </div>

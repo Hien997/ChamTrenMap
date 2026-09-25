@@ -45,4 +45,3 @@ export function sanitizeHtml(raw: string): string {
     disallowedTagsMode: "discard",
   });
 }
-

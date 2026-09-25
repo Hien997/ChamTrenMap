@@ -32,7 +32,8 @@ export function SiteHeader() {
             const active =
               link.href === "/"
                 ? pathname === "/"
-                : pathname === link.href || pathname.startsWith(`${link.href}/`);
+                : pathname === link.href ||
+                  pathname.startsWith(`${link.href}/`);
             return (
               <Link
                 key={link.href}
@@ -58,4 +59,3 @@ export function SiteHeader() {
     </header>
   );
 }
-

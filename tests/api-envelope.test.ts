@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
+import { GET as getTours } from "@/app/api/tours/route";
+import { NextRequest } from "next/server";
+
 import {
   adminError,
   adminOk,
@@ -58,6 +61,31 @@ describe("public envelope (typed)", () => {
     expect(json.ok).toBe(false);
     expect(json.error.code).toBe("BAD_REQUEST");
     expect(json.error.details.issues).toHaveLength(1);
+  });
+
+  it("GET /api/tours rejects an unsupported locale with the public 400 shape", async () => {
+    const res = await getTours(
+      new NextRequest("http://localhost/api/tours?locale=fr"),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json).toMatchObject({
+      ok: false,
+      error: {
+        code: "BAD_REQUEST",
+        message: "Invalid request",
+        details: {
+          issues: [
+            {
+              code: "invalid_value",
+              values: ["vi", "en"],
+              message: 'Invalid option: expected one of "vi"|"en"',
+            },
+          ],
+        },
+      },
+    });
   });
 });
 
@@ -139,10 +167,7 @@ describe("writeErrorResponse", () => {
   it("logs unknown errors and answers with a generic JSON 500", async () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = writeErrorResponse(new Error("db password!"));
-    expect(spy).toHaveBeenCalledWith(
-      "[api] admin write:",
-      expect.any(Error),
-    );
+    expect(spy).toHaveBeenCalledWith("[api] admin write:", expect.any(Error));
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({
       ok: false,

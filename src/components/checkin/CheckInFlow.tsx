@@ -86,8 +86,7 @@ export function CheckInFlow({
       switch (error.code) {
         case "ALREADY_CHECKED_IN": {
           const details = error.details as
-            | { progress?: TourProgressView }
-            | undefined;
+            { progress?: TourProgressView } | undefined;
           setAlreadyProgress(details?.progress ?? null);
           break;
         }

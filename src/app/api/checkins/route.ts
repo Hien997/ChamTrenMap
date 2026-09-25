@@ -1,5 +1,11 @@
 import type { NextRequest } from "next/server";
-import { apiError, apiOk, handleApiError, parseBody, parseLocale } from "@/lib/api";
+import {
+  apiError,
+  apiOk,
+  handleApiError,
+  parseBody,
+  parseLocale,
+} from "@/lib/api";
 import { CHECKIN_RATE_LIMIT } from "@/config/constants";
 import { rateLimit } from "@/lib/rate-limit";
 import { ensureVisitorWithCookie } from "@/lib/visitor-session";
@@ -9,7 +15,8 @@ import { createCheckIn } from "@/services/checkins.service";
 export async function POST(request: NextRequest) {
   try {
     const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
     const limit = rateLimit(`checkin:${ip}`, CHECKIN_RATE_LIMIT);
     if (!limit.ok) {
       return apiError("RATE_LIMITED", "Too many requests", 429, {

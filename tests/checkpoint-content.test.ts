@@ -65,10 +65,7 @@ describe("parseCheckpointUpdateForm", () => {
   });
 
   it("absent numeric fields stay undefined so zod rejects the PATCH with 400", () => {
-    const payload = parseCheckpointUpdateForm(
-      formData({ "vi.name": "n" }),
-      [],
-    );
+    const payload = parseCheckpointUpdateForm(formData({ "vi.name": "n" }), []);
     const result = updateCheckpointSchema.safeParse(payload);
     expect(result.success).toBe(false);
   });
@@ -296,13 +293,19 @@ describe("parseCheckpointUpdateValues", () => {
             openingHours: "",
             bestTimeToVisit: "",
           },
-          guide: { vi: { content: "  <h2>Giới thiệu</h2>  " }, en: { content: "" } },
+          guide: {
+            vi: { content: "  <h2>Giới thiệu</h2>  " },
+            en: { content: "" },
+          },
         },
         currentGuides,
       ),
     ).toEqual(
       parseCheckpointUpdateForm(
-        formData({ ...FULL_PATCH_FIELDS, "guide.vi.content": "  <h2>Giới thiệu</h2>  " }),
+        formData({
+          ...FULL_PATCH_FIELDS,
+          "guide.vi.content": "  <h2>Giới thiệu</h2>  ",
+        }),
         currentGuides,
       ),
     );

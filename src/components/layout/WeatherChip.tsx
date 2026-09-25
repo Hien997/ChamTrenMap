@@ -44,9 +44,17 @@ const KIND_TINT: Record<WeatherKind, string> = {
   snow: "text-cyan-600 dark:text-cyan-200",
 };
 
-function KindIcon({ kind, className }: { kind: WeatherKind; className?: string }) {
+function KindIcon({
+  kind,
+  className,
+}: {
+  kind: WeatherKind;
+  className?: string;
+}) {
   const Icon = KIND_ICONS[kind];
-  return <Icon aria-hidden className={cn(KIND_TINT[kind], className ?? "size-4")} />;
+  return (
+    <Icon aria-hidden className={cn(KIND_TINT[kind], className ?? "size-4")} />
+  );
 }
 
 const weekdayFormatters = new Map<string, Intl.DateTimeFormat>();
@@ -102,7 +110,7 @@ export function WeatherChip() {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open ]);
+  }, [open]);
 
   if (!loading && !weather) return null;
 
@@ -116,7 +124,11 @@ export function WeatherChip() {
         type="button"
         aria-expanded={open}
         aria-haspopup="dialog"
-        aria-label={weather ? t("openForecast", { temp: weather.currentTempC }) : chipLabel}
+        aria-label={
+          weather
+            ? t("openForecast", { temp: weather.currentTempC })
+            : chipLabel
+        }
         onClick={() => setOpen((v) => !v)}
         className={cn(
           "flex h-8 items-center gap-1.5 rounded-md px-2 text-sm transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/60",
@@ -124,11 +136,16 @@ export function WeatherChip() {
         )}
       >
         {loading || !weather ? (
-          <span aria-hidden className="h-4 w-12 animate-pulse rounded bg-muted" />
+          <span
+            aria-hidden
+            className="h-4 w-12 animate-pulse rounded bg-muted"
+          />
         ) : (
           <>
             <KindIcon kind={weather.currentKind} className="size-4 shrink-0" />
-            <span className="font-medium tabular-nums">{weather.currentTempC}°</span>
+            <span className="font-medium tabular-nums">
+              {weather.currentTempC}°
+            </span>
           </>
         )}
         <ChevronDownIcon
@@ -161,7 +178,9 @@ export function WeatherChip() {
                   {i === 0 ? t("today") : shortWeekday(day.date, locale)}
                 </span>
                 <KindIcon kind={day.kind} className="size-4 shrink-0" />
-                <span className="ml-auto font-medium tabular-nums">{day.highC}°</span>
+                <span className="ml-auto font-medium tabular-nums">
+                  {day.highC}°
+                </span>
                 <span className="w-8 shrink-0 text-right text-muted-foreground tabular-nums">
                   {day.lowC}°
                 </span>

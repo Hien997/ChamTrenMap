@@ -102,14 +102,12 @@ export async function getCheckpointForEdit(
     priceKind: cp.priceKind,
     vi: toAdminTranslation(cp.translations, "vi"),
     en: toAdminTranslation(cp.translations, "en"),
-    guides: cp.guides.map(
-      (g): AdminGuide => ({
-        id: g.id,
-        locale: g.locale as AdminGuide["locale"],
-        content: g.content,
-        contentType: g.contentType,
-      }),
-    ),
+    guides: cp.guides.map((g): AdminGuide => ({
+      id: g.id,
+      locale: g.locale as AdminGuide["locale"],
+      content: g.content,
+      contentType: g.contentType,
+    })),
     tours: cp.tourLinks.map((tl) => ({
       tourId: tl.tour.id,
       slug: tl.tour.slug,

@@ -49,11 +49,11 @@ export function SuccessModal({
   async function createShare() {
     setCreating(true);
     try {
-      const json = await fetch("/api/share/checkin", {
+      const json = (await fetch("/api/share/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ checkInId: checkIn.id }),
-      }).then((r) => r.json()) as ApiEnvelope<{ url: string }>;
+      }).then((r) => r.json())) as ApiEnvelope<{ url: string }>;
       if (json.ok && json.data) setShareUrl(json.data.url);
     } catch {
       /* keep the modal; user can retry */
@@ -75,7 +75,13 @@ export function SuccessModal({
                 className="absolute left-1/2 top-8 h-2 w-3 rounded-sm"
                 style={{ backgroundColor: piece.c }}
                 initial={{ x: 0, y: 0, opacity: 1, scale: 0.4 }}
-                animate={{ x: piece.x, y: piece.y, opacity: 0, scale: 1, rotate: piece.x / 10 }}
+                animate={{
+                  x: piece.x,
+                  y: piece.y,
+                  opacity: 0,
+                  scale: 1,
+                  rotate: piece.x / 10,
+                }}
                 transition={{ duration: 1.4, ease: "easeOut" }}
               />
             ))}
@@ -133,7 +139,11 @@ export function SuccessModal({
               {t("continue")}
             </Link>
             {!shareUrl && (
-              <Button variant="outline" onClick={createShare} disabled={creating}>
+              <Button
+                variant="outline"
+                onClick={createShare}
+                disabled={creating}
+              >
                 <Share2Icon aria-hidden />
                 {creating ? "…" : t("share")}
               </Button>

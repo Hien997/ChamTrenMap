@@ -6,14 +6,19 @@ import { PageHeader } from "@/components/admin/ui";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const [tourTotal, tourPublished, checkpointTotal, checkpointsWithGuides, guideTotal] =
-    await Promise.all([
-      prisma.tour.count(),
-      prisma.tour.count({ where: { status: "PUBLISHED" } }),
-      prisma.checkpoint.count(),
-      prisma.checkpoint.count({ where: { guides: { some: {} } } }),
-      prisma.guideSection.count(),
-    ]);
+  const [
+    tourTotal,
+    tourPublished,
+    checkpointTotal,
+    checkpointsWithGuides,
+    guideTotal,
+  ] = await Promise.all([
+    prisma.tour.count(),
+    prisma.tour.count({ where: { status: "PUBLISHED" } }),
+    prisma.checkpoint.count(),
+    prisma.checkpoint.count({ where: { guides: { some: {} } } }),
+    prisma.guideSection.count(),
+  ]);
 
   const tourDrafts = tourTotal - tourPublished;
 
@@ -68,7 +73,9 @@ export default async function AdminDashboard() {
               Written across all checkpoints, in Vietnamese and English.
             </p>
           </div>
-          <span className="text-2xl font-medium tabular-nums">{guideTotal}</span>
+          <span className="text-2xl font-medium tabular-nums">
+            {guideTotal}
+          </span>
         </div>
       </div>
     </div>

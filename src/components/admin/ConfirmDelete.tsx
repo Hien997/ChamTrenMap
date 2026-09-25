@@ -1,7 +1,14 @@
 "use client";
 
 import { TrashIcon } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 export function ConfirmDelete({
@@ -26,7 +33,8 @@ export function ConfirmDelete({
             Delete
           </DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete &quot;{title}&quot;? This can&apos;t be undone.
+            Are you sure you want to delete &quot;{title}&quot;? This can&apos;t
+            be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -14,8 +14,18 @@ type TTour = {
   id: string;
   slug: string;
   status: "DRAFT" | "PUBLISHED";
-  vi: { name: string; tagline: string; description: string; coverImageUrl?: string | null } | null;
-  en: { name: string; tagline: string; description: string; coverImageUrl?: string | null } | null;
+  vi: {
+    name: string;
+    tagline: string;
+    description: string;
+    coverImageUrl?: string | null;
+  } | null;
+  en: {
+    name: string;
+    tagline: string;
+    description: string;
+    coverImageUrl?: string | null;
+  } | null;
   checkpoints: TTourStop[];
 };
 
@@ -77,6 +87,9 @@ export default async function AdminTourEditPageRoute({
   };
 
   return (
-    <TourEditForm tour={typedTour} availableCheckpoints={availableCheckpoints} />
+    <TourEditForm
+      tour={typedTour}
+      availableCheckpoints={availableCheckpoints}
+    />
   );
 }

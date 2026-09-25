@@ -267,9 +267,7 @@ export function CheckpointGallery({ images, name }: Props) {
                   type="button"
                   aria-label={t("prevImage")}
                   onClick={() =>
-                    setIndex((i) =>
-                      i === null ? i : (i - 1 + count) % count,
-                    )
+                    setIndex((i) => (i === null ? i : (i - 1 + count) % count))
                   }
                   className={`${navButton} absolute left-3 top-1/2 -translate-y-1/2 sm:left-6`}
                 >

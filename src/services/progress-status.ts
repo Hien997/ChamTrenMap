@@ -11,8 +11,7 @@ export function deriveStatuses(
   completedCheckpointIds: string[],
 ): DeriveStatusesResult {
   const completed = new Set(completedCheckpointIds);
-  const current =
-    orderedCheckpointIds.find((id) => !completed.has(id)) ?? null;
+  const current = orderedCheckpointIds.find((id) => !completed.has(id)) ?? null;
 
   const statuses = new Map<string, CheckpointStatus>();
   for (const id of orderedCheckpointIds) {

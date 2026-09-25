@@ -32,12 +32,7 @@ const projectRoot = path.resolve(
 const require = createRequire(import.meta.url);
 
 const { version } = require("maplibre-gl/package.json");
-const distDir = path.join(
-  projectRoot,
-  "node_modules",
-  "maplibre-gl",
-  "dist",
-);
+const distDir = path.join(projectRoot, "node_modules", "maplibre-gl", "dist");
 const outDir = path.join(projectRoot, "public", "maplibre-gl");
 
 const readDistFile = (name) =>

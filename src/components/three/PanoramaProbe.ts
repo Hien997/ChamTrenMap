@@ -1,7 +1,6 @@
 import type { PanoramaStatus } from "./types";
 import { isLikelyPanorama } from "@/lib/panorama";
 
-
 export type PanoramaProbe = {
   ok: boolean;
   width: number;

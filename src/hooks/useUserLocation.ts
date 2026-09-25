@@ -3,10 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type LocationPermissionState =
-  | "unknown"
-  | "granted"
-  | "denied"
-  | "prompt";
+  "unknown" | "granted" | "denied" | "prompt";
 
 export function useUserLocation() {
   const [position, setPosition] = useState<GeolocationCoordinates | null>(null);

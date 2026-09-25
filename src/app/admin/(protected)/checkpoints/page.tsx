@@ -3,7 +3,7 @@
 import { useCallback, useState, useTransition } from "react";
 import Link from "next/link";
 import { PencilIcon, PlusIcon, SearchIcon, TrashIcon } from "lucide-react";
-import { buttonVariants , Button } from "@/components/ui/button";
+import { buttonVariants, Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/admin/ui";
@@ -58,7 +58,9 @@ export default function AdminCheckpointsListPage() {
     setConfirmOpen(false);
     if (!target) return;
     startTransition(async () => {
-      const res = await fetch(`/api/admin/checkpoints/${target.slug}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/checkpoints/${target.slug}`, {
+        method: "DELETE",
+      });
       const json = await res.json();
       if (json.ok) removeItem(target.id);
     });
@@ -176,7 +178,10 @@ export default function AdminCheckpointsListPage() {
                   <Link
                     href={`/admin/checkpoints/${cp.slug}`}
                     aria-label={`Edit ${name}`}
-                    className={buttonVariants({ variant: "ghost", size: "icon" })}
+                    className={buttonVariants({
+                      variant: "ghost",
+                      size: "icon",
+                    })}
                   >
                     <PencilIcon aria-hidden className="size-4" />
                   </Link>
@@ -185,9 +190,15 @@ export default function AdminCheckpointsListPage() {
                     onClick={() => onDelete(cp.id, cp.slug, name)}
                     disabled={isPending}
                     aria-label={`Delete ${name}`}
-                    className={buttonVariants({ variant: "ghost", size: "icon" })}
+                    className={buttonVariants({
+                      variant: "ghost",
+                      size: "icon",
+                    })}
                   >
-                    <TrashIcon aria-hidden className="size-4 text-destructive" />
+                    <TrashIcon
+                      aria-hidden
+                      className="size-4 text-destructive"
+                    />
                   </button>
                 </div>
               </li>

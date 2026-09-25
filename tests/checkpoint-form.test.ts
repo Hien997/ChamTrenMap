@@ -75,7 +75,12 @@ describe("updateCheckpointFormSchema", () => {
       id: "cabc123456",
       slug: "chua-phu-dung",
       guides: [
-        { id: "g1", locale: "vi", content: "<h2>old</h2>", contentType: "HTML" },
+        {
+          id: "g1",
+          locale: "vi",
+          content: "<h2>old</h2>",
+          contentType: "HTML",
+        },
       ],
     });
     const result = schema.safeParse(VALID_VALUES);
@@ -114,7 +119,12 @@ describe("editDefaultValues", () => {
     },
     en: null,
     guides: [
-      { id: "g1", locale: "vi", content: "<h2>guide</h2>", contentType: "HTML" },
+      {
+        id: "g1",
+        locale: "vi",
+        content: "<h2>guide</h2>",
+        contentType: "HTML",
+      },
     ],
   };
 

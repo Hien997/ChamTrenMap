@@ -24,7 +24,9 @@ export async function createShareLink(
 
   const shareId = checkIn.shareLink?.id ?? nanoid(SHARE_ID_LENGTH);
   if (!checkIn.shareLink) {
-    await prisma.shareLink.create({ data: { id: shareId, checkInId: checkIn.id } });
+    await prisma.shareLink.create({
+      data: { id: shareId, checkInId: checkIn.id },
+    });
   }
 
   return {

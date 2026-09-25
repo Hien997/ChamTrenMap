@@ -6,10 +6,10 @@ export function getCurrentPositionOnce(): Promise<GeolocationPosition> {
       reject(new Error("GEOLOCATION_UNSUPPORTED"));
       return;
     }
-    navigator.geolocation.getCurrentPosition(
-      resolve,
-      reject,
-      { enableHighAccuracy: true, timeout: 12_000, maximumAge: 10_000 },
-    );
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 12_000,
+      maximumAge: 10_000,
+    });
   });
 }

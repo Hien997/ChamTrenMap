@@ -70,7 +70,11 @@ describe("createCheckIn — no_tour_link branch", () => {
     vi.spyOn(prisma.checkpoint, "findUnique").mockResolvedValue(checkpoint);
     vi.spyOn(prisma.checkIn, "findMany").mockResolvedValue([]);
 
-    const result = await createCheckIn("user-1", checkInInput("cp-no-tour"), locale);
+    const result = await createCheckIn(
+      "user-1",
+      checkInInput("cp-no-tour"),
+      locale,
+    );
 
     expect(result).toEqual({ status: "no_tour_link" });
     expect(prisma.checkpoint.findUnique).toHaveBeenCalledWith(
@@ -84,7 +88,11 @@ describe("createCheckIn — no_tour_link branch", () => {
   it("still checks for an existing checkpoint before deciding no_tour_link", async () => {
     vi.spyOn(prisma.checkpoint, "findUnique").mockResolvedValue(null);
 
-    const result = await createCheckIn("user-1", checkInInput("missing"), locale);
+    const result = await createCheckIn(
+      "user-1",
+      checkInInput("missing"),
+      locale,
+    );
 
     expect(result).toEqual({ status: "not_found" });
     expect(prisma.checkIn.findMany).not.toHaveBeenCalled();

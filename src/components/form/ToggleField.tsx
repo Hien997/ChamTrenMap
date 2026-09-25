@@ -34,12 +34,7 @@ export function ToggleField({
       hideLabel
     >
       <label htmlFor={name} className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          id={name}
-          role="switch"
-          {...register(name)}
-        />
+        <input type="checkbox" id={name} role="switch" {...register(name)} />
         {label}
         {required ? (
           <span aria-hidden className="ml-0.5 text-destructive">

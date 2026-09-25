@@ -6,8 +6,9 @@ import { listTours } from "@/services/tours.service";
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000")
-    .replace(/\/$/, "");
+  const base = (
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  ).replace(/\/$/, "");
 
   const entries: MetadataRoute.Sitemap = [];
   for (const locale of SUPPORTED_LOCALES) {

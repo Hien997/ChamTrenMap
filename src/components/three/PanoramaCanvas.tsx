@@ -77,7 +77,11 @@ function LookControls({ initialYaw, autoRotate }: LookControlsProps) {
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
       const perspective = camera as PerspectiveCamera;
-      perspective.fov = clamp(perspective.fov + event.deltaY * ZOOM_SENSITIVITY, MIN_FOV, MAX_FOV);
+      perspective.fov = clamp(
+        perspective.fov + event.deltaY * ZOOM_SENSITIVITY,
+        MIN_FOV,
+        MAX_FOV,
+      );
       perspective.updateProjectionMatrix();
     };
 
@@ -104,7 +108,8 @@ function LookControls({ initialYaw, autoRotate }: LookControlsProps) {
 
     const step = Math.min(1, delta * FOLLOW_DAMPING);
     settled.current.yaw += (target.current.yaw - settled.current.yaw) * step;
-    settled.current.pitch += (target.current.pitch - settled.current.pitch) * step;
+    settled.current.pitch +=
+      (target.current.pitch - settled.current.pitch) * step;
 
     camera.rotation.set(settled.current.pitch, settled.current.yaw, 0, "YXZ");
   });
@@ -112,7 +117,13 @@ function LookControls({ initialYaw, autoRotate }: LookControlsProps) {
   return null;
 }
 
-export function PanoramaCanvas({ src, alt, autoRotate, initialYaw, onReady }: PanoramaCanvasProps) {
+export function PanoramaCanvas({
+  src,
+  alt,
+  autoRotate,
+  initialYaw,
+  onReady,
+}: PanoramaCanvasProps) {
   const texture = useEquirectangularTexture(src);
   const onReadyRef = useRef(onReady);
   useEffect(() => {

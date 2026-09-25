@@ -15,8 +15,8 @@ function flattenKeys(node: unknown, prefix = ""): string[] {
   if (typeof node !== "object" || node === null) {
     return prefix ? [prefix] : [];
   }
-  return Object.entries(node as Record<string, unknown>).flatMap(([key, value]) =>
-    flattenKeys(value, prefix ? `${prefix}.${key}` : key),
+  return Object.entries(node as Record<string, unknown>).flatMap(
+    ([key, value]) => flattenKeys(value, prefix ? `${prefix}.${key}` : key),
   );
 }
 

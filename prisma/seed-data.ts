@@ -665,7 +665,8 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Gỏi Cá Trích & Cà Xỉu Xào Tỏi",
         summary:
           "Hương vị đầm Đông Hồ: gỏi cá trích tươi tái chanh trộn dừa nạo, cùng cà xỉu xào tỏi ớt bốc khói.",
-        address: "Ven bờ sông quanh Cầu Tô Châu / đường Trần Hầu, TP. Hà Tiên, An Giang",
+        address:
+          "Ven bờ sông quanh Cầu Tô Châu / đường Trần Hầu, TP. Hà Tiên, An Giang",
         openingHours: "10:00 – 14:00 · 17:00 – 21:00",
         bestTimeToVisit: "Buổi trưa, khi cá trích vừa cập bến",
       },
@@ -673,7 +674,8 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Herring Salad & Stir-fried Ca Xiu",
         summary:
           "The flavours of Dong Ho lagoon: fresh herring salad tossed with shredded coconut, alongside smoking garlic stir-fried ca xiu clams.",
-        address: "To Chau bridge riverside / Tran Hau street, Ha Tien, An Giang",
+        address:
+          "To Chau bridge riverside / Tran Hau street, Ha Tien, An Giang",
         openingHours: "10:00 – 14:00 · 17:00 – 21:00",
         bestTimeToVisit: "Lunchtime, when the herring just comes ashore",
       },
@@ -724,7 +726,7 @@ export const seedCheckpoints: SeedCheckpoint[] = [
   {
     slug: "banh-ong-la-dua",
     latitude: 10.3831,
-    longitude: 104.4870,
+    longitude: 104.487,
     radiusMeters: 100,
     estimatedVisitMinutes: 30,
     priceVnd: 25000,
@@ -742,7 +744,8 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Pandan Tube Cakes & Palm-Sugar Bobo",
         summary:
           "Street-sweets of Ha Tien: pandan tube cakes steamed in hot aluminium moulds and golden, springy palm-sugar bobo cakes.",
-        address: "Cake carts along Tran Hau street, at the Ha Tien market gate, An Giang",
+        address:
+          "Cake carts along Tran Hau street, at the Ha Tien market gate, An Giang",
         openingHours: "14:30 – 17:30",
         bestTimeToVisit: "3:30 pm, right after a fresh steaming batch",
       },
@@ -811,7 +814,8 @@ export const seedCheckpoints: SeedCheckpoint[] = [
         name: "Ha Tien Sticky Rice Xiem",
         summary:
           "Fragrant sticky Siamese rice dressed with coconut-steamed custard, paired with ripe mango or durian — Ha Tien's famous street dessert.",
-        address: "Tran Hau street, at the Ha Tien market gate, Ha Tien, An Giang",
+        address:
+          "Tran Hau street, at the Ha Tien market gate, Ha Tien, An Giang",
         openingHours: "15:00 – 19:00",
         bestTimeToVisit: "4:00 pm",
       },

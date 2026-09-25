@@ -96,7 +96,10 @@ export default function AdminLoginPage() {
         <div className="mt-6 space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="email">
-              Email<span aria-hidden className="ml-0.5 text-destructive">*</span>
+              Email
+              <span aria-hidden className="ml-0.5 text-destructive">
+                *
+              </span>
             </Label>
             <Input
               id="email"
@@ -109,14 +112,21 @@ export default function AdminLoginPage() {
               aria-describedby={errors.email ? "email-error" : undefined}
             />
             {errors.email ? (
-              <p id="email-error" className="text-xs text-destructive" aria-live="polite">
+              <p
+                id="email-error"
+                className="text-xs text-destructive"
+                aria-live="polite"
+              >
                 {errors.email}
               </p>
             ) : null}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="password">
-              Password<span aria-hidden className="ml-0.5 text-destructive">*</span>
+              Password
+              <span aria-hidden className="ml-0.5 text-destructive">
+                *
+              </span>
             </Label>
             <Input
               id="password"
@@ -129,7 +139,11 @@ export default function AdminLoginPage() {
               aria-describedby={errors.password ? "password-error" : undefined}
             />
             {errors.password ? (
-              <p id="password-error" className="text-xs text-destructive" aria-live="polite">
+              <p
+                id="password-error"
+                className="text-xs text-destructive"
+                aria-live="polite"
+              >
                 {errors.password}
               </p>
             ) : null}

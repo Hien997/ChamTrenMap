@@ -5,12 +5,14 @@ import { AdminNav } from "@/components/admin/AdminNav";
 
 function Brand() {
   return (
-    <Link
-      href="/admin"
-      className="inline-flex items-center gap-2 text-white"
-    >
-      <WaypointsIcon aria-hidden className="size-5 text-[oklch(0.7_0.095_200)]" />
-      <span className="text-sm font-semibold tracking-tight">Chắm trên Map</span>
+    <Link href="/admin" className="inline-flex items-center gap-2 text-white">
+      <WaypointsIcon
+        aria-hidden
+        className="size-5 text-[oklch(0.7_0.095_200)]"
+      />
+      <span className="text-sm font-semibold tracking-tight">
+        Chắm trên Map
+      </span>
     </Link>
   );
 }

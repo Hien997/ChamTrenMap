@@ -10,7 +10,10 @@ export async function TourCard({ tour }: { tour: TourSummaryView }) {
 
   return (
     <Card className="group gap-0 overflow-hidden pt-0 transition-shadow duration-200 hover:shadow-lg">
-      <Link href={`/tours/${tour.slug}`} className="relative block aspect-[16/9] overflow-hidden bg-muted">
+      <Link
+        href={`/tours/${tour.slug}`}
+        className="relative block aspect-[16/9] overflow-hidden bg-muted"
+      >
         {tour.coverImageUrl ? (
           <img
             src={tour.coverImageUrl}

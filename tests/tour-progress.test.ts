@@ -49,16 +49,10 @@ describe("distanceTo", () => {
 describe("isNear", () => {
   it("is true inside the hint threshold, false beyond it, false when unknown", () => {
     expect(
-      isNear(
-        { latitude: 0, longitude: 0 },
-        { latitude: 0, longitude: 0.001 },
-      ),
+      isNear({ latitude: 0, longitude: 0 }, { latitude: 0, longitude: 0.001 }),
     ).toBe(true);
     expect(
-      isNear(
-        { latitude: 0, longitude: 0 },
-        { latitude: 0, longitude: 0.002 },
-      ),
+      isNear({ latitude: 0, longitude: 0 }, { latitude: 0, longitude: 0.002 }),
     ).toBe(false);
     expect(isNear(null, { latitude: 0, longitude: 0 })).toBe(false);
   });
@@ -72,7 +66,10 @@ describe("applyProgress", () => {
   it("merges fresh statuses, preserving object identity for unchanged entries", () => {
     const a = { id: "a", status: "locked" as const };
     const b = { id: "b", status: "locked" as const };
-    const result = applyProgress([a, b], makeProgress({ id: "a", status: "current" }));
+    const result = applyProgress(
+      [a, b],
+      makeProgress({ id: "a", status: "current" }),
+    );
     expect(result[0]).toEqual({ id: "a", status: "current" });
     expect(result[1]).toBe(b);
   });

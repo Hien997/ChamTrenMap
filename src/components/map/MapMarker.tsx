@@ -1,6 +1,10 @@
 "use client";
 
-import { Marker, type Map as MaplibreMap, type PositionAnchor } from "maplibre-gl";
+import {
+  Marker,
+  type Map as MaplibreMap,
+  type PositionAnchor,
+} from "maplibre-gl";
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 

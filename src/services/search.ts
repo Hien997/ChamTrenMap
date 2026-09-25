@@ -12,7 +12,9 @@ export function buildTourSearchWhere(q: string): Prisma.TourWhereInput {
   return {
     OR: [
       { slug: { contains: q, mode: "insensitive" } },
-      { translations: { some: { name: { contains: q, mode: "insensitive" } } } },
+      {
+        translations: { some: { name: { contains: q, mode: "insensitive" } } },
+      },
     ],
   };
 }
@@ -24,7 +26,9 @@ export function buildCheckpointSearchWhere(
   return {
     OR: [
       { slug: { contains: q, mode: "insensitive" } },
-      { translations: { some: { name: { contains: q, mode: "insensitive" } } } },
+      {
+        translations: { some: { name: { contains: q, mode: "insensitive" } } },
+      },
     ],
   };
 }

@@ -10,14 +10,20 @@ const items = [
   { href: "/admin/checkpoints", label: "Checkpoints", icon: MapPinIcon },
 ] as const;
 
-export function AdminNav({ orientation }: { orientation: "vertical" | "horizontal" }) {
+export function AdminNav({
+  orientation,
+}: {
+  orientation: "vertical" | "horizontal";
+}) {
   const pathname = usePathname();
   const vertical = orientation === "vertical";
 
   return (
     <nav
       aria-label="Admin"
-      className={vertical ? "flex w-full flex-col gap-1" : "flex items-center gap-1"}
+      className={
+        vertical ? "flex w-full flex-col gap-1" : "flex items-center gap-1"
+      }
     >
       {items.map(({ href, label, icon: Icon }) => {
         const active =

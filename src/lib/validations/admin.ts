@@ -10,7 +10,9 @@ const requiredText = (label: string) =>
  */
 const coverImageUrlSchema = z
   .union([
-    z.string().url({ message: "Enter a full URL, e.g. https://example.com/photo.jpg" }),
+    z
+      .string()
+      .url({ message: "Enter a full URL, e.g. https://example.com/photo.jpg" }),
     z.literal(""),
   ])
   .optional();
@@ -56,7 +58,9 @@ export const loginSchema = z.object({
 export const updateTourSchema = z.object({
   id: z.string().min(1).optional(),
   slug: z.string().min(1).optional(),
-  status: z.enum(["DRAFT", "PUBLISHED"], { message: "Choose a status." }).optional(),
+  status: z
+    .enum(["DRAFT", "PUBLISHED"], { message: "Choose a status." })
+    .optional(),
   vi: tourTranslationSchema.optional(),
   en: tourTranslationSchema.optional(),
   checkpointIds: checkpointIdsSchema.optional(),

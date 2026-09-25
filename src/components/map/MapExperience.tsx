@@ -11,7 +11,8 @@ import {
   NavigationIcon,
   RulerIcon,
   XIcon,
- MapPinIcon } from "lucide-react";
+  MapPinIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { CheckInFlow } from "@/components/checkin/CheckInFlow";
@@ -87,7 +88,7 @@ export function MapExperience({
   const userPosition = position;
 
   const currentCheckpoint = progress?.currentCheckpointId
-    ? checkpoints.find((cp) => cp.id === progress.currentCheckpointId) ?? null
+    ? (checkpoints.find((cp) => cp.id === progress.currentCheckpointId) ?? null)
     : null;
 
   const path = checkpoints.map(
@@ -152,7 +153,7 @@ export function MapExperience({
         timeoutLabel={t("mapTimeout")}
         emptyLabel={t("noCheckpoints")}
       />
-{/* Top overlay: tour name + progress + close */}
+      {/* Top overlay: tour name + progress + close */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-3">
         <div className="pointer-events-auto flex w-full max-w-sm items-center justify-between gap-2 rounded-xl border bg-background/95 px-3 py-2 shadow backdrop-blur">
           <div className="min-w-0">
@@ -364,7 +365,10 @@ export function MapExperience({
               )}
               {selectedCheckpoint.status === "locked" && (
                 <p className="inline-flex items-start gap-1.5 text-sm text-muted-foreground">
-                  <CheckpointStatusIcon status="locked" className="mt-0.5 text-sm" />
+                  <CheckpointStatusIcon
+                    status="locked"
+                    className="mt-0.5 text-sm"
+                  />
                   {tCheckin("lockedBody")}
                 </p>
               )}

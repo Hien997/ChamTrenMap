@@ -1,16 +1,18 @@
-import { LngLatBounds, type Map as MaplibreglMap, type StyleSpecification } from "maplibre-gl";
+import {
+  LngLatBounds,
+  type Map as MaplibreglMap,
+  type StyleSpecification,
+} from "maplibre-gl";
 
 import openfreemapLiberty from "./openfreemap-liberty.json";
 
-import type {
-  RouteFeatureCollection,
-  RouteResult,
-} from "./map.types";
+import type { RouteFeatureCollection, RouteResult } from "./map.types";
 
 export const HATIEN_CENTER: [number, number] = [104.4835, 10.3836];
 export const DEFAULT_MAP_ZOOM = 13;
 
-export const OSM_RASTER_TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+export const OSM_RASTER_TILE_URL =
+  "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
 export const OSM_ATTRIBUTION =
   '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';

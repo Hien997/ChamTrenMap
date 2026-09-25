@@ -54,7 +54,9 @@ export async function createCheckIn(
     include: {
       translations: true,
       tourLinks: {
-        include: { tour: { include: { checkpoints: { orderBy: { order: "asc" } } } } },
+        include: {
+          tour: { include: { checkpoints: { orderBy: { order: "asc" } } } },
+        },
       },
     },
   });
@@ -134,7 +136,11 @@ export async function createCheckIn(
     const progress = await buildProgressView(userId, tour.slug);
     if (!progress) throw new Error("Progress view missing after check-in");
 
-    return { status: "ok", checkIn: toCheckInView(checkIn, checkpointName), progress };
+    return {
+      status: "ok",
+      checkIn: toCheckInView(checkIn, checkpointName),
+      progress,
+    };
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
