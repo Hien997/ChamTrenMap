@@ -27,7 +27,7 @@
 - **Files:** `src/components/map/map.utils.ts` (deciders exist), `MapLibreMap.tsx` (485 lines), `MapExperience.tsx` (421).
 - **Problem:** pure decisions (`resolveMapTimeoutAction`, `resolveTileFailureAction`) were extracted, but the **orchestration** — who fires timeout vs style-error vs tile-error, when to `clearTimeout`, when to `setStatus("error")` — lives inline in the component. No *locality*: bugs hide in call order. Evidence: 5 consecutive fixes in this area (style errors → tile failover → load budget).
 - **Solution:** one deep module: `reduce(state, event)` over `loading → fallback → give-up`, driven by maplibre events; component only renders `state`.
-- **Benefits:** tests assert transitions without mocking maplibre; continues the pattern of `5c0fd79` / `ab77fa9`. Deletion test: moving the branches out of `MapLibreMap` concentrates — yes.
+- **✅ Implemented (2026-09-23):** `map-load.ts` now owns the pure `reduce(state, event)` lifecycle (`loading → fallback → give-up`, plus retry); `MapLibreMap.tsx` only translates MapLibre events and renders the resulting state. The old deciders were deleted from `map.utils.ts`, and transition tests moved to `tests/map-error.test.ts`. Deletion test: removing the reducer puts the policy and call ordering back into the component — yes.
 
 ### D. Admin write service for Tours — parity with checkpoints — **Worth exploring**
 - **Files:** `src/app/api/admin/tours/route.ts`, `…/tours/[slug]/route.ts`, vs `src/services/checkpoint-content.server.ts`.

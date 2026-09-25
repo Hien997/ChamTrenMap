@@ -14,8 +14,8 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useReducer,
   useRef,
-  useState,
   type ReactNode,
 } from "react";
 
@@ -26,6 +26,7 @@ import {
   setPathData,
   setRouteData,
 } from "./MapRoute";
+import { initialMapLoadState, reduceMapLoad } from "./map-load";
 import type {
   CustomMarkerRender,
   MapLocation,
@@ -41,8 +42,6 @@ import {
   isTileDataEvent,
   resolveMapLoadTimeoutMs,
   resolveMapStyle,
-  resolveMapTimeoutAction,
-  resolveTileFailureAction,
   styleUsesTileSources,
 } from "./map.utils";
 import {
@@ -50,8 +49,6 @@ import {
   createUserLocationElement,
 } from "./marker-elements";
 import { cn } from "@/lib/utils";
-
-type MapStatus = "loading" | "ready" | "error";
 
 export interface MapLibreMapProps<T extends MapLocation = MapLocation> {
   locations: T[];
@@ -84,6 +81,19 @@ export interface MapLibreMapRef<T extends MapLocation = MapLocation> {
   selectedLocationId: string | null;
 }
 
+/**
+ * Reads whether the current style fetches tiles. Called only when the load
+ * budget fires; if the style has not settled yet, getStyle() may throw and
+ * the answer is irrelevant — the reducer escalates on !loaded anyway.
+ */
+function readStyleHasTiles(map: MaplibreMap): boolean {
+  try {
+    return styleUsesTileSources(map.getStyle());
+  } catch {
+    return false;
+  }
+}
+
 export function MapLibreMap<T extends MapLocation = MapLocation>({
   locations,
   center,
@@ -113,12 +123,12 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   const markersRef = useRef(new Map<string, Marker>());
   const rendersRef = useRef(new Map<string, CustomMarkerRender>());
   const userMarkerRef = useRef<Marker | null>(null);
-  const [status, setStatus] = useState<MapStatus>("loading");
-  const [attempt, setAttempt] = useState(0);
-  const [useFallbackStyle, setUseFallbackStyle] = useState(false);
-  const [timedOut, setTimedOut] = useState(false);
+  const [load, dispatch] = useReducer(reduceMapLoad, initialMapLoadState);
   const renderedLocationsRef = useRef<T[]>([]);
-  const cancelledRef = useRef(false);
+  const constructionKey = `${load.attempt}:${load.styleMode}`;
+  const latestConstructionKeyRef = useRef(constructionKey);
+  latestConstructionKeyRef.current = constructionKey;
+
   useEffect(() => {
     renderedLocationsRef.current = locations.map((item) => ({ ...item }));
   }, [locations]);
@@ -131,7 +141,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       },
       flyToCheckpoint: (id: string) => {
         const map = mapRef.current;
-        if (!map || status !== "ready") return;
+        if (!map || load.status !== "ready") return;
         const location = renderedLocationsRef.current.find(
           (item) => item.id === id,
         );
@@ -140,7 +150,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       },
       fitToCheckpoints: () => {
         const map = mapRef.current;
-        if (!map || status !== "ready") return;
+        if (!map || load.status !== "ready") return;
         fitLocationsBounds(
           map,
           renderedLocationsRef.current.map(
@@ -150,7 +160,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
         );
       },
     }),
-    [selectedLocationId, status],
+    [selectedLocationId, load.status],
   );
 
   const centerRef = useRef(center);
@@ -177,12 +187,11 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    setStatus("loading");
-    setTimedOut(false);
 
-    const resolvedStyle = useFallbackStyle
-      ? fallbackMapStyle()
-      : resolveMapStyle(styleUrlRef.current);
+    const resolvedStyle =
+      load.styleMode === "fallback"
+        ? fallbackMapStyle()
+        : resolveMapStyle(styleUrlRef.current);
 
     let map: MaplibreMap;
     try {
@@ -193,76 +202,53 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
         zoom: zoomRef.current ?? DEFAULT_MAP_ZOOM,
       });
     } catch {
-      setStatus("error");
+      dispatch({ type: "constructorFailed" });
       return;
     }
     mapRef.current = map;
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
+    let active = true;
+    const isCurrentConstruction = () =>
+      active && latestConstructionKeyRef.current === constructionKey;
 
-    let loaded = false;
-    let anyTileRendered = false;
-    let tileErrorCount = 0;
     const timeoutId = window.setTimeout(() => {
-      if (
-        loaded &&
-        (!styleUsesTileSources(map.getStyle()) || anyTileRendered)
-      ) {
-        return;
-      }
-      const action = resolveMapTimeoutAction({
-        fallbackAlreadyTried: useFallbackStyle,
+      if (!isCurrentConstruction()) return;
+      dispatch({
+        type: "timeout",
+        styleHasTiles: readStyleHasTiles(map),
       });
-      if (action === "use-fallback-style") {
-        setUseFallbackStyle(true);
-        return;
-      }
-      setTimedOut(true);
-      setStatus("error");
     }, resolveMapLoadTimeoutMs(loadTimeoutMsRef.current));
 
     const handleLoad = () => {
-      loaded = true;
+      if (!isCurrentConstruction()) return;
       if (map.isStyleLoaded()) ensurePathLayer(map);
       if (map.isStyleLoaded()) ensureRouteLayers(map);
-      setStatus("ready");
+      dispatch({ type: "load" });
     };
     const handleSourceData = (event: MapSourceDataEvent) => {
+      if (!isCurrentConstruction()) return;
       if (isTileDataEvent(event)) {
-        anyTileRendered = true;
+        dispatch({ type: "tileRendered" });
       }
     };
     const handleError = (event: MapErrorEvent) => {
+      if (!isCurrentConstruction()) return;
       if (isTileLevelMapError(event)) {
-        tileErrorCount += 1;
-        const action = resolveTileFailureAction({
-          tileErrorCount,
-          anyTileRendered,
-          fallbackAlreadyTried: useFallbackStyle,
-        });
-        if (action === "use-fallback-style") {
-          window.clearTimeout(timeoutId);
-          setUseFallbackStyle(true);
-        } else if (action === "give-up") {
-          window.clearTimeout(timeoutId);
-          setStatus("error");
-        }
-        return;
-      }
-      if (!loaded) {
-        window.clearTimeout(timeoutId);
-        setStatus("error");
+        dispatch({ type: "tileError" });
+      } else {
+        dispatch({ type: "styleError" });
       }
     };
     const handleClick = (event: MapMouseEvent) => {
+      if (!isCurrentConstruction()) return;
       onMapClickRef.current?.({
         latitude: event.lngLat.lat,
         longitude: event.lngLat.lng,
       });
     };
     map.on("load", handleLoad);
-    let styleActive = true;
     const handleStyleData = () => {
-      if (!styleActive || cancelledRef.current) return;
+      if (!isCurrentConstruction()) return;
       if (map.isStyleLoaded()) {
         if (ensurePathLayer(map)) setPathData(map, pathRef.current ?? null);
         if (ensureRouteLayers(map)) setRouteData(map, routeRef.current ?? null);
@@ -274,8 +260,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     map.on("click", handleClick);
 
     return () => {
-      styleActive = false;
-      cancelledRef.current = true;
+      active = false;
       window.clearTimeout(timeoutId);
       map.off("load", handleLoad);
       map.off("styledata", handleStyleData);
@@ -291,11 +276,11 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       map.remove();
       mapRef.current = null;
     };
-  }, [attempt, useFallbackStyle]);
+  }, [constructionKey]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || status !== "ready") return;
+    if (!map || load.status !== "ready") return;
     const markers = markersRef.current;
     const renders = rendersRef.current;
     const seen = new Set<string>();
@@ -344,18 +329,18 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       markers.delete(id);
       renders.delete(id);
     }
-  }, [status, locations]);
+  }, [load.status, locations]);
 
   useEffect(() => {
     for (const id of markersRef.current.keys()) {
       rendersRef.current.get(id)?.setSelected?.(id === selectedLocationId);
     }
-  }, [selectedLocationId, status]);
+  }, [selectedLocationId, load.status]);
 
   const didFitRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || status !== "ready" || didFitRef.current) return;
+    if (!map || load.status !== "ready" || didFitRef.current) return;
     if (!fitToLocationsOnLoad || renderedLocationsRef.current.length === 0)
       return;
     didFitRef.current = true;
@@ -366,7 +351,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       ),
       { padding: 60, maxZoom: 15 },
     );
-  }, [status, fitToLocationsOnLoad]);
+  }, [load.status, fitToLocationsOnLoad]);
 
   const prevSelectedRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
@@ -383,11 +368,11 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
         number,
         number,
       ]);
-  }, [selectedLocationId, status]);
+  }, [selectedLocationId, load.status]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || status !== "ready") return;
+    if (!map || load.status !== "ready") return;
     if (!userPosition) {
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
@@ -405,19 +390,19 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
       userPosition.longitude,
       userPosition.latitude,
     ] as [number, number]);
-  }, [userPosition, status]);
+  }, [userPosition, load.status]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || status !== "ready") return;
+    if (!map || load.status !== "ready") return;
     if (ensurePathLayer(map)) setPathData(map, path ?? null);
-  }, [path, status]);
+  }, [path, load.status]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || status !== "ready") return;
+    if (!map || load.status !== "ready") return;
     if (ensureRouteLayers(map)) setRouteData(map, route ?? null);
-  }, [route, status]);
+  }, [route, load.status]);
 
   const selectedLocation = useMemo(
     () =>
@@ -431,7 +416,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
     <div className={cn("relative h-full w-full", className)}>
       <div ref={containerRef} className="h-full w-full" />
 
-      {status === "loading" && (
+      {load.status === "loading" && (
         <div
           role="status"
           aria-live="polite"
@@ -441,19 +426,16 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
         </div>
       )}
 
-      {status === "error" && (
+      {load.status === "error" && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/90 p-4 text-center">
           <p role="alert" className="text-sm text-muted-foreground">
-            {timedOut
+            {load.timedOut
               ? (timeoutLabel ?? errorLabel ?? "The map took too long to load")
               : (errorLabel ?? "Failed to load the map")}
           </p>
           <button
             type="button"
-            onClick={() => {
-              setUseFallbackStyle(false);
-              setAttempt((value) => value + 1);
-            }}
+            onClick={() => dispatch({ type: "retry" })}
             className="rounded-md border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent"
           >
             {retryLabel ?? "Retry"}
@@ -461,7 +443,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
         </div>
       )}
 
-      {status === "ready" && locations.length === 0 && emptyLabel && (
+      {load.status === "ready" && locations.length === 0 && emptyLabel && (
         <div className="pointer-events-none absolute inset-x-0 top-24 z-10 flex justify-center">
           <p className="rounded-full bg-background/90 px-3 py-1.5 text-sm text-muted-foreground shadow">
             {emptyLabel}
@@ -471,7 +453,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
 
       {selectedLocation &&
         renderPopup &&
-        status === "ready" &&
+        load.status === "ready" &&
         mapRef.current && (
           <MapPopup
             map={mapRef.current}

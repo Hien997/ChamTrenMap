@@ -71,8 +71,6 @@ export function resolveMapStyle(
 
 export const MAP_LOAD_TIMEOUT_MS = 20_000;
 
-export type MapTimeoutAction = "use-fallback-style" | "give-up";
-
 export function resolveMapLoadTimeoutMs(override?: number): number {
   if (
     typeof override === "number" &&
@@ -85,28 +83,6 @@ export function resolveMapLoadTimeoutMs(override?: number): number {
   const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
   if (Number.isFinite(parsed) && parsed > 0) return parsed;
   return MAP_LOAD_TIMEOUT_MS;
-}
-
-export function resolveMapTimeoutAction(options: {
-  fallbackAlreadyTried: boolean;
-}): MapTimeoutAction {
-  return options.fallbackAlreadyTried ? "give-up" : "use-fallback-style";
-}
-
-export const TILE_FAILURE_ESCALATION_THRESHOLD = 3;
-
-export type TileFailureAction = MapTimeoutAction | "ignore";
-
-export function resolveTileFailureAction(options: {
-  tileErrorCount: number;
-  anyTileRendered: boolean;
-  fallbackAlreadyTried: boolean;
-}): TileFailureAction {
-  if (options.anyTileRendered) return "ignore";
-  if (options.tileErrorCount < TILE_FAILURE_ESCALATION_THRESHOLD) {
-    return "ignore";
-  }
-  return options.fallbackAlreadyTried ? "give-up" : "use-fallback-style";
 }
 
 export function fitLocationsBounds(

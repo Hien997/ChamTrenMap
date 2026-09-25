@@ -1,19 +1,22 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  initialMapLoadState,
+  reduceMapLoad,
+  TILE_FAILURE_ESCALATION_THRESHOLD,
+  type MapLoadState,
+} from "@/components/map/map-load";
+import {
   MAP_LOAD_TIMEOUT_MS,
   OSM_ATTRIBUTION,
   OSM_RASTER_MAX_ZOOM,
   OSM_RASTER_TILE_URL,
-  TILE_FAILURE_ESCALATION_THRESHOLD,
   defaultMapStyle,
   fallbackMapStyle,
   isTileLevelMapError,
   isTileDataEvent,
   resolveMapLoadTimeoutMs,
   resolveMapStyle,
-  resolveMapTimeoutAction,
-  resolveTileFailureAction,
   styleUsesTileSources,
 } from "@/components/map/map.utils";
 
@@ -86,17 +89,67 @@ describe("resolveMapLoadTimeoutMs", () => {
   });
 });
 
-describe("resolveMapTimeoutAction", () => {
-  it("retries once on the other built-in host when the first attempt stalls", () => {
-    expect(resolveMapTimeoutAction({ fallbackAlreadyTried: false })).toBe(
-      "use-fallback-style",
-    );
+describe("reduceMapLoad — timeout budget", () => {
+  const readyState: MapLoadState = {
+    ...initialMapLoadState,
+    status: "ready",
+    loaded: true,
+  };
+
+  it("ignores the budget for a loaded style that needs no tiles", () => {
+    expect(
+      reduceMapLoad(readyState, { type: "timeout", styleHasTiles: false }),
+    ).toBe(readyState);
   });
 
-  it("gives up once the fallback style is already loading", () => {
-    expect(resolveMapTimeoutAction({ fallbackAlreadyTried: true })).toBe(
-      "give-up",
-    );
+  it("ignores the budget once any tile has rendered", () => {
+    const state: MapLoadState = { ...readyState, anyTileRendered: true };
+    expect(
+      reduceMapLoad(state, { type: "timeout", styleHasTiles: true }),
+    ).toBe(state);
+  });
+
+  it("falls back when a loaded style still awaits its first tile", () => {
+    const next = reduceMapLoad(readyState, {
+      type: "timeout",
+      styleHasTiles: true,
+    });
+    expect(next.styleMode).toBe("fallback");
+    expect(next.status).toBe("loading");
+    expect(next.loaded).toBe(false);
+  });
+
+  it("falls back on the first timeout while the map never loaded", () => {
+    const next = reduceMapLoad(initialMapLoadState, {
+      type: "timeout",
+      styleHasTiles: false,
+    });
+    expect(next.styleMode).toBe("fallback");
+    expect(next.status).toBe("loading");
+  });
+
+  it("escalates to a timed-out error when the fallback also stalls", () => {
+    const stalled: MapLoadState = {
+      ...initialMapLoadState,
+      styleMode: "fallback",
+    };
+    const next = reduceMapLoad(stalled, {
+      type: "timeout",
+      styleHasTiles: true,
+    });
+    expect(next.status).toBe("error");
+    expect(next.timedOut).toBe(true);
+  });
+
+  it("absorbs the late timer after give-up (terminal absorption)", () => {
+    const errored: MapLoadState = {
+      ...initialMapLoadState,
+      status: "error",
+      timedOut: true,
+    };
+    expect(
+      reduceMapLoad(errored, { type: "timeout", styleHasTiles: true }),
+    ).toBe(errored);
   });
 });
 
@@ -124,58 +177,124 @@ describe("isTileDataEvent", () => {
   });
 });
 
-describe("resolveTileFailureAction", () => {
-  it("stays non-fatal until the escalation threshold is reached", () => {
-    for (
-      let count = 1;
-      count < TILE_FAILURE_ESCALATION_THRESHOLD;
-      count += 1
-    ) {
-      expect(
-        resolveTileFailureAction({
-          tileErrorCount: count,
-          anyTileRendered: false,
-          fallbackAlreadyTried: false,
-        }),
-      ).toBe("ignore");
+describe("reduceMapLoad — tile failures", () => {
+  it("tolerates tile errors below the escalation threshold", () => {
+    let state = initialMapLoadState;
+    for (let count = 1; count < TILE_FAILURE_ESCALATION_THRESHOLD; count += 1) {
+      state = reduceMapLoad(state, { type: "tileError" });
+      expect(state.status).toBe("loading");
+      expect(state.tileErrorCount).toBe(count);
     }
   });
 
-  it("escalates once no tile has arrived by the threshold", () => {
-    expect(
-      resolveTileFailureAction({
-        tileErrorCount: TILE_FAILURE_ESCALATION_THRESHOLD,
-        anyTileRendered: false,
-        fallbackAlreadyTried: false,
-      }),
-    ).toBe("use-fallback-style");
+  it("falls back at the threshold when no tile has rendered", () => {
+    let state = initialMapLoadState;
+    for (
+      let count = 1;
+      count <= TILE_FAILURE_ESCALATION_THRESHOLD;
+      count += 1
+    ) {
+      state = reduceMapLoad(state, { type: "tileError" });
+    }
+    expect(state.styleMode).toBe("fallback");
+    expect(state.status).toBe("loading");
+    expect(state.tileErrorCount).toBe(0); // fresh construction counters
   });
 
-  it("gives up when the fallback host also serves no tiles", () => {
-    expect(
-      resolveTileFailureAction({
-        tileErrorCount: TILE_FAILURE_ESCALATION_THRESHOLD + 5,
-        anyTileRendered: false,
-        fallbackAlreadyTried: true,
-      }),
-    ).toBe("give-up");
+  it("gives up with a generic error when the fallback also fails tiles", () => {
+    let state: MapLoadState = {
+      ...initialMapLoadState,
+      styleMode: "fallback",
+    };
+    for (
+      let count = 1;
+      count <= TILE_FAILURE_ESCALATION_THRESHOLD;
+      count += 1
+    ) {
+      state = reduceMapLoad(state, { type: "tileError" });
+    }
+    expect(state.status).toBe("error");
+    expect(state.timedOut).toBe(false); // generic label, not the timeout one
   });
 
-  it("keeps gaps while panning non-fatal once a tile has rendered", () => {
-    expect(
-      resolveTileFailureAction({
-        tileErrorCount: 99,
-        anyTileRendered: true,
-        fallbackAlreadyTried: false,
-      }),
-    ).toBe("ignore");
-    expect(
-      resolveTileFailureAction({
-        tileErrorCount: 99,
-        anyTileRendered: true,
-        fallbackAlreadyTried: true,
-      }),
-    ).toBe("ignore");
+  it("keeps counting but never escalates once a tile rendered", () => {
+    let state: MapLoadState = { ...initialMapLoadState, anyTileRendered: true };
+    for (let count = 1; count <= 20; count += 1) {
+      state = reduceMapLoad(state, { type: "tileError" });
+    }
+    expect(state.status).toBe("loading");
+    expect(state.tileErrorCount).toBe(20);
+  });
+
+  it("absorbs tile noise after the error screen", () => {
+    const errored: MapLoadState = {
+      ...initialMapLoadState,
+      status: "error",
+    };
+    expect(reduceMapLoad(errored, { type: "tileError" })).toBe(errored);
+  });
+});
+
+describe("reduceMapLoad — style errors, load, restarts", () => {
+  it("fails a pre-load style error without the timeout label", () => {
+    const next = reduceMapLoad(initialMapLoadState, { type: "styleError" });
+    expect(next.status).toBe("error");
+    expect(next.timedOut).toBe(false);
+  });
+
+  it("absorbs style noise after the map loaded", () => {
+    const ready: MapLoadState = {
+      ...initialMapLoadState,
+      status: "ready",
+      loaded: true,
+    };
+    expect(reduceMapLoad(ready, { type: "styleError" })).toBe(ready);
+  });
+
+  it("pins the parity quirk: a late load flips an errored map to ready", () => {
+    const errored: MapLoadState = {
+      ...initialMapLoadState,
+      status: "error",
+    };
+    const next = reduceMapLoad(errored, { type: "load" });
+    expect(next.status).toBe("ready");
+    expect(next.loaded).toBe(true);
+  });
+
+  it("retry restarts with a bumped attempt and the primary style", () => {
+    const errored: MapLoadState = {
+      ...initialMapLoadState,
+      status: "error",
+      timedOut: true,
+      loaded: true,
+      anyTileRendered: true,
+      tileErrorCount: 7,
+    };
+    expect(reduceMapLoad(errored, { type: "retry" })).toEqual({
+      status: "loading",
+      timedOut: false,
+      attempt: 1,
+      styleMode: "primary",
+      loaded: false,
+      anyTileRendered: false,
+      tileErrorCount: 0,
+    });
+  });
+
+  it("absorbs constructor failure after the error screen", () => {
+    const errored: MapLoadState = {
+      ...initialMapLoadState,
+      status: "error",
+    };
+    expect(reduceMapLoad(errored, { type: "constructorFailed" })).toBe(
+      errored,
+    );
+  });
+
+  it("records tile rendering once (idempotent)", () => {
+    const once = reduceMapLoad(initialMapLoadState, { type: "tileRendered" });
+    expect(once.anyTileRendered).toBe(true);
+    expect(reduceMapLoad(once, { type: "tileRendered" })).toBe(once);
   });
 });
 
