@@ -2,10 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { deriveStatuses } from "@/services/progress-status";
 import type { TourProgressView } from "@/types";
 
-export async function buildProgressView(
+export const buildProgressView = async (
   userId: string,
   tourSlug: string,
-): Promise<TourProgressView | null> {
+): Promise<TourProgressView | null> => {
   const tour = await prisma.tour.findUnique({
     where: { slug: tourSlug },
     include: { checkpoints: { orderBy: { order: "asc" } } },
@@ -39,23 +39,23 @@ export async function buildProgressView(
       status: statuses.get(tc.checkpointId) ?? "locked",
     })),
   };
-}
+};
 
-export async function ensureTourStarted(
+export const ensureTourStarted = async (
   userId: string,
   tourId: string,
-): Promise<void> {
+): Promise<void> => {
   await prisma.tourProgress.upsert({
     where: { userId_tourId: { userId, tourId } },
     create: { userId, tourId },
     update: {},
   });
-}
+};
 
-export async function getCompletedCheckpointIds(
+export const getCompletedCheckpointIds = async (
   userId: string,
   tourSlug: string,
-): Promise<string[]> {
+): Promise<string[]> => {
   const tour = await prisma.tour.findUnique({
     where: { slug: tourSlug },
     select: { checkpoints: { select: { checkpointId: true } } },
@@ -69,4 +69,4 @@ export async function getCompletedCheckpointIds(
     select: { checkpointId: true },
   });
   return checkIns.map((c) => c.checkpointId);
-}
+};

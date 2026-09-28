@@ -11,7 +11,7 @@ import { useFormContext } from "react-hook-form";
 import { CommonField } from "./CommonField";
 import { peekErrors } from "./utils";
 
-export function SelectField({
+export const SelectField = ({
   name,
   label,
   options,
@@ -27,7 +27,7 @@ export function SelectField({
   hint?: string;
   serverError?: string;
   className?: string;
-}) {
+}) => {
   const form = useFormContext();
   const { setValue, watch } = form;
   const error = serverError ?? peekErrors(form, name);
@@ -69,4 +69,4 @@ export function SelectField({
       </Select>
     </CommonField>
   );
-}
+};

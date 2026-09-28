@@ -20,7 +20,7 @@ const FLAT: PanoramaProbe = { ok: false, width: 0, height: 0, status: "flat" };
 const PROBE_CACHE_MAX = 100;
 const probeCache = new Map<string, Promise<PanoramaProbe>>();
 
-export function probePanoramaImage(src: string): Promise<PanoramaProbe> {
+export const probePanoramaImage = (src: string): Promise<PanoramaProbe> => {
   if (typeof window === "undefined") return Promise.resolve(UNPROBED);
 
   const cached = probeCache.get(src);
@@ -52,4 +52,4 @@ export function probePanoramaImage(src: string): Promise<PanoramaProbe> {
   }
 
   return probe;
-}
+};

@@ -9,10 +9,10 @@ export type ApiEnvelopeError = Extract<
   { ok: false }
 >["error"];
 
-export async function fetchApiOk<TData>(
+export const fetchApiOk = async <TData>(
   url: string,
   init?: RequestInit,
-): Promise<TData> {
+): Promise<TData> => {
   const response = await fetch(url, init);
   const json = (await response.json()) as ApiEnvelope<TData>;
 
@@ -26,4 +26,4 @@ export async function fetchApiOk<TData>(
   }
 
   return json.data;
-}
+};

@@ -6,7 +6,7 @@ import { useFormContext } from "react-hook-form";
 import { CommonField } from "./CommonField";
 import { peekErrors } from "./utils";
 
-export function ComboBoxField({
+export const ComboBoxField = ({
   name,
   label,
   options,
@@ -24,7 +24,7 @@ export function ComboBoxField({
   serverError?: string;
   className?: string;
   placeholder?: string;
-}) {
+}) => {
   const form = useFormContext();
   const { setValue, watch } = form;
   const [query, setQuery] = useState("");
@@ -155,4 +155,4 @@ export function ComboBoxField({
       </div>
     </CommonField>
   );
-}
+};

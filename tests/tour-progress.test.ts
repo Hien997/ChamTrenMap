@@ -8,9 +8,9 @@ import {
 } from "@/lib/tour-progress";
 import type { TourProgressView } from "@/types";
 
-function makeProgress(
+const makeProgress = (
   ...statuses: { id: string; status: "completed" | "current" | "locked" }[]
-): TourProgressView {
+): TourProgressView => {
   return {
     tourSlug: "tour",
     completedCount: statuses.filter((s) => s.status === "completed").length,
@@ -25,7 +25,7 @@ function makeProgress(
       status: s.status,
     })),
   };
-}
+};
 
 describe("distanceTo", () => {
   const user = { latitude: 10.3836, longitude: 104.4835 };

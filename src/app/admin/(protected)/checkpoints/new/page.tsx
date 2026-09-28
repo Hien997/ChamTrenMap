@@ -34,7 +34,7 @@ type FormInput = CheckpointCreateFormValues;
 /** What the resolver hands `onSubmit`: the validated API payload. */
 type FormOutput = CreateCheckpointPayload;
 
-export default function AdminCheckpointNewPage() {
+const AdminCheckpointNewPage = () => {
   const router = useRouter();
 
   const form = useForm<FormInput, unknown, FormOutput>({
@@ -135,4 +135,6 @@ export default function AdminCheckpointNewPage() {
       </FormProvider>
     </div>
   );
-}
+};
+
+export default AdminCheckpointNewPage;

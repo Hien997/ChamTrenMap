@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-export function ConfirmDelete({
+export const ConfirmDelete = ({
   open,
   onOpenChange,
   title,
@@ -23,7 +23,7 @@ export function ConfirmDelete({
   title: string;
   onConfirm: () => void;
   pending: boolean;
-}) {
+}) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -52,4 +52,4 @@ export function ConfirmDelete({
       </DialogContent>
     </Dialog>
   );
-}
+};

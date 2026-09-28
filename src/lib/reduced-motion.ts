@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
-export function prefersReducedMotion(): boolean {
+export const prefersReducedMotion = (): boolean => {
   if (
     typeof window === "undefined" ||
     typeof window.matchMedia !== "function"
@@ -12,9 +12,9 @@ export function prefersReducedMotion(): boolean {
     return false;
   }
   return window.matchMedia(REDUCED_MOTION_QUERY).matches;
-}
+};
 
-export function useReducedMotion(): { prefersReducedMotion: boolean } {
+export const useReducedMotion = (): { prefersReducedMotion: boolean } => {
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
@@ -34,4 +34,4 @@ export function useReducedMotion(): { prefersReducedMotion: boolean } {
   }, []);
 
   return { prefersReducedMotion: reduced };
-}
+};

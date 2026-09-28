@@ -16,7 +16,7 @@ export const EMPTY_ROUTE_GEOJSON: RouteFeatureCollection = {
   features: [],
 };
 
-function ensureLineSource(map: MaplibreMap, sourceId: string): boolean {
+const ensureLineSource = (map: MaplibreMap, sourceId: string): boolean => {
   if (!map.isStyleLoaded()) return false;
   if (!map.getSource(sourceId)) {
     try {
@@ -26,9 +26,9 @@ function ensureLineSource(map: MaplibreMap, sourceId: string): boolean {
     }
   }
   return true;
-}
+};
 
-export function ensurePathLayer(map: MaplibreMap): boolean {
+export const ensurePathLayer = (map: MaplibreMap): boolean => {
   if (!ensureLineSource(map, PATH_SOURCE_ID)) return false;
   if (!map.getLayer("tour-path-line")) {
     try {
@@ -49,12 +49,12 @@ export function ensurePathLayer(map: MaplibreMap): boolean {
     }
   }
   return true;
-}
+};
 
-export function setPathData(
+export const setPathData = (
   map: MaplibreMap,
   coordinates: [number, number][] | null,
-): void {
+): void => {
   const source = map.getSource(PATH_SOURCE_ID);
   if (!source || !("setData" in source)) return;
   const data =
@@ -62,9 +62,9 @@ export function setPathData(
       ? lineStringFeatureCollection(coordinates)
       : EMPTY_ROUTE_GEOJSON;
   (source as GeoJSONSource).setData(data);
-}
+};
 
-export function ensureRouteLayers(map: MaplibreMap): boolean {
+export const ensureRouteLayers = (map: MaplibreMap): boolean => {
   if (!ensureLineSource(map, ROUTE_SOURCE_ID)) return false;
   try {
     if (!map.getLayer("route-line-casing")) {
@@ -97,18 +97,18 @@ export function ensureRouteLayers(map: MaplibreMap): boolean {
     return false;
   }
   return true;
-}
+};
 
-export function setRouteData(
+export const setRouteData = (
   map: MaplibreMap,
   route: RouteFeatureCollection | null,
-): void {
+): void => {
   const source = map.getSource(ROUTE_SOURCE_ID);
   if (!source || !("setData" in source)) return;
   (source as GeoJSONSource).setData(route ?? EMPTY_ROUTE_GEOJSON);
-}
+};
 
-export function MapRoute({
+export const MapRoute = ({
   map,
   route,
   path,
@@ -116,7 +116,7 @@ export function MapRoute({
   map: MaplibreMap | null;
   route: RouteFeatureCollection | null;
   path?: [number, number][] | null;
-}) {
+}) => {
   useEffect(() => {
     if (!map || !map.isStyleLoaded()) return;
     if (ensurePathLayer(map)) setPathData(map, path ?? null);
@@ -128,9 +128,9 @@ export function MapRoute({
   }, [map, route]);
 
   return null;
-}
+};
 
-export function TravelModeToggle({
+export const TravelModeToggle = ({
   value,
   onChange,
   labels,
@@ -138,7 +138,7 @@ export function TravelModeToggle({
   value: "WALKING" | "DRIVING";
   onChange: (mode: "WALKING" | "DRIVING") => void;
   labels: { walking: string; driving: string };
-}) {
+}) => {
   return (
     <div className="flex overflow-hidden rounded-md border text-xs">
       {(["WALKING", "DRIVING"] as const).map((mode) => (
@@ -163,4 +163,4 @@ export function TravelModeToggle({
       ))}
     </div>
   );
-}
+};

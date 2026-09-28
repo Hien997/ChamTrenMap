@@ -8,7 +8,7 @@ import {
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-export function MapMarker({
+export const MapMarker = ({
   map,
   position,
   zIndex,
@@ -22,7 +22,7 @@ export function MapMarker({
   anchor?: PositionAnchor;
   onClick?: () => void;
   children: ReactNode;
-}) {
+}) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   if (containerRef.current === null && typeof document !== "undefined") {
     containerRef.current = document.createElement("div");
@@ -63,4 +63,4 @@ export function MapMarker({
   });
 
   return container ? createPortal(children, container) : null;
-}
+};

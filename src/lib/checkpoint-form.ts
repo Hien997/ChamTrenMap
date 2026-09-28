@@ -81,9 +81,9 @@ export const CREATE_DEFAULT_VALUES: CheckpointCreateFormValues = {
 };
 
 /** Flattens a stored checkpoint into edit defaults (nullable → empty string). */
-export function editDefaultValues(
+export const editDefaultValues = (
   checkpoint: AdminCheckpoint,
-): CheckpointUpdateFormValues {
+): CheckpointUpdateFormValues => {
   const translation = (t: AdminCheckpoint["vi"]) => ({
     name: t?.name ?? "",
     summary: t?.summary ?? "",
@@ -108,7 +108,7 @@ export function editDefaultValues(
       en: { content: guideContent("en") },
     },
   };
-}
+};
 
 /**
  * Thin wrapper (grill Q2): registered form values are strings/nested objects,
@@ -140,9 +140,9 @@ export const createCheckpointFormSchema = z
  * Edit twin: binds the checkpoint identity (and its current guides, for id
  * re-attachment) into the resulting PATCH payload.
  */
-export function updateCheckpointFormSchema(
+export const updateCheckpointFormSchema = (
   checkpoint: Pick<AdminCheckpoint, "id" | "slug" | "guides">,
-) {
+) => {
   return z
     .custom<CheckpointUpdateFormValues>(() => true)
     .transform((values, ctx) => {
@@ -166,7 +166,7 @@ export function updateCheckpointFormSchema(
       // fields plus id/slug (which updateCheckpointSchema would strip).
       return payload;
     });
-}
+};
 
 /**
  * Server `details` paths whose root has a registered input — only these are
@@ -187,6 +187,6 @@ const FORM_FIELD_ROOTS = new Set([
   "guide",
 ]);
 
-export function isCheckpointFormPath(path: string): boolean {
+export const isCheckpointFormPath = (path: string): boolean => {
   return FORM_FIELD_ROOTS.has(path.split(".")[0]);
-}
+};

@@ -3,7 +3,7 @@ import { ChevronLeftIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 
-export function PageHeader({
+export const PageHeader = ({
   title,
   sub,
   actions,
@@ -11,7 +11,7 @@ export function PageHeader({
   title: ReactNode;
   sub?: ReactNode;
   actions?: ReactNode;
-}) {
+}) => {
   return (
     <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
@@ -27,15 +27,15 @@ export function PageHeader({
       ) : null}
     </header>
   );
-}
+};
 
-export function BackLink({
+export const BackLink = ({
   href,
   children,
 }: {
   href: string;
   children: ReactNode;
-}) {
+}) => {
   return (
     <Link
       href={href}
@@ -45,9 +45,9 @@ export function BackLink({
       {children}
     </Link>
   );
-}
+};
 
-export function Panel({
+export const Panel = ({
   title,
   children,
   className = "",
@@ -55,7 +55,7 @@ export function Panel({
   title?: ReactNode;
   children: ReactNode;
   className?: string;
-}) {
+}) => {
   return (
     <section
       className={`overflow-hidden rounded-lg border bg-card ${className}`}
@@ -68,9 +68,9 @@ export function Panel({
       <div className="p-5">{children}</div>
     </section>
   );
-}
+};
 
-export function StatusChip({ status }: { status: string }) {
+export const StatusChip = ({ status }: { status: string }) => {
   const published = status === "PUBLISHED";
   return (
     <span
@@ -89,10 +89,10 @@ export function StatusChip({ status }: { status: string }) {
       {published ? "Published" : "Draft"}
     </span>
   );
-}
+};
 
 /** Legend for the red asterisk that `Field` renders on required labels. */
-export function RequiredNote() {
+export const RequiredNote = () => {
   return (
     <p className="text-xs text-muted-foreground">
       <span aria-hidden className="text-destructive">
@@ -101,9 +101,9 @@ export function RequiredNote() {
       required
     </p>
   );
-}
+};
 
-export function Field({
+export const Field = ({
   label,
   htmlFor,
   children,
@@ -117,7 +117,7 @@ export function Field({
   hint?: string;
   error?: string;
   required?: boolean;
-}) {
+}) => {
   const hintId = htmlFor ? `${htmlFor}-hint` : undefined;
   const errorId = htmlFor ? `${htmlFor}-error` : undefined;
   return (
@@ -144,4 +144,4 @@ export function Field({
       ) : null}
     </div>
   );
-}
+};

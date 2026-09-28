@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import * as THREE from "three";
 
-export function configurePanoramaTexture(
+export const configurePanoramaTexture = (
   texture: THREE.Texture,
-): THREE.Texture {
+): THREE.Texture => {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
@@ -14,9 +14,11 @@ export function configurePanoramaTexture(
   texture.wrapT = THREE.ClampToEdgeWrapping;
   texture.needsUpdate = true;
   return texture;
-}
+};
 
-export function useEquirectangularTexture(src: string): THREE.Texture | null {
+export const useEquirectangularTexture = (
+  src: string,
+): THREE.Texture | null => {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
@@ -49,14 +51,17 @@ export function useEquirectangularTexture(src: string): THREE.Texture | null {
   }, [src]);
 
   return texture;
-}
+};
 
 type PanoramaSphereProps = {
   texture: THREE.Texture;
   radius?: number;
 };
 
-export function PanoramaSphere({ texture, radius = 500 }: PanoramaSphereProps) {
+export const PanoramaSphere = ({
+  texture,
+  radius = 500,
+}: PanoramaSphereProps) => {
   return (
     <mesh scale={[-1, 1, 1]}>
       <sphereGeometry args={[radius, 64, 32]} />
@@ -67,4 +72,4 @@ export function PanoramaSphere({ texture, radius = 500 }: PanoramaSphereProps) {
       />
     </mesh>
   );
-}
+};

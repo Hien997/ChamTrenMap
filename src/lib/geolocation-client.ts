@@ -1,6 +1,6 @@
 "use client";
 
-export function getCurrentPositionOnce(): Promise<GeolocationPosition> {
+export const getCurrentPositionOnce = (): Promise<GeolocationPosition> => {
   return new Promise((resolve, reject) => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       reject(new Error("GEOLOCATION_UNSUPPORTED"));
@@ -12,4 +12,4 @@ export function getCurrentPositionOnce(): Promise<GeolocationPosition> {
       maximumAge: 10_000,
     });
   });
-}
+};

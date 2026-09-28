@@ -6,10 +6,10 @@ export interface DeriveStatusesResult {
   isCompleted: boolean;
 }
 
-export function deriveStatuses(
+export const deriveStatuses = (
   orderedCheckpointIds: string[],
   completedCheckpointIds: string[],
-): DeriveStatusesResult {
+): DeriveStatusesResult => {
   const completed = new Set(completedCheckpointIds);
   const current = orderedCheckpointIds.find((id) => !completed.has(id)) ?? null;
 
@@ -26,4 +26,4 @@ export function deriveStatuses(
     currentCheckpointId: current,
     isCompleted: current === null && orderedCheckpointIds.length > 0,
   };
-}
+};

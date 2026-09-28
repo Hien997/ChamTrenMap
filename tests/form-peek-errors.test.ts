@@ -4,9 +4,9 @@ import type { FieldValues, UseFormReturn } from "react-hook-form";
 
 import { peekErrors } from "@/components/form/utils";
 
-function fakeForm(errors: unknown): UseFormReturn<FieldValues> {
+const fakeForm = (errors: unknown): UseFormReturn<FieldValues> => {
   return { formState: { errors } } as unknown as UseFormReturn<FieldValues>;
-}
+};
 
 describe("peekErrors", () => {
   it("returns the message for a top-level field", () => {

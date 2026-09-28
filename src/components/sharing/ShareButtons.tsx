@@ -5,13 +5,13 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-function FacebookIcon({
+const FacebookIcon = ({
   className,
   "aria-hidden": ariaHidden,
 }: {
   className?: string;
   "aria-hidden"?: boolean | "true" | "false";
-}) {
+}) => {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -22,19 +22,25 @@ function FacebookIcon({
       <path d="M13.5 21v-8.2h2.76l.41-3.2H13.5V7.55c0-.93.26-1.56 1.59-1.56h1.7V3.13c-.3-.04-1.31-.13-2.49-.13-2.46 0-4.15 1.5-4.15 4.26v2.36H7.38v3.2h2.77V21h3.35Z" />
     </svg>
   );
-}
+};
 
-export function ShareButtons({ url, title }: { url: string; title: string }) {
+export const ShareButtons = ({
+  url,
+  title,
+}: {
+  url: string;
+  title: string;
+}) => {
   const t = useTranslations("Share");
 
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 
-  function openPopup(href: string) {
+  const openPopup = (href: string) => {
     window.open(href, "_blank", "noopener,noreferrer,width=640,height=560");
-  }
+  };
 
-  async function nativeShare() {
+  const nativeShare = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({ title, url });
@@ -44,16 +50,16 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
       return;
     }
     await copyLink();
-  }
+  };
 
-  async function copyLink() {
+  const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(url);
       toast.success(t("copied"));
     } catch {
       toast.error(t("copy"));
     }
-  }
+  };
 
   return (
     <div className="grid grid-cols-2 gap-2">
@@ -87,4 +93,4 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
       </Button>
     </div>
   );
-}
+};

@@ -13,11 +13,13 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string; shareId: string }> };
 
-function appUrl(): string {
+const appUrl = (): string => {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-}
+};
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export const generateMetadata = async ({
+  params,
+}: Props): Promise<Metadata> => {
   const { locale, shareId } = await params;
   const view = await getSharePageView(shareId, locale as Locale);
   if (!view) return { title: "Chắm Trên Map" };
@@ -36,9 +38,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: { title, description, url, type: "website", images },
     twitter: { card: "summary_large_image", title, description, images },
   };
-}
+};
 
-export default async function SharePage({ params }: Props) {
+const SharePage = async ({ params }: Props) => {
   const { locale, shareId } = await params;
   setRequestLocale(locale);
 
@@ -117,4 +119,6 @@ export default async function SharePage({ params }: Props) {
       </div>
     </div>
   );
-}
+};
+
+export default SharePage;

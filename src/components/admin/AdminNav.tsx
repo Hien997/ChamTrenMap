@@ -10,11 +10,11 @@ const items = [
   { href: "/admin/checkpoints", label: "Checkpoints", icon: MapPinIcon },
 ] as const;
 
-export function AdminNav({
+export const AdminNav = ({
   orientation,
 }: {
   orientation: "vertical" | "horizontal";
-}) {
+}) => {
   const pathname = usePathname();
   const vertical = orientation === "vertical";
 
@@ -48,4 +48,4 @@ export function AdminNav({
       })}
     </nav>
   );
-}
+};

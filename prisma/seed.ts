@@ -10,7 +10,7 @@ import {
 
 const prisma = new PrismaClient();
 
-async function seedCheckpoint(checkpoint: SeedCheckpoint) {
+const seedCheckpoint = async (checkpoint: SeedCheckpoint) => {
   const created = await prisma.checkpoint.upsert({
     where: { slug: checkpoint.slug },
     create: {
@@ -76,9 +76,9 @@ async function seedCheckpoint(checkpoint: SeedCheckpoint) {
   });
 
   return created;
-}
+};
 
-async function main() {
+const main = async () => {
   console.log("🌱 Seeding DEMO data for Hà Tiên Discovery…");
 
   const checkpoints: Awaited<ReturnType<typeof seedCheckpoint>>[] = [];
@@ -157,7 +157,7 @@ async function main() {
       "⚠️  ADMIN_EMAIL / ADMIN_PASSWORD not set — skipping admin seed.",
     );
   }
-}
+};
 
 main()
   .catch((error) => {

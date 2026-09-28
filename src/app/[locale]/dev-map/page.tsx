@@ -10,7 +10,7 @@ import {
   resolveMapStyle,
 } from "@/components/map/map.utils";
 
-export default function DevMapPage() {
+const DevMapPage = () => {
   return (
     <main className="h-[100dvh] w-full">
       <Map
@@ -24,4 +24,6 @@ export default function DevMapPage() {
       />
     </main>
   );
-}
+};
+
+export default DevMapPage;

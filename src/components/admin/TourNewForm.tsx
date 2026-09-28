@@ -27,11 +27,11 @@ type FormInput = z.input<typeof createTourSchema>;
 /** Output shape produced by the resolver after Zod parses/defaults. */
 type FormData = z.output<typeof createTourSchema>;
 
-export default function TourNewForm({
+const TourNewForm = ({
   availableCheckpoints,
 }: {
   availableCheckpoints: CheckpointOption[];
-}) {
+}) => {
   const router = useRouter();
 
   const form = useForm<FormInput, unknown, FormData>({
@@ -222,4 +222,6 @@ export default function TourNewForm({
       </FormProvider>
     </div>
   );
-}
+};
+
+export default TourNewForm;

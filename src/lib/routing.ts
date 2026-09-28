@@ -17,10 +17,10 @@ interface OsrmResponse {
   }[];
 }
 
-export function createOsrmRouteService(baseUrl: string): RouteService {
+export const createOsrmRouteService = (baseUrl: string): RouteService => {
   const base = baseUrl.replace(/\/+$/, "");
   return {
-    async getRoute(start, destination, profile = "foot") {
+    getRoute: async (start, destination, profile = "foot") => {
       const url =
         `${base}/route/v1/${profile}/` +
         `${start[0]},${start[1]};${destination[0]},${destination[1]}` +
@@ -39,11 +39,11 @@ export function createOsrmRouteService(baseUrl: string): RouteService {
       };
     },
   };
-}
+};
 
 const DEFAULT_ROUTING_URL = "https://router.project-osrm.de";
 
-export function getRouteService(): RouteService {
+export const getRouteService = (): RouteService => {
   const configured = process.env.NEXT_PUBLIC_ROUTING_API_URL?.trim();
   return createOsrmRouteService(configured || DEFAULT_ROUTING_URL);
-}
+};

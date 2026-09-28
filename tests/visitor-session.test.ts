@@ -31,7 +31,7 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-function makeUser(overrides: Partial<User> = {}): User {
+const makeUser = (overrides: Partial<User> = {}): User => {
   return {
     id: "user-1",
     visitorKey: "key-1",
@@ -43,7 +43,7 @@ function makeUser(overrides: Partial<User> = {}): User {
     createdAt: new Date("2026-09-23T00:00:00Z"),
     ...overrides,
   };
-}
+};
 
 beforeEach(() => {
   vi.restoreAllMocks();

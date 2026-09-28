@@ -24,11 +24,11 @@ import type { AdminCheckpoint } from "@/services/checkpoint-content";
 import { formatApiError, type AdminWriteResponse } from "@/lib/admin-form";
 import { Button } from "@/components/ui/button";
 
-export default function CheckpointEditForm({
+const CheckpointEditForm = ({
   checkpoint,
 }: {
   checkpoint: AdminCheckpoint;
-}) {
+}) => {
   const router = useRouter();
 
   const form = useForm<
@@ -123,4 +123,6 @@ export default function CheckpointEditForm({
       </FormProvider>
     </div>
   );
-}
+};
+
+export default CheckpointEditForm;

@@ -23,9 +23,9 @@ interface CheckpointFixture {
   }>;
 }
 
-function makeCheckpoint(
+const makeCheckpoint = (
   overrides: Partial<CheckpointFixture> = {},
-): CheckpointFixture {
+): CheckpointFixture => {
   return {
     id: overrides.id ?? "cp-1",
     slug: overrides.slug ?? "cp-1",
@@ -39,19 +39,19 @@ function makeCheckpoint(
     translations: [{ locale: "vi", name: "Test Checkpoint" }],
     tourLinks: overrides.tourLinks ?? [],
   };
-}
+};
 
-function checkInInput(
+const checkInInput = (
   checkpointId = "cp-1",
   accuracy?: number,
-): CreateCheckInInput {
+): CreateCheckInInput => {
   return {
     checkpointId,
     latitude: 10.3826,
     longitude: 104.4835,
     accuracy: accuracy != null ? accuracy : 12,
   };
-}
+};
 
 describe("createCheckIn — no_tour_link branch", () => {
   const locale: Locale = "vi";

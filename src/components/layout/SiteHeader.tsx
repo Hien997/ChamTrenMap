@@ -7,7 +7,7 @@ import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { WeatherChip } from "@/components/layout/WeatherChip";
 import { cn } from "@/lib/utils";
 
-export function SiteHeader() {
+export const SiteHeader = () => {
   const t = useTranslations("Nav");
   const pathname = usePathname();
 
@@ -58,4 +58,4 @@ export function SiteHeader() {
       </div>
     </header>
   );
-}
+};

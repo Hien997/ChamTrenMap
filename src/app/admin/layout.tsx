@@ -17,11 +17,7 @@ export const metadata: Metadata = {
   description: "Edit tours and checkpoints.",
 };
 
-export default function AdminRootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const AdminRootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html
       lang="en"
@@ -33,4 +29,6 @@ export default function AdminRootLayout({
       </body>
     </html>
   );
-}
+};
+
+export default AdminRootLayout;

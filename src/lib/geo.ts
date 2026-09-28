@@ -5,11 +5,11 @@ export interface LatLng {
 
 const EARTH_RADIUS_METERS = 6_371_000;
 
-function toRadians(degrees: number): number {
+const toRadians = (degrees: number): number => {
   return (degrees * Math.PI) / 180;
-}
+};
 
-export function haversineMeters(a: LatLng, b: LatLng): number {
+export const haversineMeters = (a: LatLng, b: LatLng): number => {
   const dLat = toRadians(b.latitude - a.latitude);
   const dLon = toRadians(b.longitude - a.longitude);
   const lat1 = toRadians(a.latitude);
@@ -20,7 +20,7 @@ export function haversineMeters(a: LatLng, b: LatLng): number {
     Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
 
   return 2 * EARTH_RADIUS_METERS * Math.asin(Math.min(1, Math.sqrt(h)));
-}
+};
 
 export type CheckInDecision =
   | { status: "ok" }
@@ -38,7 +38,9 @@ export interface EvaluateCheckInInput {
   isLocked: boolean;
 }
 
-export function evaluateCheckIn(input: EvaluateCheckInInput): CheckInDecision {
+export const evaluateCheckIn = (
+  input: EvaluateCheckInInput,
+): CheckInDecision => {
   if (input.alreadyCheckedIn) return { status: "already_checked_in" };
   if (input.isLocked) return { status: "locked" };
   if (
@@ -60,4 +62,4 @@ export function evaluateCheckIn(input: EvaluateCheckInInput): CheckInDecision {
     };
   }
   return { status: "ok" };
-}
+};

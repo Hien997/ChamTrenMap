@@ -15,37 +15,37 @@ import { prisma } from "@/lib/prisma";
  * mutates cookies). Read paths (`getSessionVisitor`) never create rows.
  */
 
-export function newVisitorKey(): string {
+export const newVisitorKey = (): string => {
   return randomBytes(32).toString("hex");
-}
+};
 
-export async function readVisitorId(): Promise<string | null> {
+export const readVisitorId = async (): Promise<string | null> => {
   const store = await cookies();
   return store.get(VISITOR_COOKIE_NAME)?.value ?? null;
-}
+};
 
-export async function findVisitor(key: string | null): Promise<User | null> {
+export const findVisitor = async (key: string | null): Promise<User | null> => {
   if (!key) return null;
   return prisma.user.findUnique({ where: { visitorKey: key } });
-}
+};
 
 /** Read-only session lookup for pages — never writes. */
-export async function getSessionVisitor(): Promise<User | null> {
+export const getSessionVisitor = async (): Promise<User | null> => {
   return findVisitor(await readVisitorId());
-}
+};
 
 /** Create-if-missing for a known key — the write half of write-lazy identity. */
-export async function ensureVisitor(key: string): Promise<User> {
+export const ensureVisitor = async (key: string): Promise<User> => {
   const existing = await prisma.user.findUnique({ where: { visitorKey: key } });
   if (existing) return existing;
   return prisma.user.create({ data: { visitorKey: key } });
-}
+};
 
 /**
  * First-check-in glue for route handlers: reuse the cookie's key (or mint
  * one), ensure the row exists, and attach `ctm_visitor` when new.
  */
-export async function ensureVisitorWithCookie(): Promise<User> {
+export const ensureVisitorWithCookie = async (): Promise<User> => {
   const store = await cookies();
   const cookieKey = store.get(VISITOR_COOKIE_NAME)?.value ?? null;
   if (cookieKey) {
@@ -65,4 +65,4 @@ export async function ensureVisitorWithCookie(): Promise<User> {
     path: "/",
   });
   return user;
-}
+};

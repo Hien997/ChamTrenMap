@@ -5,7 +5,7 @@ import { InputField, SelectField } from "@/components/form";
  * store via `defaultValues` — this component renders labels + inputs only
  * (grill Q4).
  */
-export function CheckpointFields() {
+export const CheckpointFields = () => {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-3">
@@ -65,4 +65,4 @@ export function CheckpointFields() {
       </div>
     </div>
   );
-}
+};

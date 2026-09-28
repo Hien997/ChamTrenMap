@@ -7,6 +7,6 @@
  * JSON — parsers decode the escaped form back to `<` — while making a
  * breakout impossible.
  */
-export function serializeJsonLd(value: unknown): string {
+export const serializeJsonLd = (value: unknown): string => {
   return JSON.stringify(value).replace(/</g, "\\u003c");
-}
+};

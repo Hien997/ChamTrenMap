@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type LocationPermissionState =
   "unknown" | "granted" | "denied" | "prompt";
 
-export function useUserLocation() {
+export const useUserLocation = () => {
   const [position, setPosition] = useState<GeolocationCoordinates | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -63,4 +63,4 @@ export function useUserLocation() {
   useEffect(() => stopWatching, [stopWatching]);
 
   return { position, error, loading, permission, startWatching, stopWatching };
-}
+};

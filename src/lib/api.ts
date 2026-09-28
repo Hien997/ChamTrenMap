@@ -50,34 +50,37 @@ export interface ValidationDetail {
   message: string;
 }
 
-export function validationDetails(error: ZodError): ValidationDetail[] {
+export const validationDetails = (error: ZodError): ValidationDetail[] => {
   return error.issues.map((issue) => ({
     path: issue.path.join("."),
     message: issue.message,
   }));
-}
+};
 
 // ---------------------------------------------------------------------------
 // Public envelope (typed errors).
 // ---------------------------------------------------------------------------
 
-export function apiOk<T>(data: T, init?: ResponseInit): NextResponse {
+export const apiOk = <T>(data: T, init?: ResponseInit): NextResponse => {
   return NextResponse.json({ ok: true as const, data }, init);
-}
+};
 
-export function apiError(
+export const apiError = (
   code: ApiErrorCode,
   message: string,
   status: number,
   details?: unknown,
-): NextResponse {
+): NextResponse => {
   return NextResponse.json(
     { ok: false as const, error: { code, message, details } },
     { status },
   );
-}
+};
 
-export function handleApiError(context: string, error: unknown): NextResponse {
+export const handleApiError = (
+  context: string,
+  error: unknown,
+): NextResponse => {
   if (error instanceof ZodError) {
     return apiError("BAD_REQUEST", "Invalid request", 400, {
       issues: error.issues,
@@ -85,10 +88,10 @@ export function handleApiError(context: string, error: unknown): NextResponse {
   }
   console.error(`[api] ${context}:`, error);
   return apiError("INTERNAL", "Internal server error", 500);
-}
+};
 
 /** Parse a request body against a schema; failure yields the public 400 shape. */
-export function parseBody<T>(schema: ZodType<T>, raw: unknown): Parsed<T> {
+export const parseBody = <T>(schema: ZodType<T>, raw: unknown): Parsed<T> => {
   const result = schema.safeParse(raw);
   if (result.success) return { ok: true, data: result.data };
   return {
@@ -97,24 +100,24 @@ export function parseBody<T>(schema: ZodType<T>, raw: unknown): Parsed<T> {
       issues: result.error.issues,
     }),
   };
-}
+};
 
 /** Read and validate the `?locale=` query parameter (defaults to `vi`). */
-export function parseLocale(searchParams: URLSearchParams): Locale {
+export const parseLocale = (searchParams: URLSearchParams): Locale => {
   return localeQuerySchema.parse(searchParams.get("locale") ?? undefined);
-}
+};
 
 // ---------------------------------------------------------------------------
 // Admin adapter (flat envelope with string errors).
 // ---------------------------------------------------------------------------
 
 /** `{ ok: true, ...entities }` — e.g. `adminOk({ checkpoints })` or `adminOk()`. */
-export function adminOk(
+export const adminOk = (
   entities: Record<string, unknown> = {},
   init?: ResponseInit,
-): NextResponse {
+): NextResponse => {
   return NextResponse.json({ ok: true, ...entities }, init);
-}
+};
 
 export interface AdminErrorOptions {
   details?: ValidationDetail[];
@@ -122,20 +125,23 @@ export interface AdminErrorOptions {
 }
 
 /** `{ ok: false, error: message, details? }` with the given status. */
-export function adminError(
+export const adminError = (
   message: string,
   status: number,
   options: AdminErrorOptions = {},
-): NextResponse {
+): NextResponse => {
   const { details, init } = options;
   return NextResponse.json(
     { ok: false, error: message, ...(details ? { details } : {}) },
     { status, ...init },
   );
-}
+};
 
 /** Like `parseBody`, but failure yields the admin flat 400 shape. */
-export function parseAdminBody<T>(schema: ZodType<T>, raw: unknown): Parsed<T> {
+export const parseAdminBody = <T>(
+  schema: ZodType<T>,
+  raw: unknown,
+): Parsed<T> => {
   const result = schema.safeParse(raw);
   if (result.success) return { ok: true, data: result.data };
   return {
@@ -144,12 +150,12 @@ export function parseAdminBody<T>(schema: ZodType<T>, raw: unknown): Parsed<T> {
       details: validationDetails(result.error),
     }),
   };
-}
+};
 
 /** Read and validate `?q=&take=&offset=` for the admin list routes. */
-export function parseAdminListQuery(
+export const parseAdminListQuery = (
   searchParams: URLSearchParams,
-): Parsed<AdminListQuery> {
+): Parsed<AdminListQuery> => {
   const result = adminListQuerySchema.safeParse({
     q: searchParams.get("q") ?? undefined,
     take: searchParams.get("take") ?? undefined,
@@ -162,7 +168,7 @@ export function parseAdminListQuery(
       details: validationDetails(result.error),
     }),
   };
-}
+};
 
 /**
  * Map a caught write error onto the admin envelope (absorbs `http.ts`).
@@ -171,10 +177,10 @@ export function parseAdminListQuery(
  * bug — log it server-side and answer with a generic JSON 500 so the admin UI
  * always receives the documented envelope instead of Next's HTML error page.
  */
-export function writeErrorResponse(error: unknown): NextResponse {
+export const writeErrorResponse = (error: unknown): NextResponse => {
   if (error instanceof CheckpointWriteError) {
     return adminError(error.message, error.status);
   }
   console.error("[api] admin write:", error);
   return adminError("Internal server error", 500);
-}
+};

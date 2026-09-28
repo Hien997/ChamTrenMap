@@ -2,23 +2,23 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-function loadCatalog(name: string): Record<string, unknown> {
+const loadCatalog = (name: string): Record<string, unknown> => {
   return JSON.parse(
     readFileSync(
       new URL(`../src/messages/${name}.json`, import.meta.url),
       "utf8",
     ),
   ) as Record<string, unknown>;
-}
+};
 
-function flattenKeys(node: unknown, prefix = ""): string[] {
+const flattenKeys = (node: unknown, prefix = ""): string[] => {
   if (typeof node !== "object" || node === null) {
     return prefix ? [prefix] : [];
   }
   return Object.entries(node as Record<string, unknown>).flatMap(
     ([key, value]) => flattenKeys(value, prefix ? `${prefix}.${key}` : key),
   );
-}
+};
 
 describe("message catalogs", () => {
   const vi = flattenKeys(loadCatalog("vi"));

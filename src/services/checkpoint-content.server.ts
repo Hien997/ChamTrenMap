@@ -9,7 +9,7 @@ import {
 } from "@/services/checkpoint-content";
 import { buildCheckpointSearchWhere } from "@/services/search";
 
-function toAdminTranslation(
+const toAdminTranslation = (
   rows: {
     locale: string;
     name: string;
@@ -19,7 +19,7 @@ function toAdminTranslation(
     bestTimeToVisit: string | null;
   }[],
   locale: "vi" | "en",
-): AdminCheckpoint["vi"] {
+): AdminCheckpoint["vi"] => {
   const row = rows.find((item) => item.locale === locale);
   return row
     ? {
@@ -30,18 +30,18 @@ function toAdminTranslation(
         bestTimeToVisit: row.bestTimeToVisit,
       }
     : null;
-}
+};
 
 /**
  * One page of checkpoints for the admin list: `q` search + offset paging.
  * Returns the page's rows plus the full match count so the client knows
  * whether more pages exist.
  */
-export async function listCheckpointsForAdmin(params: {
+export const listCheckpointsForAdmin = async (params: {
   q: string;
   take: number;
   offset: number;
-}): Promise<{ items: AdminCheckpoint[]; total: number }> {
+}): Promise<{ items: AdminCheckpoint[]; total: number }> => {
   const where = buildCheckpointSearchWhere(params.q);
   const [checkpoints, total] = await Promise.all([
     prisma.checkpoint.findMany({
@@ -76,11 +76,11 @@ export async function listCheckpointsForAdmin(params: {
     })),
   }));
   return { items, total };
-}
+};
 
-export async function getCheckpointForEdit(
+export const getCheckpointForEdit = async (
   slug: string,
-): Promise<AdminCheckpoint | null> {
+): Promise<AdminCheckpoint | null> => {
   const cp = await prisma.checkpoint.findUnique({
     where: { slug },
     include: {
@@ -114,11 +114,11 @@ export async function getCheckpointForEdit(
       order: tl.order,
     })),
   };
-}
+};
 
-export async function createCheckpoint(
+export const createCheckpoint = async (
   input: CreateCheckpointInput,
-): Promise<{ id: string; slug: string }> {
+): Promise<{ id: string; slug: string }> => {
   try {
     const existing = await prisma.checkpoint.findUnique({
       where: { slug: input.slug },
@@ -163,12 +163,12 @@ export async function createCheckpoint(
       "Checkpoint error or database error",
     );
   }
-}
+};
 
-export async function updateCheckpoint(
+export const updateCheckpoint = async (
   slug: string,
   input: UpdateCheckpointInput,
-): Promise<{ id: string; slug: string }> {
+): Promise<{ id: string; slug: string }> => {
   try {
     const existing = await prisma.checkpoint.findUnique({ where: { slug } });
     if (!existing) {
@@ -232,12 +232,12 @@ export async function updateCheckpoint(
     if (error instanceof CheckpointWriteError) throw error;
     throw new CheckpointWriteError("storage", "Database error");
   }
-}
+};
 
-export async function deleteCheckpoint(slug: string): Promise<void> {
+export const deleteCheckpoint = async (slug: string): Promise<void> => {
   const checkpoint = await prisma.checkpoint.findUnique({ where: { slug } });
   if (!checkpoint) {
     throw new CheckpointWriteError("not-found", "Not found");
   }
   await prisma.checkpoint.delete({ where: { id: checkpoint.id } });
-}
+};

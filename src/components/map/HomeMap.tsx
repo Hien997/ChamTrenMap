@@ -15,13 +15,13 @@ export interface HomeMapLocation extends MapLocation {
   slug: string;
 }
 
-export function HomeMap({
+export const HomeMap = ({
   locations,
   className,
 }: {
   locations: HomeMapLocation[];
   className?: string;
-}) {
+}) => {
   const t = useTranslations("Home");
   const tCommon = useTranslations("Common");
   const tMap = useTranslations("Map");
@@ -63,4 +63,4 @@ export function HomeMap({
       timeoutLabel={tMap("mapTimeout")}
     />
   );
-}
+};

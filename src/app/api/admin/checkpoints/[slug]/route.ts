@@ -13,12 +13,12 @@ import {
   updateCheckpoint,
 } from "@/services/checkpoint-content.server";
 
-function slugFromRequest(request: NextRequest): string {
+const slugFromRequest = (request: NextRequest): string => {
   const { pathname } = new URL(request.url);
   return pathname.split("/").pop() ?? "";
-}
+};
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const checkpoint = await getCheckpointForEdit(slugFromRequest(request));
@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
     return adminError("Not found", 404);
   }
   return adminOk({ checkpoint });
-}
+};
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const parsed = parseAdminBody(updateCheckpointSchema, await request.json());
@@ -43,9 +43,9 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     return writeErrorResponse(error);
   }
-}
+};
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   try {
@@ -54,4 +54,4 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     return writeErrorResponse(error);
   }
-}
+};

@@ -48,13 +48,13 @@ type TTour = {
   checkpoints: { checkpointId: string; slug: string; name: string }[];
 };
 
-export default function AdminTourEditPage({
+const AdminTourEditPage = ({
   tour,
   availableCheckpoints,
 }: {
   tour: TTour;
   availableCheckpoints: CheckpointOption[];
-}) {
+}) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -317,4 +317,6 @@ export default function AdminTourEditPage({
       </form>
     </div>
   );
-}
+};
+
+export default AdminTourEditPage;

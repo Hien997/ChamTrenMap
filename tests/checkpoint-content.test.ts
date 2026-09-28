@@ -13,11 +13,11 @@ import {
   type CheckpointContentRow,
 } from "@/services/checkpoint-content";
 
-function formData(entries: Record<string, string>): FormData {
+const formData = (entries: Record<string, string>): FormData => {
   const fd = new FormData();
   for (const [key, value] of Object.entries(entries)) fd.set(key, value);
   return fd;
-}
+};
 
 const FULL_PATCH_FIELDS = {
   latitude: "10.3864",

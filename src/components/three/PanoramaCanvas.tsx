@@ -20,11 +20,11 @@ type LookControlsProps = {
   autoRotate: boolean;
 };
 
-function clamp(value: number, min: number, max: number): number {
+const clamp = (value: number, min: number, max: number): number => {
   return Math.max(min, Math.min(max, value));
-}
+};
 
-function LookControls({ initialYaw, autoRotate }: LookControlsProps) {
+const LookControls = ({ initialYaw, autoRotate }: LookControlsProps) => {
   const camera = useThree((state) => state.camera);
   const domElement = useThree((state) => state.gl.domElement);
   const target = useRef({ yaw: initialYaw, pitch: 0 });
@@ -115,15 +115,15 @@ function LookControls({ initialYaw, autoRotate }: LookControlsProps) {
   });
 
   return null;
-}
+};
 
-export function PanoramaCanvas({
+export const PanoramaCanvas = ({
   src,
   alt,
   autoRotate,
   initialYaw,
   onReady,
-}: PanoramaCanvasProps) {
+}: PanoramaCanvasProps) => {
   const texture = useEquirectangularTexture(src);
   const onReadyRef = useRef(onReady);
   useEffect(() => {
@@ -147,4 +147,4 @@ export function PanoramaCanvas({
       {texture ? <PanoramaSphere texture={texture} /> : null}
     </Canvas>
   );
-}
+};

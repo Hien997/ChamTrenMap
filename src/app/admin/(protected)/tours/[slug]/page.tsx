@@ -31,11 +31,11 @@ type TTour = {
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminTourEditPageRoute({
+const AdminTourEditPageRoute = async ({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}) => {
   const { slug } = await params;
 
   const [tour, availableCheckpoints] = await Promise.all([
@@ -92,4 +92,6 @@ export default async function AdminTourEditPageRoute({
       availableCheckpoints={availableCheckpoints}
     />
   );
-}
+};
+
+export default AdminTourEditPageRoute;

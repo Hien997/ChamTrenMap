@@ -5,7 +5,7 @@ import { InputField, TextAreaField } from "@/components/form";
  * through the page's `FormProvider`, so the only input here is the locale —
  * no defaultValue, no flat error map (grill Q4).
  */
-export function TranslationFields({ locale }: { locale: "vi" | "en" }) {
+export const TranslationFields = ({ locale }: { locale: "vi" | "en" }) => {
   return (
     <div className="space-y-4" lang={locale}>
       <InputField name={`${locale}.name`} label="Name" required />
@@ -25,4 +25,4 @@ export function TranslationFields({ locale }: { locale: "vi" | "en" }) {
       </div>
     </div>
   );
-}
+};

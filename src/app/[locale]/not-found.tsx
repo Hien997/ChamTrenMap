@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CompassIcon } from "lucide-react";
 
-export default function LocaleNotFound() {
+const LocaleNotFound = () => {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-3 px-4 text-center">
       <CompassIcon aria-hidden className="size-10 text-primary/70" />
@@ -17,4 +17,6 @@ export default function LocaleNotFound() {
       </Link>
     </div>
   );
-}
+};
+
+export default LocaleNotFound;

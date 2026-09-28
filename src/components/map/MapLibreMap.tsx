@@ -83,15 +83,15 @@ export interface MapLibreMapRef<T extends MapLocation = MapLocation> {
  * budget fires; if the style has not settled yet, getStyle() may throw and
  * the answer is irrelevant — the reducer escalates on !loaded anyway.
  */
-function readStyleHasTiles(map: MaplibreMap): boolean {
+const readStyleHasTiles = (map: MaplibreMap): boolean => {
   try {
     return styleUsesTileSources(map.getStyle());
   } catch {
     return false;
   }
-}
+};
 
-export function MapLibreMap<T extends MapLocation = MapLocation>({
+export const MapLibreMap = <T extends MapLocation = MapLocation>({
   locations,
   center,
   zoom,
@@ -114,7 +114,7 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
   emptyLabel,
   loadTimeoutMs,
   ref,
-}: MapLibreMapProps<T>) {
+}: MapLibreMapProps<T>) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const markersRef = useRef(new Map<string, Marker>());
@@ -462,4 +462,4 @@ export function MapLibreMap<T extends MapLocation = MapLocation>({
         )}
     </div>
   );
-}
+};

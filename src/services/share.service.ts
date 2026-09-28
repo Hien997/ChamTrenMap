@@ -10,11 +10,11 @@ export type CreateShareLinkResult =
   | { status: "not_found" }
   | { status: "forbidden" };
 
-export async function createShareLink(
+export const createShareLink = async (
   userId: string,
   checkInId: string,
   origin: string,
-): Promise<CreateShareLinkResult> {
+): Promise<CreateShareLinkResult> => {
   const checkIn = await prisma.checkIn.findUnique({
     where: { id: checkInId },
     include: { shareLink: true },
@@ -34,12 +34,12 @@ export async function createShareLink(
     shareId,
     url: `${origin}/${DEFAULT_LOCALE}/share/checkin/${shareId}`,
   };
-}
+};
 
-export async function getSharePageView(
+export const getSharePageView = async (
   shareId: string,
   locale: Locale,
-): Promise<SharePageView | null> {
+): Promise<SharePageView | null> => {
   const shareLink = await prisma.shareLink.findUnique({
     where: { id: shareId },
     include: {
@@ -86,4 +86,4 @@ export async function getSharePageView(
         }
       : null,
   };
-}
+};

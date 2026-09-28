@@ -10,7 +10,7 @@ const OPTIONS: { value: AppLocale; code: string }[] = [
   { value: "en", code: "EN" },
 ];
 
-export function LocaleSwitcher() {
+export const LocaleSwitcher = () => {
   const t = useTranslations("LocaleSwitcher");
   const locale = useLocale();
   const pathname = usePathname();
@@ -49,4 +49,4 @@ export function LocaleSwitcher() {
       })}
     </div>
   );
-}
+};

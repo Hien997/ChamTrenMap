@@ -6,10 +6,10 @@ import type { FieldValues, UseFormReturn } from "react-hook-form";
  * like "vi.name" — `formState.errors` is a nested object, so a flat
  * `errors[name]` lookup only ever works for top-level fields.
  */
-export function peekErrors(
+export const peekErrors = (
   form: UseFormReturn<FieldValues>,
   name: string,
-): string | undefined {
+): string | undefined => {
   let node: unknown = form.formState.errors;
   for (const key of name.split(".")) {
     if (node == null || typeof node !== "object") return undefined;
@@ -18,12 +18,12 @@ export function peekErrors(
   if (node == null || typeof node !== "object") return undefined;
   const message = (node as { message?: unknown }).message;
   return typeof message === "string" ? message : undefined;
-}
+};
 
 /** Combine several refs into a single callback ref (e.g. register's ref + a forwarded ref). */
-export function mergeRefs<T>(
+export const mergeRefs = <T>(
   ...refs: Array<Ref<T> | undefined>
-): RefCallback<T> {
+): RefCallback<T> => {
   return (value) => {
     for (const ref of refs) {
       if (typeof ref === "function") {
@@ -33,4 +33,4 @@ export function mergeRefs<T>(
       }
     }
   };
-}
+};

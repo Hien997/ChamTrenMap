@@ -19,13 +19,13 @@ const LABELS: Record<CheckpointStatus, string> = {
   locked: "Locked",
 };
 
-export function CheckpointStatusIcon({
+export const CheckpointStatusIcon = ({
   status,
   className,
 }: {
   status: CheckpointStatus | null;
   className?: string;
-}) {
+}) => {
   if (!status) return null;
   const Icon = ICONS[status];
   return (
@@ -38,4 +38,4 @@ export function CheckpointStatusIcon({
       <Icon aria-hidden className="size-[1em]" />
     </span>
   );
-}
+};

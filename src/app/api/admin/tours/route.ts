@@ -10,7 +10,7 @@ import { requireAdminApi } from "@/lib/admin-auth";
 import { buildTourSearchWhere } from "@/services/search";
 import { createTourSchema } from "@/lib/validations/admin";
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const query = parseAdminListQuery(request.nextUrl.searchParams);
@@ -64,9 +64,9 @@ export async function GET(request: NextRequest) {
     }),
     total,
   });
-}
+};
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const parsed = parseAdminBody(createTourSchema, await request.json());
@@ -133,4 +133,4 @@ export async function POST(request: NextRequest) {
   } catch {
     return adminError("Tour already exists or database error", 409);
   }
-}
+};

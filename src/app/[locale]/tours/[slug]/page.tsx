@@ -17,7 +17,9 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export const generateMetadata = async ({
+  params,
+}: Props): Promise<Metadata> => {
   const { locale, slug } = await params;
   const tour = await getTourDetail(slug, locale as Locale);
   if (!tour) return {};
@@ -30,9 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: tour.coverImageUrl ? [tour.coverImageUrl] : [],
     },
   };
-}
+};
 
-export default async function TourDetailPage({ params }: Props) {
+const TourDetailPage = async ({ params }: Props) => {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
@@ -162,4 +164,6 @@ export default async function TourDetailPage({ params }: Props) {
       </main>
     </div>
   );
-}
+};
+
+export default TourDetailPage;

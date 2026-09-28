@@ -3,7 +3,7 @@ import { LogOutIcon, WaypointsIcon } from "lucide-react";
 import { requireAdminPage } from "@/lib/admin-auth";
 import { AdminNav } from "@/components/admin/AdminNav";
 
-function Brand() {
+const Brand = () => {
   return (
     <Link href="/admin" className="inline-flex items-center gap-2 text-white">
       <WaypointsIcon
@@ -15,16 +15,16 @@ function Brand() {
       </span>
     </Link>
   );
-}
+};
 
 const logoutLink =
   "inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-white/60 transition-colors duration-200 hover:bg-white/5 hover:text-white";
 
-export default async function AdminProtectedLayout({
+const AdminProtectedLayout = async ({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}) => {
   const user = await requireAdminPage();
 
   return (
@@ -67,4 +67,6 @@ export default async function AdminProtectedLayout({
       </main>
     </div>
   );
-}
+};
+
+export default AdminProtectedLayout;

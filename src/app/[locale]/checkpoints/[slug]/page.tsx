@@ -37,11 +37,13 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
-function appUrl(): string {
+const appUrl = (): string => {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-}
+};
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export const generateMetadata = async ({
+  params,
+}: Props): Promise<Metadata> => {
   const { locale, slug } = await params;
   const checkpoint = await getCheckpointDetail(slug, locale as Locale);
   if (!checkpoint) return {};
@@ -72,9 +74,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: checkpoint.thumbnailUrl ? [checkpoint.thumbnailUrl] : [],
     },
   };
-}
+};
 
-export default async function CheckpointPage({ params }: Props) {
+const CheckpointPage = async ({ params }: Props) => {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
@@ -284,4 +286,6 @@ export default async function CheckpointPage({ params }: Props) {
       />
     </div>
   );
-}
+};
+
+export default CheckpointPage;

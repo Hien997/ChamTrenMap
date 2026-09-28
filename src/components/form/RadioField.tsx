@@ -4,7 +4,7 @@ import { useFormContext } from "react-hook-form";
 import { CommonField } from "./CommonField";
 import { peekErrors } from "./utils";
 
-export function RadioField({
+export const RadioField = ({
   name,
   label,
   options,
@@ -20,7 +20,7 @@ export function RadioField({
   hint?: string;
   serverError?: string;
   className?: string;
-}) {
+}) => {
   const form = useFormContext();
   const { register } = form;
   const error = serverError ?? peekErrors(form, name);
@@ -49,4 +49,4 @@ export function RadioField({
       </div>
     </CommonField>
   );
-}
+};

@@ -3,7 +3,7 @@ import { apiOk, handleApiError, parseLocale } from "@/lib/api";
 import { getSessionVisitor } from "@/lib/visitor-session";
 import { listMyCheckIns } from "@/services/checkins.service";
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
   try {
     // Write-lazy: no visitor row yet means no check-ins — never create rows here.
     const user = await getSessionVisitor();
@@ -13,4 +13,4 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     return handleApiError("GET /api/checkins/me", error);
   }
-}
+};

@@ -10,7 +10,7 @@ import type {
 } from "@/types";
 import type { Locale } from "@/config/constants";
 
-export async function listTours(locale: Locale): Promise<TourSummaryView[]> {
+export const listTours = async (locale: Locale): Promise<TourSummaryView[]> => {
   const tours = await prisma.tour.findMany({
     where: { status: "PUBLISHED" },
     orderBy: { createdAt: "asc" },
@@ -54,13 +54,13 @@ export async function listTours(locale: Locale): Promise<TourSummaryView[]> {
       };
     },
   );
-}
+};
 
-export async function getTourDetail(
+export const getTourDetail = async (
   slug: string,
   locale: Locale,
   completedCheckpointIds?: string[],
-): Promise<TourDetailView | null> {
+): Promise<TourDetailView | null> => {
   const tour = await prisma.tour.findUnique({
     where: { slug, status: "PUBLISHED" },
     include: {
@@ -124,4 +124,4 @@ export async function getTourDetail(
     ),
     checkpoints,
   };
-}
+};

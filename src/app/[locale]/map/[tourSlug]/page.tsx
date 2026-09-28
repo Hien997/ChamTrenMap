@@ -14,13 +14,15 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string; tourSlug: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export const generateMetadata = async ({
+  params,
+}: Props): Promise<Metadata> => {
   const { locale, tourSlug } = await params;
   const tour = await getTourDetail(tourSlug, locale as Locale);
   return { title: `${tour?.name ?? "Map"} — Chắm Trên Map` };
-}
+};
 
-export default async function TourMapPage({ params }: Props) {
+const TourMapPage = async ({ params }: Props) => {
   const { locale, tourSlug } = await params;
   setRequestLocale(locale);
 
@@ -76,4 +78,6 @@ export default async function TourMapPage({ params }: Props) {
       progress={progress}
     />
   );
-}
+};
+
+export default TourMapPage;

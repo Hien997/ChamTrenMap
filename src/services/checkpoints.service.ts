@@ -7,10 +7,10 @@ import {
 } from "@/services/checkpoint-content";
 import type { CheckpointDetailView } from "@/types";
 
-export async function getCheckpointDetail(
+export const getCheckpointDetail = async (
   slug: string,
   locale: Locale,
-): Promise<CheckpointDetailView | null> {
+): Promise<CheckpointDetailView | null> => {
   const checkpoint = await prisma.checkpoint.findUnique({
     where: { slug },
     include: {
@@ -22,9 +22,9 @@ export async function getCheckpointDetail(
   if (!checkpoint) return null;
 
   return toCheckpointDetail(checkpoint, locale);
-}
+};
 
-export async function listCheckpoints(locale: Locale) {
+export const listCheckpoints = async (locale: Locale) => {
   const checkpoints = await prisma.checkpoint.findMany({
     include: {
       translations: true,
@@ -32,12 +32,12 @@ export async function listCheckpoints(locale: Locale) {
     },
   });
   return checkpoints.map((cp) => toCheckpointSummary(cp, locale));
-}
+};
 
-export async function getTourForCheckpoint(
+export const getTourForCheckpoint = async (
   checkpointSlug: string,
   locale: Locale,
-): Promise<{ slug: string; name: string; order: number } | null> {
+): Promise<{ slug: string; name: string; order: number } | null> => {
   const link = await prisma.tourCheckpoint.findFirst({
     where: {
       checkpoint: { slug: checkpointSlug },
@@ -53,7 +53,7 @@ export async function getTourForCheckpoint(
     name: translation?.name ?? link.tour.slug,
     order: link.order,
   };
-}
+};
 
 /**
  * All checkpoints as picker options for the tour stop editor: id/slug plus
@@ -62,9 +62,9 @@ export async function getTourForCheckpoint(
  * Deliberately unbounded — the admin list endpoint caps `take` at 50, which
  * would silently truncate the picker on larger datasets.
  */
-export async function listCheckpointOptions(): Promise<
+export const listCheckpointOptions = async (): Promise<
   { id: string; slug: string; name: string }[]
-> {
+> => {
   const checkpoints = await prisma.checkpoint.findMany({
     include: { translations: true },
     orderBy: { slug: "asc" },
@@ -76,4 +76,4 @@ export async function listCheckpointOptions(): Promise<
       checkpoint.translations.find((t) => t.locale === "vi")?.name ||
       checkpoint.slug,
   }));
-}
+};

@@ -17,7 +17,7 @@ const PanoramaCanvas = dynamic(
   { ssr: false },
 );
 
-export function usePanoramaStatus(src: string): PanoramaStatus {
+export const usePanoramaStatus = (src: string): PanoramaStatus => {
   const [status, setStatus] = useState<PanoramaStatus>("probing");
 
   useEffect(() => {
@@ -32,14 +32,14 @@ export function usePanoramaStatus(src: string): PanoramaStatus {
   }, [src]);
 
   return status;
-}
+};
 
-function FlatPhoto({
+const FlatPhoto = ({
   src,
   alt,
   className,
   fit = "cover",
-}: PanoramaImageSource & { className?: string; fit?: "cover" | "contain" }) {
+}: PanoramaImageSource & { className?: string; fit?: "cover" | "contain" }) => {
   return (
     <img
       src={src}
@@ -52,9 +52,9 @@ function FlatPhoto({
       }
     />
   );
-}
+};
 
-export function PanoramaViewer({
+export const PanoramaViewer = ({
   src,
   alt,
   initialYaw = 0,
@@ -62,7 +62,7 @@ export function PanoramaViewer({
   className,
   fit = "cover",
   onReady,
-}: PanoramaViewerProps) {
+}: PanoramaViewerProps) => {
   const tCommon = useTranslations("Common");
   const status = usePanoramaStatus(src);
   const shouldRotate = useMemo(
@@ -95,4 +95,4 @@ export function PanoramaViewer({
       )}
     </div>
   );
-}
+};

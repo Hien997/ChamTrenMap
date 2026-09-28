@@ -2,10 +2,10 @@ import type { NextRequest } from "next/server";
 import { apiError, apiOk, handleApiError, parseLocale } from "@/lib/api";
 import { getCheckpointDetail } from "@/services/checkpoints.service";
 
-export async function GET(
+export const GET = async (
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
-) {
+) => {
   try {
     const { slug } = await params;
     const locale = parseLocale(request.nextUrl.searchParams);
@@ -15,4 +15,4 @@ export async function GET(
   } catch (error) {
     return handleApiError("GET /api/checkpoints/[slug]", error);
   }
-}
+};

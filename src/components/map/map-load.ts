@@ -55,10 +55,10 @@ export const TILE_FAILURE_ESCALATION_THRESHOLD = 3;
  * Fresh per-construction state — mirrors the old effect re-run, which reset
  * status/timedOut and allocated new counters (loaded, tiles, errors).
  */
-function restarting(
+const restarting = (
   state: MapLoadState,
   styleMode: MapLoadStyleMode,
-): MapLoadState {
+): MapLoadState => {
   return {
     status: "loading",
     timedOut: false,
@@ -68,12 +68,12 @@ function restarting(
     anyTileRendered: false,
     tileErrorCount: 0,
   };
-}
+};
 
-export function reduceMapLoad(
+export const reduceMapLoad = (
   state: MapLoadState,
   event: MapLoadEvent,
-): MapLoadState {
+): MapLoadState => {
   switch (event.type) {
     case "retry":
       return { ...restarting(state, "primary"), attempt: state.attempt + 1 };
@@ -129,4 +129,4 @@ export function reduceMapLoad(
       return restarting(state, "fallback");
     }
   }
-}
+};

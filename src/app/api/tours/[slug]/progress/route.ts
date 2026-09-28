@@ -3,10 +3,10 @@ import { apiError, apiOk, handleApiError } from "@/lib/api";
 import { getSessionVisitor } from "@/lib/visitor-session";
 import { buildProgressView } from "@/services/progress.service";
 
-export async function GET(
+export const GET = async (
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
-) {
+) => {
   try {
     const { slug } = await params;
     // Read-only lookup; an id that matches nothing yields a zeroed view for
@@ -18,4 +18,4 @@ export async function GET(
   } catch (error) {
     return handleApiError("GET /api/tours/[slug]/progress", error);
   }
-}
+};

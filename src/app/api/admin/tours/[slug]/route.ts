@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/admin-auth";
 import { updateTourSchema } from "@/lib/validations/admin";
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const { pathname } = new URL(request.url);
@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
       })),
     },
   });
-}
+};
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const parsed = parseAdminBody(updateTourSchema, await request.json());
@@ -137,9 +137,9 @@ export async function PATCH(request: NextRequest) {
   });
 
   return adminOk();
-}
+};
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const { pathname } = new URL(request.url);
@@ -152,4 +152,4 @@ export async function DELETE(request: NextRequest) {
 
   await prisma.tour.delete({ where: { id: tour.id } });
   return adminOk();
-}
+};

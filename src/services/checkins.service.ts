@@ -28,10 +28,10 @@ interface CheckInRecordLike {
   checkedInAt: Date;
 }
 
-function toCheckInView(
+const toCheckInView = (
   checkIn: CheckInRecordLike,
   checkpointName: string,
-): CheckInView {
+): CheckInView => {
   return {
     id: checkIn.id,
     checkpointId: checkIn.checkpointId,
@@ -42,13 +42,13 @@ function toCheckInView(
     distanceFromCheckpoint: checkIn.distanceFromCheckpoint,
     checkedInAt: checkIn.checkedInAt.toISOString(),
   };
-}
+};
 
-export async function createCheckIn(
+export const createCheckIn = async (
   userId: string,
   input: CreateCheckInInput,
   locale: Locale,
-): Promise<CheckInResult> {
+): Promise<CheckInResult> => {
   const checkpoint = await prisma.checkpoint.findUnique({
     where: { id: input.checkpointId },
     include: {
@@ -153,12 +153,12 @@ export async function createCheckIn(
     }
     throw error;
   }
-}
+};
 
-export async function listMyCheckIns(
+export const listMyCheckIns = async (
   userId: string,
   locale: Locale,
-): Promise<CheckInView[]> {
+): Promise<CheckInView[]> => {
   const checkIns = await prisma.checkIn.findMany({
     where: { userId },
     orderBy: { checkedInAt: "desc" },
@@ -172,4 +172,4 @@ export async function listMyCheckIns(
         c.checkpoint.slug,
     ),
   );
-}
+};

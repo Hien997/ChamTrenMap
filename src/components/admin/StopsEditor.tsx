@@ -43,7 +43,7 @@ export type CheckpointOption = {
  *
  * Drag rows into a new visit order; the row order *is* the saved order.
  */
-function StopRow({
+const StopRow = ({
   stop,
   index,
   onRemove,
@@ -51,7 +51,7 @@ function StopRow({
   stop: CheckpointOption;
   index: number;
   onRemove: (id: string) => void;
-}) {
+}) => {
   const {
     attributes,
     listeners,
@@ -104,7 +104,7 @@ function StopRow({
       </Button>
     </li>
   );
-}
+};
 
 /**
  * Controlled stop list for a tour form: drag-to-reorder rows plus a combobox
@@ -112,7 +112,7 @@ function StopRow({
  * (react-hook-form on create, component state on edit) and arrives back as a
  * whole new array via `onChange`.
  */
-export default function StopsEditor({
+const StopsEditor = ({
   value,
   onChange,
   availableCheckpoints,
@@ -127,7 +127,7 @@ export default function StopsEditor({
   extraOptions?: CheckpointOption[];
   error?: string;
   hint?: string;
-}) {
+}) => {
   // A stop already on the tour is always in `availableCheckpoints`, but falling
   // back to the caller's rows keeps it renderable if it ever is not.
   const stopInfo = new Map<string, CheckpointOption>();
@@ -247,4 +247,6 @@ export default function StopsEditor({
       )}
     </>
   );
-}
+};
+
+export default StopsEditor;

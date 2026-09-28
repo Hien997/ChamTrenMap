@@ -15,11 +15,11 @@ type QuickStatsCardProps = {
   priceVnd?: number | null;
 };
 
-export function QuickStatsCard({
+export const QuickStatsCard = ({
   checkpoint,
   openingHours,
   priceVnd,
-}: QuickStatsCardProps) {
+}: QuickStatsCardProps) => {
   const { position } = useUserLocation();
 
   const distanceMeters = position
@@ -54,9 +54,9 @@ export function QuickStatsCard({
       </CardContent>
     </Card>
   );
-}
+};
 
-function Stat({
+const Stat = ({
   icon,
   label,
   value,
@@ -64,7 +64,7 @@ function Stat({
   icon: React.ReactNode;
   label: string;
   value: string;
-}) {
+}) => {
   return (
     <div className="flex flex-col items-center gap-1 text-center">
       {icon}
@@ -72,10 +72,10 @@ function Stat({
       <span className="text-sm font-semibold">{value}</span>
     </div>
   );
-}
+};
 
-function formatDistance(meters: number | null): string {
+const formatDistance = (meters: number | null): string => {
   if (meters === null) return "—";
   if (meters < 1000) return `${Math.round(meters)} m`;
   return `${(meters / 1000).toFixed(1)} km`;
-}
+};

@@ -27,7 +27,7 @@ const CONFETTI = [
   { x: 130, y: -165, c: "#d98c66" },
 ] as const;
 
-export function SuccessModal({
+export const SuccessModal = ({
   open,
   onOpenChange,
   checkIn,
@@ -39,14 +39,14 @@ export function SuccessModal({
   checkIn: CheckInView;
   progress: TourProgressView;
   variant?: "default" | "food";
-}) {
+}) => {
   const t = useTranslations("CheckIn");
   const tShare = useTranslations("Share");
   const reduceMotion = useReducedMotion();
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  async function createShare() {
+  const createShare = async () => {
     setCreating(true);
     try {
       const json = (await fetch("/api/share/checkin", {
@@ -60,7 +60,7 @@ export function SuccessModal({
     } finally {
       setCreating(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -164,4 +164,4 @@ export function SuccessModal({
       </DialogContent>
     </Dialog>
   );
-}
+};

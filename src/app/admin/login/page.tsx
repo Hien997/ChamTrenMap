@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { toFieldErrors } from "@/lib/admin-form";
 import { loginSchema } from "@/lib/validations/admin";
 
-export default function AdminLoginPage() {
+const AdminLoginPage = () => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -156,4 +156,6 @@ export default function AdminLoginPage() {
       </form>
     </div>
   );
-}
+};
+
+export default AdminLoginPage;

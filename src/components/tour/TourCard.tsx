@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { TourSummaryView } from "@/types";
 
-export async function TourCard({ tour }: { tour: TourSummaryView }) {
+export const TourCard = async ({ tour }: { tour: TourSummaryView }) => {
   const t = await getTranslations("Tours");
 
   return (
@@ -63,4 +63,4 @@ export async function TourCard({ tour }: { tour: TourSummaryView }) {
       </CardContent>
     </Card>
   );
-}
+};

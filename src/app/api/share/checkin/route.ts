@@ -4,7 +4,7 @@ import { getSessionVisitor } from "@/lib/visitor-session";
 import { createShareLinkSchema } from "@/lib/validations";
 import { createShareLink } from "@/services/share.service";
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
   try {
     const parsed = parseBody(createShareLinkSchema, await request.json());
     if (!parsed.ok) return parsed.response;
@@ -30,4 +30,4 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return handleApiError("POST /api/share/checkin", error);
   }
-}
+};

@@ -19,7 +19,7 @@ export const OSM_ATTRIBUTION =
 
 export const OSM_RASTER_MAX_ZOOM = 19;
 
-export function defaultMapStyle(): StyleSpecification {
+export const defaultMapStyle = (): StyleSpecification => {
   return {
     version: 8,
     sources: {
@@ -33,47 +33,47 @@ export function defaultMapStyle(): StyleSpecification {
     },
     layers: [{ id: "osm", type: "raster", source: "osm" }],
   };
-}
+};
 
-export function fallbackMapStyle(): StyleSpecification {
+export const fallbackMapStyle = (): StyleSpecification => {
   return structuredClone(openfreemapLiberty) as StyleSpecification;
-}
+};
 
-function hasTilePayload(event: unknown): boolean {
+const hasTilePayload = (event: unknown): boolean => {
   if (typeof event !== "object" || event === null) return false;
   return "tile" in event && (event as { tile?: unknown }).tile != null;
-}
+};
 
-export function isTileLevelMapError(event: unknown): boolean {
+export const isTileLevelMapError = (event: unknown): boolean => {
   return hasTilePayload(event);
-}
+};
 
-export function isTileDataEvent(event: unknown): boolean {
+export const isTileDataEvent = (event: unknown): boolean => {
   return hasTilePayload(event);
-}
+};
 
 const TILE_SOURCE_TYPES = new Set(["raster", "vector", "raster-dem"]);
 
-export function styleUsesTileSources(style: {
+export const styleUsesTileSources = (style: {
   sources?: Record<string, { type?: string }>;
-}): boolean {
+}): boolean => {
   const sources = style?.sources ?? {};
   return Object.values(sources).some(
     (source) => source?.type != null && TILE_SOURCE_TYPES.has(source.type),
   );
-}
+};
 
-export function resolveMapStyle(
+export const resolveMapStyle = (
   styleUrl?: string,
-): string | StyleSpecification {
+): string | StyleSpecification => {
   const url = styleUrl ?? process.env.NEXT_PUBLIC_MAP_STYLE_URL;
   const trimmed = url?.trim();
   return trimmed ? trimmed : defaultMapStyle();
-}
+};
 
 export const MAP_LOAD_TIMEOUT_MS = 20_000;
 
-export function resolveMapLoadTimeoutMs(override?: number): number {
+export const resolveMapLoadTimeoutMs = (override?: number): number => {
   if (
     typeof override === "number" &&
     Number.isFinite(override) &&
@@ -85,13 +85,13 @@ export function resolveMapLoadTimeoutMs(override?: number): number {
   const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
   if (Number.isFinite(parsed) && parsed > 0) return parsed;
   return MAP_LOAD_TIMEOUT_MS;
-}
+};
 
-export function fitLocationsBounds(
+export const fitLocationsBounds = (
   map: MaplibreglMap,
   coordinates: [number, number][],
   options?: { padding?: number; maxZoom?: number },
-): void {
+): void => {
   if (coordinates.length === 0) return;
   const maxZoom = options?.maxZoom ?? 15;
   if (coordinates.length === 1) {
@@ -111,23 +111,23 @@ export function fitLocationsBounds(
     maxZoom,
     duration: 800,
   });
-}
+};
 
-export function flyToLocation(
+export const flyToLocation = (
   map: MaplibreglMap,
   coordinate: [number, number],
   zoom?: number,
-): void {
+): void => {
   map.flyTo({
     center: coordinate,
     zoom: zoom ?? 16,
     duration: 800,
   });
-}
+};
 
-export function lineStringFeatureCollection(
+export const lineStringFeatureCollection = (
   coordinates: [number, number][],
-): RouteFeatureCollection {
+): RouteFeatureCollection => {
   return {
     type: "FeatureCollection",
     features: [
@@ -138,12 +138,12 @@ export function lineStringFeatureCollection(
       },
     ],
   };
-}
+};
 
-export function routeResultToGeoJson(
+export const routeResultToGeoJson = (
   route: RouteResult,
-): RouteFeatureCollection {
+): RouteFeatureCollection => {
   return lineStringFeatureCollection(route.coordinates);
-}
+};
 
 export { googleMapsDirectionsUrl } from "./map-links";

@@ -20,27 +20,27 @@ import { rateLimit, type RateLimitResult } from "@/lib/rate-limit";
  * (`requireAdminPage`); route handlers get 401 JSON (`requireAdminApi`, S9).
  */
 
-export async function hashPassword(plain: string): Promise<string> {
+export const hashPassword = async (plain: string): Promise<string> => {
   return bcrypt.hash(plain, 12);
-}
+};
 
-export async function verifyPassword(
+export const verifyPassword = async (
   plain: string,
   hash: string,
-): Promise<boolean> {
+): Promise<boolean> => {
   return bcrypt.compare(plain, hash);
-}
+};
 
-export function newAdminToken(): string {
+export const newAdminToken = (): string => {
   return randomBytes(32).toString("hex");
-}
+};
 
-export function hashAdminToken(token: string): string {
+export const hashAdminToken = (token: string): string => {
   return createHash("sha256").update(token).digest("hex");
-}
+};
 
 /** Rotate the admin token: fresh random value per login, old one revoked. */
-export async function issueAdminSession(userId: string): Promise<string> {
+export const issueAdminSession = async (userId: string): Promise<string> => {
   const token = newAdminToken();
   const expiresAt = new Date(Date.now() + ADMIN_SESSION_MAX_AGE_SECONDS * 1000);
   await prisma.user.update({
@@ -51,11 +51,11 @@ export async function issueAdminSession(userId: string): Promise<string> {
     },
   });
   return token;
-}
+};
 
-export async function verifyAdminToken(
+export const verifyAdminToken = async (
   token: string | null,
-): Promise<User | null> {
+): Promise<User | null> => {
   if (!token) return null;
   const user = await prisma.user.findUnique({
     where: { adminSessionTokenHash: hashAdminToken(token) },
@@ -68,43 +68,43 @@ export async function verifyAdminToken(
     return null;
   }
   return user;
-}
+};
 
-async function readAdminToken(): Promise<string | null> {
+const readAdminToken = async (): Promise<string | null> => {
   const store = await cookies();
   return store.get(ADMIN_COOKIE_NAME)?.value ?? null;
-}
+};
 
-export async function getAdminUser(): Promise<User | null> {
+export const getAdminUser = async (): Promise<User | null> => {
   const user = await verifyAdminToken(await readAdminToken());
   if (!user || user.role !== "ADMIN") return null;
   return user;
-}
+};
 
 /** Page/layout guard: redirect to login (former `requireAdmin`). */
-export async function requireAdminPage(): Promise<User> {
+export const requireAdminPage = async (): Promise<User> => {
   const user = await getAdminUser();
   if (!user) redirect("/admin/login");
   return user;
-}
+};
 
 /** Route-handler guard: `null` when authenticated, else a 401 JSON response. */
-export async function requireAdminApi(): Promise<NextResponse | null> {
+export const requireAdminApi = async (): Promise<NextResponse | null> => {
   const user = await getAdminUser();
   if (!user) {
     return apiError("UNAUTHORIZED", "Admin session required", 401);
   }
   return null;
-}
+};
 
-export async function revokeAdminSession(userId: string): Promise<void> {
+export const revokeAdminSession = async (userId: string): Promise<void> => {
   await prisma.user.update({
     where: { id: userId },
     data: { adminSessionTokenHash: null, adminSessionExpiresAt: null },
   });
-}
+};
 
 /** S3: throttle login attempts per IP (trusted-proxy `x-forwarded-for`). */
-export function checkLoginRate(ip: string): RateLimitResult {
+export const checkLoginRate = (ip: string): RateLimitResult => {
   return rateLimit(`login:${ip}`, LOGIN_RATE_LIMIT);
-}
+};

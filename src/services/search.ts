@@ -7,7 +7,7 @@ import type { Prisma } from "@prisma/client";
  * An empty query means "no filter"; otherwise the match is case-insensitive
  * (Postgres `QueryMode`) against the slug OR either locale's name.
  */
-export function buildTourSearchWhere(q: string): Prisma.TourWhereInput {
+export const buildTourSearchWhere = (q: string): Prisma.TourWhereInput => {
   if (!q) return {};
   return {
     OR: [
@@ -17,11 +17,11 @@ export function buildTourSearchWhere(q: string): Prisma.TourWhereInput {
       },
     ],
   };
-}
+};
 
-export function buildCheckpointSearchWhere(
+export const buildCheckpointSearchWhere = (
   q: string,
-): Prisma.CheckpointWhereInput {
+): Prisma.CheckpointWhereInput => {
   if (!q) return {};
   return {
     OR: [
@@ -31,4 +31,4 @@ export function buildCheckpointSearchWhere(
       },
     ],
   };
-}
+};

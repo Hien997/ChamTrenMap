@@ -4,7 +4,7 @@ import { useFormContext } from "react-hook-form";
 import { CommonField } from "./CommonField";
 import { peekErrors } from "./utils";
 
-export function ToggleField({
+export const ToggleField = ({
   name,
   label,
   required,
@@ -18,7 +18,7 @@ export function ToggleField({
   hint?: string;
   serverError?: string;
   className?: string;
-}) {
+}) => {
   const form = useFormContext();
   const { register } = form;
   const error = serverError ?? peekErrors(form, name);
@@ -44,4 +44,4 @@ export function ToggleField({
       </label>
     </CommonField>
   );
-}
+};

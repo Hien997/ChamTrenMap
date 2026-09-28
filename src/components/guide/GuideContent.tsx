@@ -1,6 +1,6 @@
 import { sanitizeHtml } from "@/lib/sanitize";
 
-export function GuideContentRenderer({ content }: { content: string }) {
+export const GuideContentRenderer = ({ content }: { content: string }) => {
   if (!content.trim()) return null;
   return (
     <div
@@ -8,4 +8,4 @@ export function GuideContentRenderer({ content }: { content: string }) {
       dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) ?? "" }}
     />
   );
-}
+};

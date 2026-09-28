@@ -11,7 +11,7 @@ import { Panel } from "./ui";
  * fall out of the submitted values (the invariant this panel was originally
  * built around for FormData).
  */
-export function GuideContentPanel() {
+export const GuideContentPanel = () => {
   return (
     <Panel title="Guide content">
       <Tabs defaultValue="vi">
@@ -28,4 +28,4 @@ export function GuideContentPanel() {
       </Tabs>
     </Panel>
   );
-}
+};

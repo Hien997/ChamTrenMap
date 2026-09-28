@@ -7,7 +7,10 @@ import { CheckIcon } from "lucide-react";
 
 const Combobox = ComboboxPrimitive.Root;
 
-function ComboboxInput({ className, ...props }: ComboboxPrimitive.Input.Props) {
+const ComboboxInput = ({
+  className,
+  ...props
+}: ComboboxPrimitive.Input.Props) => {
   return (
     <ComboboxPrimitive.Input
       data-slot="combobox-input"
@@ -18,9 +21,9 @@ function ComboboxInput({ className, ...props }: ComboboxPrimitive.Input.Props) {
       {...props}
     />
   );
-}
+};
 
-function ComboboxContent({
+const ComboboxContent = ({
   className,
   children,
   side = "bottom",
@@ -30,7 +33,7 @@ function ComboboxContent({
 }: Omit<ComboboxPrimitive.Popup.Props, "children"> &
   Pick<ComboboxPrimitive.Positioner.Props, "side" | "sideOffset" | "align"> & {
     children: React.ReactNode;
-  }) {
+  }) => {
   return (
     <ComboboxPrimitive.Portal>
       <ComboboxPrimitive.Positioner
@@ -52,13 +55,13 @@ function ComboboxContent({
       </ComboboxPrimitive.Positioner>
     </ComboboxPrimitive.Portal>
   );
-}
+};
 
-function ComboboxItem({
+const ComboboxItem = ({
   className,
   children,
   ...props
-}: ComboboxPrimitive.Item.Props) {
+}: ComboboxPrimitive.Item.Props) => {
   return (
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
@@ -78,7 +81,7 @@ function ComboboxItem({
       </ComboboxPrimitive.ItemIndicator>
     </ComboboxPrimitive.Item>
   );
-}
+};
 
 /**
  * Render-prop passthrough for the filtered items.
@@ -87,16 +90,19 @@ function ComboboxItem({
  * `<Item>` rendered by the callback. This wrapper is just here to thread the
  * caller's item type through, so `(checkpoint: TCheckpoint) => …` type-checks.
  */
-function ComboboxCollection<TItem>({
+const ComboboxCollection = <TItem,>({
   children,
 }: {
   children: (item: TItem, index: number) => React.ReactNode;
-}) {
+}) => {
   const render = children as (item: unknown, index: number) => React.ReactNode;
   return <ComboboxPrimitive.Collection>{render}</ComboboxPrimitive.Collection>;
-}
+};
 
-function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
+const ComboboxEmpty = ({
+  className,
+  ...props
+}: ComboboxPrimitive.Empty.Props) => {
   return (
     <ComboboxPrimitive.Empty
       data-slot="combobox-empty"
@@ -107,7 +113,7 @@ function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
       {...props}
     />
   );
-}
+};
 
 export {
   Combobox,

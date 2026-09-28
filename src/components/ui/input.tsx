@@ -2,10 +2,10 @@ import * as React from "react";
 import { Input as InputPrimitive } from "@base-ui/react/input";
 import { cn } from "cn";
 
-function Input({
+const Input = ({
   className,
   ...props
-}: React.ComponentProps<typeof InputPrimitive>) {
+}: React.ComponentProps<typeof InputPrimitive>) => {
   return (
     <InputPrimitive
       data-slot="input"
@@ -16,6 +16,6 @@ function Input({
       {...props}
     />
   );
-}
+};
 
 export { Input };

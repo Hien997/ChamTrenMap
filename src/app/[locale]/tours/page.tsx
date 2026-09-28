@@ -9,16 +9,18 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export const generateMetadata = async ({
+  params,
+}: Props): Promise<Metadata> => {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Tours" });
   return {
     title: `${t("title")} — Chắm Trên Map`,
     description: t("subtitle"),
   };
-}
+};
 
-export default async function ToursPage({ params }: Props) {
+const ToursPage = async ({ params }: Props) => {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -45,4 +47,6 @@ export default async function ToursPage({ params }: Props) {
       </main>
     </div>
   );
-}
+};
+
+export default ToursPage;

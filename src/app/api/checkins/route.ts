@@ -12,7 +12,7 @@ import { ensureVisitorWithCookie } from "@/lib/visitor-session";
 import { createCheckInSchema } from "@/lib/validations";
 import { createCheckIn } from "@/services/checkins.service";
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
   try {
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
@@ -64,4 +64,4 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return handleApiError("POST /api/checkins", error);
   }
-}
+};

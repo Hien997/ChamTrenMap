@@ -45,7 +45,7 @@ import { applyProgress, distanceTo, isNear } from "@/lib/tour-progress";
 import { getRouteService } from "@/lib/routing";
 import type { TourProgressView } from "@/types";
 
-export function MapExperience({
+export const MapExperience = ({
   tourSlug,
   locale,
   tour,
@@ -57,7 +57,7 @@ export function MapExperience({
   tour: { slug: string; name: string } | null;
   checkpoints: MapCheckpoint[];
   progress: TourProgressView | null;
-}) {
+}) => {
   const t = useTranslations("Map");
   const tCheckin = useTranslations("CheckIn");
   const tCommon = useTranslations("Common");
@@ -99,7 +99,7 @@ export function MapExperience({
 
   const distanceToSelected = distanceTo(userPosition, selectedCheckpoint);
 
-  async function fetchRoute() {
+  const fetchRoute = async () => {
     const cp = selectedCheckpoint;
     if (!cp || !userPosition) return;
     setRouteLoading(true);
@@ -117,15 +117,15 @@ export function MapExperience({
     } finally {
       setRouteLoading(false);
     }
-  }
+  };
 
-  function handleChecked(progressData: TourProgressView | null) {
+  const handleChecked = (progressData: TourProgressView | null) => {
     if (progressData) {
       setProgress(progressData);
       setCheckpoints((prev) => applyProgress(prev, progressData));
     }
     setShowCheckin(false);
-  }
+  };
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden">
@@ -422,4 +422,4 @@ export function MapExperience({
       )}
     </div>
   );
-}
+};

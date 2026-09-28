@@ -12,16 +12,16 @@ import {
   listCheckpointsForAdmin,
 } from "@/services/checkpoint-content.server";
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const query = parseAdminListQuery(request.nextUrl.searchParams);
   if (!query.ok) return query.response;
   const { items, total } = await listCheckpointsForAdmin(query.data);
   return adminOk({ items, total });
-}
+};
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   const parsed = parseAdminBody(createCheckpointSchema, await request.json());
@@ -33,4 +33,4 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return writeErrorResponse(error);
   }
-}
+};

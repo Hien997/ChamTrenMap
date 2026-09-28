@@ -28,7 +28,9 @@ export interface AdminWriteResponse {
  * address.". The first issue is the most fundamental one — a missing value
  * before a malformed one — so that is the one worth showing.
  */
-function firstMessagePerField(details: AdminFieldError[]): AdminFieldError[] {
+const firstMessagePerField = (
+  details: AdminFieldError[],
+): AdminFieldError[] => {
   const seen = new Set<string>();
   const deduped: AdminFieldError[] = [];
   for (const detail of details) {
@@ -38,26 +40,26 @@ function firstMessagePerField(details: AdminFieldError[]): AdminFieldError[] {
     deduped.push({ path, message: detail.message });
   }
   return deduped;
-}
+};
 
 /** Turn the API `details` list into a `field name -> message` map for inline errors. */
-export function toFieldErrors(
+export const toFieldErrors = (
   details?: AdminFieldError[],
-): Record<string, string> {
+): Record<string, string> => {
   const fieldErrors: Record<string, string> = {};
   for (const detail of firstMessagePerField(details ?? [])) {
     fieldErrors[detail.path] = detail.message;
   }
   return fieldErrors;
-}
+};
 
 /** Flatten the envelope into one human-readable line for a toast. */
-export function formatApiError(
+export const formatApiError = (
   error?: string,
   details?: AdminFieldError[],
-): string {
+): string => {
   const detailMessage = firstMessagePerField(details ?? [])
     .map((detail) => `${detail.path}: ${detail.message}`)
     .join("; ");
   return [error, detailMessage].filter(Boolean).join(" — ") || "Request failed";
-}
+};

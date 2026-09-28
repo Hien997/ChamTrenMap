@@ -44,22 +44,22 @@ const KIND_TINT: Record<WeatherKind, string> = {
   snow: "text-cyan-600 dark:text-cyan-200",
 };
 
-function KindIcon({
+const KindIcon = ({
   kind,
   className,
 }: {
   kind: WeatherKind;
   className?: string;
-}) {
+}) => {
   const Icon = KIND_ICONS[kind];
   return (
     <Icon aria-hidden className={cn(KIND_TINT[kind], className ?? "size-4")} />
   );
-}
+};
 
 const weekdayFormatters = new Map<string, Intl.DateTimeFormat>();
 
-function shortWeekday(dateIso: string, locale: string): string {
+const shortWeekday = (dateIso: string, locale: string): string => {
   const date = new Date(`${dateIso}T12:00:00+07:00`);
   if (Number.isNaN(date.getTime())) return dateIso;
   const tag = locale === "vi" ? "vi-VN" : "en-US";
@@ -72,9 +72,9 @@ function shortWeekday(dateIso: string, locale: string): string {
     weekdayFormatters.set(tag, formatter);
   }
   return formatter.format(date);
-}
+};
 
-export function WeatherChip() {
+export const WeatherChip = () => {
   const t = useTranslations("Weather");
   const locale = useLocale();
   const [weather, setWeather] = useState<HatienWeather | null>(null);
@@ -199,4 +199,4 @@ export function WeatherChip() {
       )}
     </div>
   );
-}
+};

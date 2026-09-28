@@ -34,13 +34,13 @@ export interface MarkerElementHandle {
   setSelected(selected: boolean): void;
 }
 
-export function createCheckpointPin(
+export const createCheckpointPin = (
   checkpoint: MapCheckpoint,
   options?: {
     selected?: boolean;
     statusLabels?: Partial<Record<CheckpointStatus, string>>;
   },
-): MarkerElementHandle {
+): MarkerElementHandle => {
   const status = checkpoint.status;
   const statusLabel =
     options?.statusLabels?.[status] ?? DEFAULT_STATUS_LABELS[status];
@@ -77,9 +77,9 @@ export function createCheckpointPin(
   setSelected(options?.selected ?? false);
 
   return { element: button, zIndex: baseZ, setSelected };
-}
+};
 
-export function createHomePin(location: MapLocation): MarkerElementHandle {
+export const createHomePin = (location: MapLocation): MarkerElementHandle => {
   const baseZ = MARKER_Z.normal;
 
   const button = document.createElement("button");
@@ -110,9 +110,11 @@ export function createHomePin(location: MapLocation): MarkerElementHandle {
   setSelected(false);
 
   return { element: button, zIndex: baseZ, setSelected };
-}
+};
 
-export function createDefaultPin(location: MapLocation): MarkerElementHandle {
+export const createDefaultPin = (
+  location: MapLocation,
+): MarkerElementHandle => {
   const element = document.createElement("div");
   element.title = location.name;
   element.className =
@@ -126,9 +128,9 @@ export function createDefaultPin(location: MapLocation): MarkerElementHandle {
   setSelected(false);
 
   return { element, zIndex: MARKER_Z.normal, setSelected };
-}
+};
 
-export function createUserLocationElement(): HTMLDivElement {
+export const createUserLocationElement = (): HTMLDivElement => {
   const wrapper = document.createElement("div");
   wrapper.setAttribute("aria-label", "You");
   wrapper.className = "relative flex items-center justify-center";
@@ -137,4 +139,4 @@ export function createUserLocationElement(): HTMLDivElement {
     '<span class="absolute h-6 w-6 animate-ping rounded-full bg-primary/50"></span>' +
     '<span class="relative h-4 w-4 rounded-full border-2 border-white bg-primary shadow"></span>';
   return wrapper;
-}
+};

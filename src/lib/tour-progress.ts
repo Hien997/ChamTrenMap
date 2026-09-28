@@ -3,25 +3,28 @@ import type { CheckpointStatus, TourProgressView } from "@/types";
 
 export const NEAR_HINT_METERS = 200;
 
-export function distanceTo(
+export const distanceTo = (
   user: LatLng | null | undefined,
   checkpoint: LatLng | null | undefined,
-): number | null {
+): number | null => {
   if (!user || !checkpoint) return null;
   return haversineMeters(user, checkpoint);
-}
+};
 
-export function isNear(
+export const isNear = (
   user: LatLng | null | undefined,
   checkpoint: LatLng | null | undefined,
-): boolean {
+): boolean => {
   const distance = distanceTo(user, checkpoint);
   return distance !== null && distance <= NEAR_HINT_METERS;
-}
+};
 
-export function applyProgress<
+export const applyProgress = <
   T extends { id: string; status: CheckpointStatus },
->(checkpoints: T[], progress: TourProgressView): T[] {
+>(
+  checkpoints: T[],
+  progress: TourProgressView,
+): T[] => {
   const statusById = new Map(
     progress.checkpoints.map((item) => [item.checkpointId, item.status]),
   );
@@ -31,4 +34,4 @@ export function applyProgress<
       ? { ...checkpoint, status }
       : checkpoint;
   });
-}
+};

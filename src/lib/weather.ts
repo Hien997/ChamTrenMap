@@ -16,7 +16,7 @@ export type WeatherKind =
   | "storm"
   | "snow";
 
-export function weatherKindForCode(code: number): WeatherKind {
+export const weatherKindForCode = (code: number): WeatherKind => {
   if (!Number.isFinite(code)) return "overcast";
   if (code === 0) return "clear";
   if (code === 1 || code === 2) return "partly-cloudy";
@@ -27,7 +27,7 @@ export function weatherKindForCode(code: number): WeatherKind {
   if (code >= 95 && code <= 99) return "storm";
   if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "snow";
   return "overcast";
-}
+};
 
 export type WeatherDay = {
   date: string;
@@ -55,21 +55,21 @@ type OpenMeteoResponse = {
   };
 };
 
-function toFiniteNumber(value: unknown): number | null {
+const toFiniteNumber = (value: unknown): number | null => {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
+};
 
-function toFiniteArray(value: unknown): number[] | null {
+const toFiniteArray = (value: unknown): number[] | null => {
   if (!Array.isArray(value)) return null;
   if (!value.every((v) => typeof v === "number" && Number.isFinite(v)))
     return null;
   return value as number[];
-}
+};
 
-export function parseHatienWeather(
+export const parseHatienWeather = (
   payload: unknown,
   now: number = Date.now(),
-): HatienWeather | null {
+): HatienWeather | null => {
   if (typeof payload !== "object" || payload === null) return null;
   const data = payload as OpenMeteoResponse;
 
@@ -127,9 +127,9 @@ export function parseHatienWeather(
     days,
     fetchedAt: now,
   };
-}
+};
 
-export function buildWeatherUrl(): string {
+export const buildWeatherUrl = (): string => {
   const params = new URLSearchParams({
     latitude: String(HATIEN_LATITUDE),
     longitude: String(HATIEN_LONGITUDE),
@@ -140,12 +140,12 @@ export function buildWeatherUrl(): string {
     forecast_days: "7",
   });
   return `${WEATHER_API_URL}?${params.toString()}`;
-}
+};
 
-function readStoredPayload(): {
+const readStoredPayload = (): {
   parsed: HatienWeather;
   fetchedAt: number;
-} | null {
+} | null => {
   try {
     if (typeof window === "undefined" || !window.localStorage) return null;
     const raw = window.localStorage.getItem(WEATHER_CACHE_KEY);
@@ -157,20 +157,20 @@ function readStoredPayload(): {
   } catch {
     return null;
   }
-}
+};
 
-function writeCache(weather: HatienWeather): void {
+const writeCache = (weather: HatienWeather): void => {
   try {
     if (typeof window === "undefined" || !window.localStorage) return;
     window.localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(weather));
   } catch {
     // Private mode / quota — weather just refetches next mount.
   }
-}
+};
 
-export async function fetchHatienWeather(
+export const fetchHatienWeather = async (
   now: number = Date.now(),
-): Promise<HatienWeather | null> {
+): Promise<HatienWeather | null> => {
   const stored = readStoredPayload();
   if (stored && now - stored.fetchedAt <= WEATHER_CACHE_TTL_MS) {
     return stored.parsed;
@@ -186,4 +186,4 @@ export async function fetchHatienWeather(
   } catch {
     return stored?.parsed ?? null;
   }
-}
+};

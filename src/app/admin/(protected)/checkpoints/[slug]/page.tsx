@@ -4,11 +4,11 @@ import { getCheckpointForEdit } from "@/services/checkpoint-content.server";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminCheckpointEditPage({
+const AdminCheckpointEditPage = async ({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}) => {
   const { slug } = await params;
 
   const checkpoint = await getCheckpointForEdit(slug);
@@ -16,4 +16,6 @@ export default async function AdminCheckpointEditPage({
   if (!checkpoint) notFound();
 
   return <CheckpointEditForm checkpoint={checkpoint} />;
-}
+};
+
+export default AdminCheckpointEditPage;

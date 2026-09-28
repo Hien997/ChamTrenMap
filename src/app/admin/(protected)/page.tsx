@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboard() {
+const AdminDashboard = async () => {
   const [
     tourTotal,
     tourPublished,
@@ -80,4 +80,6 @@ export default async function AdminDashboard() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminDashboard;

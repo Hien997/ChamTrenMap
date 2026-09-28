@@ -26,7 +26,7 @@ type CheckInEnvelope = ApiEnvelope<{
   progress: TourProgressView;
 }>;
 
-export function CheckInFlow({
+export const CheckInFlow = ({
   checkpointId,
   locale,
   checkedIn = false,
@@ -40,7 +40,7 @@ export function CheckInFlow({
   disabled?: boolean;
   onChecked?: (progress: TourProgressView | null) => void;
   variant?: "default" | "food";
-}) {
+}) => {
   const t = useTranslations("CheckIn");
   const tCommon = useTranslations("Common");
   const [phase, setPhase] = useState<Phase>("idle");
@@ -51,11 +51,11 @@ export function CheckInFlow({
   const [alreadyProgress, setAlreadyProgress] =
     useState<TourProgressView | null>(null);
 
-  function showError() {
+  const showError = () => {
     toast.error(t("errorTitle"), { description: t("errorBody") });
-  }
+  };
 
-  async function submit(position: GeolocationPosition) {
+  const submit = async (position: GeolocationPosition) => {
     try {
       const response = await fetch(`/api/checkins?locale=${locale}`, {
         method: "POST",
@@ -129,9 +129,9 @@ export function CheckInFlow({
     } catch {
       showError();
     }
-  }
+  };
 
-  async function beginCheckIn() {
+  const beginCheckIn = async () => {
     setPhase("locating");
     try {
       const position = await getCurrentPositionOnce();
@@ -149,7 +149,7 @@ export function CheckInFlow({
     } finally {
       setPhase("idle");
     }
-  }
+  };
 
   if (checkedIn) {
     return (
@@ -227,4 +227,4 @@ export function CheckInFlow({
       </Dialog>
     </>
   );
-}
+};

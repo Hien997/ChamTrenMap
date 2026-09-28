@@ -22,7 +22,7 @@ type Props = {
   name: string;
 };
 
-function cellClass(index: number, count: number): string {
+const cellClass = (index: number, count: number): string => {
   if (count === 1) return "col-span-2 aspect-[16/9] sm:col-span-12";
   if (index === 0) {
     if (count === 2)
@@ -37,9 +37,9 @@ function cellClass(index: number, count: number): string {
     return "col-span-1 aspect-[4/3] sm:col-span-12 sm:aspect-[21/9]";
   if (extras === 2) return "col-span-1 aspect-[4/3] sm:col-span-6";
   return "col-span-1 aspect-[4/3] sm:col-span-4";
-}
+};
 
-function GalleryCell({
+const GalleryCell = ({
   image,
   fallbackAlt,
   eager,
@@ -53,7 +53,7 @@ function GalleryCell({
   onOpen: () => void;
   buttonRef: (el: HTMLButtonElement | null) => void;
   cellClassName: string;
-}) {
+}) => {
   const t = useTranslations("Checkpoint");
   const status = usePanoramaStatus(image.url);
   const alt = image.alt ?? fallbackAlt;
@@ -82,15 +82,15 @@ function GalleryCell({
       )}
     </button>
   );
-}
+};
 
-function LightboxBody({
+const LightboxBody = ({
   image,
   fallbackAlt,
 }: {
   image: GalleryImage;
   fallbackAlt: string;
-}) {
+}) => {
   const t = useTranslations("Checkpoint");
   const status = usePanoramaStatus(image.url);
   const alt = image.alt ?? fallbackAlt;
@@ -129,12 +129,12 @@ function LightboxBody({
       </p>
     </div>
   );
-}
+};
 
 const navButton =
   "pointer-events-auto inline-flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80";
 
-export function CheckpointGallery({ images, name }: Props) {
+export const CheckpointGallery = ({ images, name }: Props) => {
   const t = useTranslations("Checkpoint");
   const count = images.length;
 
@@ -300,4 +300,4 @@ export function CheckpointGallery({ images, name }: Props) {
         )}
     </>
   );
-}
+};

@@ -12,7 +12,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validations/admin";
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
   // S3: throttle before doing any parsing or DB work.
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
@@ -49,4 +49,4 @@ export async function POST(request: NextRequest) {
     maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
   });
   return response;
-}
+};

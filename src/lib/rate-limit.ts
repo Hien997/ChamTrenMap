@@ -13,16 +13,16 @@ export interface RateLimitResult {
 
 // Lazy eviction (S5): drop buckets whose window has passed whenever a new key
 // arrives, so keys that never come back cannot grow the map without bound.
-function sweepExpired(now: number): void {
+const sweepExpired = (now: number): void => {
   for (const [key, bucket] of buckets) {
     if (bucket.resetAtMs <= now) buckets.delete(key);
   }
-}
+};
 
-export function rateLimit(
+export const rateLimit = (
   key: string,
   options: { windowMs: number; max: number },
-): RateLimitResult {
+): RateLimitResult => {
   const now = Date.now();
   const bucket = buckets.get(key);
 
@@ -46,8 +46,8 @@ export function rateLimit(
     };
   }
   return { ok: true, retryAfterSec: 0, remaining: options.max - bucket.count };
-}
+};
 
-export function resetRateLimiter(): void {
+export const resetRateLimiter = (): void => {
   buckets.clear();
-}
+};

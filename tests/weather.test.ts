@@ -6,7 +6,7 @@ import {
   weatherKindForCode,
 } from "@/lib/weather";
 
-function payload(overrides = {}) {
+const payload = (overrides = {}) => {
   return {
     current: { temperature_2m: 29.4, weather_code: 2 },
     daily: {
@@ -18,7 +18,7 @@ function payload(overrides = {}) {
     },
     ...overrides,
   };
-}
+};
 
 describe("weatherKindForCode", () => {
   it("maps every documented WMO group", () => {

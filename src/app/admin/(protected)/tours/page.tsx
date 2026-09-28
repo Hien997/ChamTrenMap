@@ -19,7 +19,7 @@ type TPaginatedTour = {
   checkpointCount: number;
 };
 
-export default function AdminToursListPage() {
+const AdminToursListPage = () => {
   const {
     items: tours,
     total,
@@ -228,4 +228,6 @@ export default function AdminToursListPage() {
       />
     </div>
   );
-}
+};
+
+export default AdminToursListPage;

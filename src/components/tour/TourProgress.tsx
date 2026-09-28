@@ -1,7 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-export function TourProgress({
+export const TourProgress = ({
   completed,
   total,
   percent,
@@ -13,7 +13,7 @@ export function TourProgress({
   percent: number;
   label?: string;
   className?: string;
-}) {
+}) => {
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <div className="flex items-center justify-between text-sm">
@@ -28,4 +28,4 @@ export function TourProgress({
       <Progress value={percent} className="bg-primary/15" />
     </div>
   );
-}
+};

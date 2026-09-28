@@ -22,7 +22,7 @@ type TCheckpoint = {
   en: { name: string } | null;
 };
 
-export default function AdminCheckpointsListPage() {
+const AdminCheckpointsListPage = () => {
   const {
     items: checkpoints,
     total,
@@ -235,4 +235,6 @@ export default function AdminCheckpointsListPage() {
       />
     </div>
   );
-}
+};
+
+export default AdminCheckpointsListPage;

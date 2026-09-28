@@ -31,7 +31,7 @@ const ALLOWED_TAGS = [
   "blockquote",
 ];
 
-export function sanitizeHtml(raw: string): string {
+export const sanitizeHtml = (raw: string): string => {
   return sanitizeHtmlLib(raw, {
     allowedTags: ALLOWED_TAGS,
     // Same attribute allowlist as before, applied to every allowed tag.
@@ -44,4 +44,4 @@ export function sanitizeHtml(raw: string): string {
     // Disallowed wrappers (e.g. `<div>`) are dropped but keep their content.
     disallowedTagsMode: "discard",
   });
-}
+};

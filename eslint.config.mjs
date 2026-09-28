@@ -11,11 +11,11 @@ const localPlugin = {
           description: "Disallow inline directives; use eslint.config.mjs.",
         },
       },
-      create(context) {
+      create: (context) => {
         const sourceCode = context.sourceCode ?? context.getSourceCode?.();
         if (!sourceCode) return {};
         return {
-          Program() {
+          Program: () => {
             for (const comment of sourceCode.getAllComments()) {
               const text = comment.value.trim();
               if (/^eslint-(disable|enable)([\s,]|$)/.test(text)) {

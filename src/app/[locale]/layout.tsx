@@ -21,22 +21,22 @@ type Props = {
   params: Promise<{ locale: string }>;
 };
 
-export function generateStaticParams() {
+export const generateStaticParams = () => {
   return routing.locales.map((locale) => ({ locale }));
-}
+};
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
-}: Omit<Props, "children">): Promise<Metadata> {
+}: Omit<Props, "children">): Promise<Metadata> => {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
   return {
     title: t("title"),
     description: t("description"),
   };
-}
+};
 
-export default async function LocaleLayout({ children, params }: Props) {
+const LocaleLayout = async ({ children, params }: Props) => {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) {
     notFound();
@@ -54,4 +54,6 @@ export default async function LocaleLayout({ children, params }: Props) {
       </body>
     </html>
   );
-}
+};
+
+export default LocaleLayout;

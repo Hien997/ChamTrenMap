@@ -44,7 +44,7 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-function makeUser(overrides: Partial<User> = {}) {
+const makeUser = (overrides: Partial<User> = {}) => {
   return {
     id: "admin-1",
     visitorKey: null,
@@ -56,7 +56,7 @@ function makeUser(overrides: Partial<User> = {}) {
     createdAt: new Date("2026-09-23T00:00:00Z"),
     ...overrides,
   };
-}
+};
 
 beforeEach(() => {
   vi.restoreAllMocks();

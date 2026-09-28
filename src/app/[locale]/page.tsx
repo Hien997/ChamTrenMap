@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string }> };
 
-export default async function HomePage({ params }: Props) {
+const HomePage = async ({ params }: Props) => {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -154,4 +154,6 @@ export default async function HomePage({ params }: Props) {
       </footer>
     </div>
   );
-}
+};
+
+export default HomePage;

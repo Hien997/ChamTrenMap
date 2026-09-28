@@ -4,7 +4,7 @@ import { Popup, type Map as MaplibreMap } from "maplibre-gl";
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-export function MapPopup({
+export const MapPopup = ({
   map,
   longitude,
   latitude,
@@ -18,7 +18,7 @@ export function MapPopup({
   maxWidth?: string;
   onClose?: () => void;
   children: ReactNode;
-}) {
+}) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   if (containerRef.current === null && typeof document !== "undefined") {
     containerRef.current = document.createElement("div");
@@ -45,4 +45,4 @@ export function MapPopup({
   }, [map, container, longitude, latitude, maxWidth]);
 
   return container ? createPortal(children, container) : null;
-}
+};

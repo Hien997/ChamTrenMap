@@ -53,9 +53,9 @@ export interface PaginatedAdminList<T> {
  *   sentinel nears the viewport; the pages *also* render an explicit
  *   "Load more" button so keyboard users and IO-less browsers can load too.
  */
-export function usePaginatedAdminList<T extends { id: string }>(
+export const usePaginatedAdminList = <T extends { id: string }>(
   endpoint: string,
-): PaginatedAdminList<T> {
+): PaginatedAdminList<T> => {
   const [search, setSearch] = useState("");
   const [appliedQuery, setAppliedQuery] = useState("");
   const [items, setItems] = useState<T[] | null>(null);
@@ -236,4 +236,4 @@ export function usePaginatedAdminList<T extends { id: string }>(
     removeItem,
     sentinelRef,
   };
-}
+};

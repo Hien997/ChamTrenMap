@@ -12,7 +12,7 @@ interface Props {
  * defaultValues seed both at once — no local state, and the unregistered
  * hidden contentType input is gone (the field readers always emit "HTML").
  */
-export function GuideSection({ locale }: Props) {
+export const GuideSection = ({ locale }: Props) => {
   const { register } = useFormContext();
   const contentId = `guide.${locale}.content`;
   const preview = String(useWatch({ name: contentId }) ?? "");
@@ -44,4 +44,4 @@ export function GuideSection({ locale }: Props) {
       )}
     </div>
   );
-}
+};

@@ -28,9 +28,9 @@ interface RasterSource {
   attribution: string;
 }
 
-function makeErrorEvent(data?: Record<string, unknown>): object {
+const makeErrorEvent = (data?: Record<string, unknown>): object => {
   return Object.assign(new Error("boom"), data);
-}
+};
 
 describe("isTileLevelMapError", () => {
   it("treats errors carrying a tile payload as per-tile (non-fatal)", () => {

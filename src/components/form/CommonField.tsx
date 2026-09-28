@@ -3,7 +3,7 @@ import { peekErrors } from "./utils";
 import { cn } from "cn";
 import { Label } from "../ui/label";
 
-export function CommonField({
+export const CommonField = ({
   label,
   name,
   required,
@@ -22,7 +22,7 @@ export function CommonField({
   /** Suppress the top-level label (for inline controls like checkboxes/toggles). */
   hideLabel?: boolean;
   children: React.ReactNode;
-}) {
+}) => {
   const form = useFormContext();
   const error = serverError ?? peekErrors(form, name);
   const errorId = `${name}-error`;
@@ -52,4 +52,4 @@ export function CommonField({
       ) : null}
     </div>
   );
-}
+};
