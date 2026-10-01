@@ -224,50 +224,6 @@ export const unlockPrivateTour = async (input: {
   };
 };
 
-/**
- * Read an already-unlocked itinerary for the page render.
- *
- * Separate from `unlockPrivateTour` on purpose: re-entering the code on every
- * page load would charge a slot each time and need the phone again. This reads
- * through the holder cookie, so a holder who refreshes keeps their itinerary,
- * and anyone without the cookie sees nothing.
- */
-export const readUnlockedPrivateTour = async (input: {
-  code: string;
-  sessionKey: string;
-  locale: Locale;
-}): Promise<PrivateTourDetailView | null> => {
-  const tour = await prisma.privateTour.findUnique({
-    where: { code: input.code.trim().toUpperCase() },
-    include: privateTourInclude,
-  });
-  if (!tour) return null;
-
-  // The cookie alone is not enough: it must also have spent a slot on *this*
-  // tour, so a key borrowed from another tour reveals nothing.
-  const holdsSlot = await prisma.privateTourAccess.findUnique({
-    where: {
-      privateTourId_sessionKey: {
-        privateTourId: tour.id,
-        sessionKey: input.sessionKey,
-      },
-    },
-    select: { id: true },
-  });
-  if (!holdsSlot) return null;
-
-  const visits = await prisma.privateTourVisit.findMany({
-    where: { privateTourId: tour.id, sessionKey: input.sessionKey },
-    select: { checkpointId: true },
-  });
-
-  return toDetailView(
-    tour,
-    input.locale,
-    new Set(visits.map((v) => v.checkpointId)),
-  );
-};
-
 export type PrivateTourVisitResult =
   | { status: "ok"; order: number; alreadyVisited: boolean }
   | { status: "too_far"; distanceMeters: number; radiusMeters: number }

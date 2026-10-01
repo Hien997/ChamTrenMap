@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { KeyRoundIcon } from "lucide-react";
+import { setRequestLocale } from "next-intl/server";
 import PrivateTourShell from "@/components/tour/PrivateTourShell";
-import PrivateTourUnlockForm from "@/components/tour/PrivateTourUnlockForm";
+import PrivateTourUnlockGate from "@/components/tour/PrivateTourUnlockGate";
 
 /**
  * Unlisted by design (ADR-0006): the entry page and every code URL must stay
@@ -15,8 +14,12 @@ export const metadata: Metadata = {
 /**
  * Entry point for a private tour.
  *
- * This is the *only* public way in: the itinerary is never served without a
- * prior unlock, so the page itself shows the form and nothing else (ADR-0006).
+ * The itinerary is never rendered here at all: `PrivateTourUnlockGate` owns the
+ * form *and* the unlocked view, and hands the tour over only after
+ * `POST /api/private-tours/access` has matched a code against a phone number.
+ * Nothing on this route reads the holder cookie, so a link on its own — or a
+ * cookie left over from an earlier visit — buys nothing (ADR-0006).
+ *
  * `PrivateTourShell` supplies the private backdrop and the language switcher —
  * neither leaks anything, because this route has no tour data to leak.
  */
@@ -27,23 +30,10 @@ const PrivateTourAccessPage = async ({
 }) => {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: "PrivateTour" });
 
   return (
     <PrivateTourShell>
-      <div className="my-auto w-full max-w-md space-y-6 py-8">
-        <header className="space-y-2 text-center">
-          <span className="inline-flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <KeyRoundIcon aria-hidden className="size-6" />
-          </span>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {t("title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
-        </header>
-
-        <PrivateTourUnlockForm />
-      </div>
+      <PrivateTourUnlockGate />
     </PrivateTourShell>
   );
 };

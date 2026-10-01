@@ -200,6 +200,12 @@ Every response flows through the one envelope module `src/lib/api.ts` (architect
 | `GET/PATCH/DELETE /api/admin/checkpoints/[slug]` | `requireAdminApi` | PATCH: `updateCheckpointSchema` | via `checkpoint-content.server`; **slug immutable on update**; guides rewritten deleteMany→createMany (sanitized); failures surface as `CheckpointWriteError` → `writeErrorResponse` |
 | `POST /api/admin/login` | rate 5/min/IP **first** (before parse/DB) | `loginSchema` | bcrypt compare → `issueAdminSession` (fresh 32-byte token, SHA-256 + expiry on `User`) → set `ctm_admin` (httpOnly, sameSite lax, secure in prod, maxAge 7 d) |
 | `POST /api/admin/logout` | cookie | — | `revokeAdminSession` (DB) **then** clear cookie — revocation first, always |
+| `POST /api/private-tours/access` | rate-limited by IP; cookie session key | `privateTourAccessSchema` | `unlockPrivateTour` — **two independent gates** (code + phone) collapsed into one `denied`; charges a slot under a `FOR UPDATE` row lock (ADR-0006) |
+| `POST /api/private-tours/visit` | `ctm_private` cookie required → 401, and the service requires that key to **hold a slot on this tour** (else `denied` → the shared 404); rate limit keyed on the cookie | `privateTourVisitSchema` | `visitPrivateTourStop` — holder gate first, then the **shared** `evaluateCheckIn` GPS policy, `isLocked: false`; writes `PrivateTourVisit`, never a `CheckIn` (ADR-0006) |
+| `GET/POST /api/admin/private-tours` | `requireAdminApi` | `parseAdminListQuery` / `createPrivateTourSchema` | `listPrivateTours` (`q` over code/customer/translation name, createdAt desc, id tie-break, one `where` for items + total) / `createPrivateTour` (tx: tour + translations + stops) |
+| `GET/PATCH/DELETE /api/admin/private-tours/[id]` | `requireAdminApi` | PATCH: `updatePrivateTourSchema` | GET assembles `{ vi, en, stops }`; PATCH: id pre-check → tx `{ update, translation upserts, stops deleteMany+createMany }` (same shape as ADR-0004); DELETE relies on cascades |
+
+**Private tours deliberately break two public-tour rules** (ADR-0006): there is no `PUBLISHED` gate (status is `DRAFT`/`ACTIVE`/`REVOKED`) and no sequential unlock. It also reuses the existing `Checkpoint` rows rather than defining its own, so a private tour adds no coordinates, images or guide content of its own. `/visit` refusals carry a machine `code` plus numeric `details` (`TOO_FAR`, `POOR_ACCURACY`, `NOT_IN_ITINERARY`; anything else collapses to the same `NOT_FOUND` as `denied`), and `PrivateTourItinerary` renders localized copy from them — the server never sends user-facing prose.
 ### 4.2 Service layer (`src/services/`)
 
 | Module | Role |
@@ -214,6 +220,7 @@ Every response flows through the one envelope module `src/lib/api.ts` (architect
 | `checkpoint-content.ts` | shared schemas, view mappers (`toCheckpointDetail/Summary`), `CheckpointWriteError`, and the **field readers** reused by both the server and the RHF resolvers |
 | `checkpoint-content.server.ts` | checkpoint admin CRUD + admin list/detail assembly; sanitizes guide HTML on write |
 | `search.ts` | pure Prisma WHERE builders for `?q=` (slug OR any locale's name, case-insensitive) |
+| `private-tours.service.ts` | private-tour read/write; pure `evaluatePrivateTourAccess` (every refusal → one `denied`), `unlockPrivateTour` (slot charging under a row lock, returns the itinerary view itself so a re-unlock is free and re-marks this session's arrivals), `visitPrivateTourStop` (reuses `evaluateCheckIn` with `isLocked: false`), `listPrivateTours`, `reserveUniqueCode` |
 
 **Tour admin writes still live inside the routes** — no `tours-admin.server` module and zero tour-write tests yet (architecture candidate **D**, open; see `docs/architecture-review.md`).
 
@@ -231,6 +238,9 @@ Every response flows through the one envelope module `src/lib/api.ts` (architect
 - **`tour-progress.ts`** — client helpers: `distanceTo` / `isNear` (200 m **UI hint only** — never trusted for check-in) and `applyProgress` (merges a server progress payload into local checkpoint state).
 - **`validations/`** — public schemas (`index.ts`: check-in, share, locale) and admin schemas (`admin.ts`: tour create/update, login, list query). Checkpoint schemas live with `checkpoint-content.ts`.
 - **`admin-form.ts` / `checkpoint-form.ts`** — envelope → field-error mapping (first message per path wins) and the RHF transform resolvers (§6.4).
+- **`private-tour-codes.ts`** — `generatePrivateTourCode` (8 chars from an alphabet with `0/O/1/l/I` removed, because a code gets read aloud) and `normalizePhone` (strips spacing, folds `+84`/`84` → the local `0…` form, but leaves a short number that merely starts with `84` alone).
+- **`private-tour-session.ts`** — reads the holder cookie `ctm_private` (httpOnly, sameSite lax, secure in prod); the cookie is **minted only** by `POST /api/private-tours/access`, so this seam stays read-only exactly like `visitor-session.ts`. It is the **rate-limit identity** for `/visit` and the identity the slot is charged against, so an anonymous caller cannot mint a fresh limit per request.
+- **`skills.ts` / `scripts/skills.ts` / `bin/skills`** — the `/skills` CLI: reads `.agents/skills/*/SKILL.md` frontmatter straight off disk (no bundled registry, so a new skill needs no code change) and prints the chosen skill's instructions.
 ## 5. Public frontend
 
 ### 5.1 Pages (`src/app/[locale]/`)
@@ -243,6 +253,8 @@ Every response flows through the one envelope module `src/lib/api.ts` (architect
 | `/checkpoints/[slug]` | `getCheckpointDetail` + `getTourForCheckpoint` + checked-in state; summary, badges, guide article, gallery, JSON-LD | `CheckInFlow`, gallery, `QuickStatsCard` |
 | `/map/[tourSlug]` | session → completed ids → `getTourDetail` + `deriveStatuses` → assembles `MapCheckpoint[]` and `TourProgressView` props | `MapExperience` (everything below) |
 | `/share/checkin/[shareId]` | `getSharePageView` → OG/Twitter metadata + passport-stamp card | `ShareButtons`, `PanoramaViewer` |
+| `/private-tour` (ADR-0006) | no DB read, nothing to leak | `PrivateTourShell` (`.private-tour-skin` backdrop + `LocaleSwitcher`, because these routes skip `SiteHeader`), `PrivateTourUnlockGate` (code + phone form, and the unlocked view) |
+| `/private-tour/[code]` | no read at all — not the cookie, not the DB — so an unknown code and a locked one are indistinguishable; `noindex` metadata | `PrivateTourShell`; `PrivateTourUnlockGate code={code}` (code prefilled; the itinerary is rendered only from `POST /api/private-tours/access`, i.e. only after both gates matched). It owns `PrivateTourExperience`, which holds one `visited` set and feeds both `PrivateTourMap` (read-only: `privateStopsToMapLocations`/`privateStopsToPath` → `MapLibreMap`, pins numbered by itinerary order) and `PrivateTourItinerary` (StopCard is inline: no separate component) |
 | `/dev-map` | map playground page for development | map |
 
 Metadata: per-page `generateMetadata`; the checkpoint page adds canonical + `hreflang` alternates. `src/app/sitemap.ts` (force-dynamic) always emits static entries and DB-backed entries guarded by try/catch (build-without-DB safe). `robots.ts` allows `/`, disallows `/api/`.
@@ -308,6 +320,13 @@ Both list pages run **`usePaginatedAdminList(endpoint)`** (`src/hooks/usePaginat
 - **Create — `tours/new` + `TourNewForm`:** react-hook-form bridging (ADR-0005): slug, status, vi/en translation blocks, and **stops on create** via the shared `StopsEditor` (commit `6dbeaec`) — drag-to-reorder rows (dnd-kit; keyboard: Space + arrows), combobox fed by `listCheckpointOptions`, resulting array registered as `checkpointIds`. Stops optional/empty allowed (R14). Success → route back to the list.
 - **Edit — `tours/[slug]` + `TourEditForm`:** plain component state (never migrated to RHF — deliberate scope line in ADR-0005). PATCH is replace-all on stops (ADR-0004).
 - **Delete — `ConfirmDelete` dialog → DELETE → `removeItem`.**
+
+### 6.6 Private tours (ADR-0006)
+
+- **List — `private-tours` + `usePaginatedAdminList`:** same `{ ok, items, total }` contract as every other admin list. Rows surface the code, the customer phone, the slot meter (`slotsUsed / maxSlots`) and the status, because "is this tour still good to send?" is the whole question on this screen.
+- **Create — `private-tours/new` + `PrivateTourNewForm`:** RHF bridging like `TourNewForm` (customer name/phone, `maxSlots`, `startsAt`/`expiresAt`, status, vi/en, stops via the shared `StopsEditor`). The response carries the freshly minted `code`, and the toast reads `Private tour created — code XXXX` so the admin can send it straight to the customer.
+- **Codes are minted by the server** (`reserveUniqueCode`) and returned once at create time; there is no admin-settable code. The alphabet drops `0/O/1/l/I` because a code is read aloud over the phone.
+- **Edit** mirrors `TourEditForm` (plain component state, replace-all stops). **Delete** reuses `ConfirmDelete`.
 - List rows carry `status` and `checkpointCount` straight from the admin GET payload.
 
 ### 6.4 Checkpoints — RHF + shared guide panel (commit `1a46de2`, ADR-0005)
@@ -452,6 +471,33 @@ sequenceDiagram
         API-->>FM: {ok:false, error, details[path,message]} → setError(path) + toast
     end
 ```
+
+### Flow E — Private tour (admin mints a code → customer unlocks → arrives)
+
+```
+ADMIN                      CUSTOMER
+  |  POST /api/admin/private-tours {customerPhone, maxSlots:10, …, checkpointIds}
+  |-> API->DB: tx {PrivateTour(+code), translations, stops}
+  |  <- {ok, code:"ABCD2345"}         (toast shows the code; sent out-of-band)
+  |
+  |                              GET /[locale]/private-tour          (static)
+  |                              GET /[locale]/private-tour/ABCD2345 (no read: form, code prefilled)
+  |                              POST /api/private-tours/access {code, phone}
+  |                              API->DB: lock PrivateTour row, count slots
+  |                              API: normalizePhone → evaluatePrivateTourAccess
+  |                              alt both gates + status + expiry + slots
+  |                                 DB: create PrivateTourAccess, set ctm_private
+  |                                 -> {ok:true, data:{tour…}}  (one `denied` otherwise)
+  |                              client: setTour(tour) → PrivateTourExperience
+  |                              -> itinerary, "Đã tới điểm thứ N" per stop
+  |                              POST /api/private-tours/visit {code, checkpointId, lat, lng, accuracy}
+  |                              API: rate limit (cookie) → evaluateCheckIn(isLocked:false)
+  |                              DB: create PrivateTourVisit  (NOT CheckIn/TourProgress)
+  |                              -> {ok, order:N}  → card flips to visited
+```
+
+The row lock on `PrivateTour` is load-bearing: without it two simultaneous unlocks both read `slotsUsed = 9` and both take the 10th slot, so an 11th visitor gets in. The count-then-insert is therefore done inside a transaction that holds `SELECT … FOR UPDATE` on the tour row — the same reason a check-in writes in a transaction (§Flow B).
+
 ## 8. Test map (`tests/`, vitest)
 
 | File | What it pins |
@@ -470,6 +516,10 @@ sequenceDiagram
 | `map-error.test.ts` · `maplibre-worker-asset.test.ts` | escalation deciders; worker-file copy |
 | `panorama.test.ts` · `weather.test.ts` | equirectangular detection; Open-Meteo parser |
 | `messages.test.ts` | vi/en message-key parity |
+| `private-tours.service.test.ts` | phone normalization, code alphabet, the full `evaluatePrivateTourAccess` gate matrix incl. the shared-error contract, the row-lock ordering, the `/visit` holder gate (a non-holder never reaches the itinerary or a write), and the `/visit` refusal contract (code + numeric `details`, localized client keys, `noindex` on both routes) |
+| `private-tour-map.test.ts` | the stop → MapLibre translation (`privateStopsToMapLocations`: itinerary order, address fallback when a stop has no copy, `visited` → `checkedIn`, `order` for the pin) and `privateStopsToPath`'s `[lng, lat]` pairs |
+| `private-tour-ui.test.ts` | the private-tour page contracts read off source: both routes mount `PrivateTourShell` (so `LocaleSwitcher` is always there) and never `SiteHeader`; neither route can render tour data on its own (no cookie read, no service read, no `PrivateTourExperience`); the gate reaches `PrivateTourExperience` only from inside its `if (tour)` branch, with the `POST /api/private-tours/access` before it, and the service exports no cookie-satisfiable read; the map never calls the network while the itinerary still posts to `/visit`; one check-in reaches both; the skin re-declares `color: var(--foreground)` (else the subtree inherits `body`'s light-theme ink); every text pair it defines recomputed from its `oklch()` tokens and held at ≥ 4.5:1; and the backdrop stays scoped to `.private-tour-skin` behind a `prefers-reduced-motion` guard |
+| `skills.test.ts` | `/skills` frontmatter parsing, argv parsing, listing, dispatch |
 
 Commands: `npm test` (vitest run). Ship gates used so far: `tsc --noEmit` · `eslint` · `vitest run` · `next build`.
 
@@ -480,6 +530,9 @@ Commands: `npm test` (vitest run). Ship gates used so far: `tsc --noEmit` · `es
 1. No "PUBLISHED requires ≥ 1 stop" rule — empty published tours are possible (R14, ADR-0004).
 2. No unsaved-changes guard on the tour create form.
 3. No route-level integration tests — everything is unit/service level with mocked Prisma.
+4. **`maxSlots` counts unlocks, not people** (ADR-0006). There is no login for a customer, so a person who opens the code on a second device spends a second slot. Chosen deliberately: the alternative (a distinct person) needs OTP or a login, which is a different product. The admin screen therefore labels the column *slots*, never *guests*.
+5. **A private tour's code + phone is the only secret.** Codes are 8 chars from a 32-symbol alphabet (~1.1e12), so guessing is impractical, but unlike a public tour the content is not merely unlisted — the itinerary is only served to a holder of the `ctm_private` cookie. Mitigations in place: both gates must match, the failure message is identical for every cause (so the form is not a code oracle), and the IP rate limit bounds online guessing. Not implemented: per-code attempt lockout.
+6. **`startsAt` is display-only.** A tour can be read before its start time; the field is not a gate. Decided so a customer whose flight is delayed is not locked out.
 
 **Observations recorded while mapping (fix only via a new decision):**
 
