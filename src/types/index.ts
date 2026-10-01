@@ -4,6 +4,45 @@ export type { Locale };
 
 export type CheckpointStatus = "completed" | "current" | "locked";
 export type TourStatus = "DRAFT" | "PUBLISHED";
+export type PrivateTourStatus = "DRAFT" | "ACTIVE" | "REVOKED";
+
+export interface PrivateTourStopView {
+  checkpointId: string;
+  order: number;
+  name: string;
+  summary: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+  estimatedVisitMinutes: number;
+  visited: boolean;
+}
+
+export interface PrivateTourDetailView {
+  code: string;
+  name: string;
+  tagline: string;
+  description: string;
+  coverImageUrl: string;
+  startsAt: string | null;
+  stops: PrivateTourStopView[];
+}
+
+export interface PrivateTourListItem {
+  id: string;
+  code: string;
+  status: PrivateTourStatus;
+  customerName: string | null;
+  customerPhone: string;
+  name: string;
+  stopCount: number;
+  slotsUsed: number;
+  maxSlots: number;
+  startsAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+}
 
 export interface TourSummaryView {
   id: string;

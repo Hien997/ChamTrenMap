@@ -24,11 +24,15 @@ Domain language for **ChamTrenMap** (Chắm trên Map) — a self-guided tour & 
 | **Checkpoint status** | A visitor's per-Tour state of a Checkpoint — **derived, never stored** (`deriveStatuses`): `completed` (has a Check-in) · `current` (the first not completed) · `locked` (the rest). Enforced server-side at check-in time. ADR-0002. |
 | **Locale fallback** | Content pick (`pickLocalized`): requested locale → `vi` → first row. UI strings fall back the same way via next-intl (default `vi`). |
 | **Admin list query** | `?q=&take=&offset=` on admin list routes → `{ ok, items, total }`. `q` = case-insensitive *contains* over slug or any locale's name (≤100 chars); `take` 1–50 (default 10); offsets are stable via deterministic orderings. ADR-0003. |
+| **Private tour** | A run built for one named customer, **parallel to** `Tour` (not a `Tour`): unlisted, code-addressed, individually revocable, expiring. Composed from **existing** `Checkpoint`s, which stay shared content. Owns `PrivateTourTranslation` / `PrivateTourStop`. ADR-0006. |
+| **Private-tour access** | Opening a private itinerary: **code AND phone must both match** — two independent gates, and *every* refusal (wrong code, wrong phone, expired, revoked, no slots) returns one indistinguishable error so the pair is not an oracle. |
+| **Private-tour slot** | One `PrivateTourAccess` row per successful unlock; `maxSlots` (default 10) counts **unlocks, not people** — there is no customer login, so "who" is unknowable. Accepted weakness, not a per-person cap. |
+| **Private-tour visit** | A "Tôi đã tới" action: the client sends a raw GPS fix, the **server** reuses `evaluateCheckIn` and answers near/far. Records *proximity*, not progress — no `CheckIn`/`TourProgress` row is written, and stops are **not** order-enforced. |
 
 ## Conventions worth stating
 
 - Field names in forms are **strings** (`name: string`); error lookup walks dot-paths (`vi.name`) via `peekErrors`.
 - "Error replaces hint": when a field errors, its hint paragraph is not shown.
 - Content safety boundary: **guide HTML passes the `sanitizeHtml` seam** (now the `sanitize-html` parser) on write; translation name/summary fields don't need write-side sanitization because the JSON-LD script escapes `<` at render time (`serializeJsonLd`, S4).
-- ADRs live in `docs/adr/` — ADR-0001 records the visitor/admin auth split; ADR-0002–0005 record the retroactive decisions (sequential unlock as derived state, offset pagination for admin lists, atomic stop rewrites, react-hook-form migration). Rejections with load-bearing reasons get recorded there so future reviews don't re-suggest them.
+- ADRs live in `docs/adr/` — ADR-0001 records the visitor/admin auth split; ADR-0002–0005 record the retroactive decisions (sequential unlock as derived state, offset pagination for admin lists, atomic stop rewrites, react-hook-form migration); ADR-0006 records why a private tour is a separate model family rather than a `Tour`. Rejections with load-bearing reasons get recorded there so future reviews don't re-suggest them.
 - The full-surface FE/BE logic summary lives in `docs/logic-map.md` (routes, services, business rules, Mermaid ERD + golden flows, known gaps) — update it when routes, services, or rules move.

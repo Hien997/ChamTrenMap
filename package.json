@@ -12,7 +12,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,mjs,json,css}\" \"tests/**/*.{ts,tsx,js,mjs,json,css}\" \"prisma/**/*.{ts,tsx,js,mjs,json,css}\" \"scripts/**/*.{ts,tsx,js,mjs,json,css}\" \"*.{ts,tsx,js,mjs,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,mjs,json,css}\" \"tests/**/*.{ts,tsx,js,mjs,json,css}\" \"prisma/**/*.{ts,tsx,js,mjs,json,css}\" \"scripts/**/*.{ts,tsx,js,mjs,json,css}\" \"*.{ts,tsx,js,mjs,json}\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "skills": "node --no-warnings scripts/skills.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

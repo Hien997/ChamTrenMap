@@ -30,6 +30,7 @@ export type ApiErrorCode =
   | "UNAUTHORIZED"
   | "NOT_FOUND"
   | "NO_TOUR_LINK"
+  | "NOT_IN_ITINERARY"
   | "LOCKED"
   | "TOO_FAR"
   | "POOR_ACCURACY"

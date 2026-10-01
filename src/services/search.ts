@@ -1,5 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
+import { normalizePhone } from "@/lib/private-tour-codes";
+
 /**
  * WHERE builders for the admin list search (`?q=`).
  *
@@ -26,6 +28,33 @@ export const buildCheckpointSearchWhere = (
   return {
     OR: [
       { slug: { contains: q, mode: "insensitive" } },
+      {
+        translations: { some: { name: { contains: q, mode: "insensitive" } } },
+      },
+    ],
+  };
+};
+
+/**
+ * Private tours are searched by **code or customer**, not by slug: they have
+ * none, and the admin works from what the customer said on the phone — the code
+ * they were given, their name, or their number.
+ *
+ * The phone column is stored normalized (digits only, `+84…` → `0…`, ADR-0006),
+ * so the typed term is normalized the same way before matching. A term with no
+ * digits at all (`"Nguyen"`) is skipped rather than normalized to `""`, because
+ * `contains: ""` matches every row.
+ */
+export const buildPrivateTourSearchWhere = (
+  q: string,
+): Prisma.PrivateTourWhereInput => {
+  if (!q) return {};
+  const phone = normalizePhone(q);
+  return {
+    OR: [
+      { code: { contains: q, mode: "insensitive" } },
+      { customerName: { contains: q, mode: "insensitive" } },
+      ...(phone ? [{ customerPhone: { contains: phone } }] : []),
       {
         translations: { some: { name: { contains: q, mode: "insensitive" } } },
       },

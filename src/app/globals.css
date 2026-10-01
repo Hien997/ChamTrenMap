@@ -152,3 +152,124 @@
     letter-spacing: -0.02em;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Private tour skin
+ *
+ * The private-tour routes are the only pages whose whole point is that
+ * nobody else can see them, and a plain `bg-background` column says nothing
+ * about that. This re-skins the subtree instead of the document: overriding the
+ * shadcn custom properties on one wrapper cascades into every token utility
+ * used below it (`bg-card`, `text-muted-foreground`, `Button`, `LocaleSwitcher`,
+ * …), so the page reads as a separate, dimmer room without forking a single
+ * component or leaking into the rest of the app.
+ *
+ * Palette: a near-black indigo ground with a champagne accent. Checked against
+ * WCAG AA by `tests/private-tour-ui.test.ts`, which parses this block and
+ * recomputes every text pair above — foreground on background ≈ 18:1,
+ * muted-foreground on card ≈ 8:1, primary-foreground on primary ≈ 9.6:1.
+ *
+ * Two things here are load-bearing rather than decorative:
+ *
+ * 1. `color: var(--foreground)` must be re-declared on the wrapper. `body`
+ *    computes `color: var(--foreground)` *outside* this subtree, so it resolves
+ *    to `:root`'s dark navy and is inherited by every heading and paragraph
+ *    without its own `text-*` class — dark ink on a near-black ground. The
+ *    tokens below only re-resolve for elements carrying a utility, which is
+ *    exactly the text that already looked fine.
+ * 2. The pseudo-element layers stay at `z-index: 0` while the shell's header
+ *    and main sit at `z-10`, so the grain and vignette fall *behind* the copy
+ *    instead of veiling it.
+ * -------------------------------------------------------------------------*/
+.private-tour-skin {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color-scheme: dark;
+  color: var(--foreground);
+
+  --background: oklch(0.145 0.022 275);
+  --foreground: oklch(0.975 0.008 90);
+  --card: oklch(0.2 0.025 275);
+  --card-foreground: oklch(0.975 0.008 90);
+  --popover: oklch(0.22 0.026 275);
+  --popover-foreground: oklch(0.975 0.008 90);
+  --primary: oklch(0.8 0.1 85);
+  --primary-foreground: oklch(0.2 0.03 85);
+  --secondary: oklch(0.26 0.024 275);
+  --secondary-foreground: oklch(0.95 0.008 90);
+  --muted: oklch(0.26 0.024 275);
+  --muted-foreground: oklch(0.8 0.018 270);
+  --accent: oklch(0.3 0.03 280);
+  --accent-foreground: oklch(0.96 0.008 90);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.8 0.1 85);
+  --destructive: oklch(0.78 0.15 25);
+  --chart-3: oklch(0.8 0.12 75);
+  --chart-4: oklch(0.85 0.1 85);
+
+  background-color: var(--background);
+}
+
+/* Layered light: a cool wash from above, a warm one from the side. Inset
+ * beyond the box so the drift below can move without exposing an edge. */
+.private-tour-skin::before {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      120% 80% at 50% -20%,
+      oklch(0.34 0.09 285 / 0.9) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      80% 60% at 8% 105%,
+      oklch(0.26 0.08 200 / 0.75) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 55% at 95% 35%,
+      oklch(0.36 0.1 75 / 0.32) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      50% 40% at 18% 12%,
+      oklch(0.3 0.11 330 / 0.3) 0%,
+      transparent 75%
+    );
+}
+
+/* Film grain + vignette: the two cues that make a flat colour read as a
+ * *space* rather than a swatch. Kept light (0.16) on purpose — this layer sits
+ * behind the copy, and a louder grain just makes 12–14px text harder to read. */
+.private-tour-skin::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.16'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  box-shadow: inset 0 0 160px 30px rgb(4 4 16 / 0.55);
+}
+
+@keyframes private-tour-glow {
+  from {
+    transform: translate3d(-1.5%, -1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.5%, 1.5%, 0) scale(1.06);
+  }
+}
+
+/* Purely decorative, so it is opt-in rather than opt-out: a visitor who asked
+ * for less motion gets a still backdrop instead of a slowed-down one. */
+@media (prefers-reduced-motion: no-preference) {
+  .private-tour-skin::before {
+    animation: private-tour-glow 24s ease-in-out infinite alternate;
+  }
+}

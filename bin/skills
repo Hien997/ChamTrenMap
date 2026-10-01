@@ -1,0 +1,10 @@
+#!/bin/sh
+# `/skills` — list and dispatch the skills in `.agents/skills/`.
+#
+# Add the repo's `bin/` to your PATH to get the slash command:
+#   export PATH="/Users/nguyenhien/PT/ChamTrenMap/bin:$PATH"
+# After that, `/skills` and `/skills tdd` work from any directory.
+# `--no-warnings` silences NODE_TYPELESS_PACKAGE_JSON: this repo is CommonJS
+# (Next.js), and adding "type": "module" to break one warning would be a far
+# bigger change. The module is still detected correctly.
+exec node --no-warnings "$(dirname -- "$0")/../scripts/skills.ts" "$@"

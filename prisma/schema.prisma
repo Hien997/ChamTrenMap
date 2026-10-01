@@ -28,6 +28,12 @@ enum ContentType {
   HTML
 }
 
+enum PrivateTourStatus {
+  DRAFT
+  ACTIVE
+  REVOKED
+}
+
 model Tour {
   id           String            @id @default(cuid())
   slug         String            @unique
@@ -67,6 +73,7 @@ model Checkpoint {
   guides                GuideSection[]
   tourLinks             TourCheckpoint[]
   checkIns              CheckIn[]
+  privateStops          PrivateTourStop[]
 }
 
 model CheckpointTranslation {
@@ -165,4 +172,84 @@ model ShareLink {
   checkInId String   @unique
   checkIn   CheckIn  @relation(fields: [checkInId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+// ── Private tours (ADR-0006) ────────────────────────────────────────────────
+// A per-customer run composed from the same Checkpoints as public tours. Not
+// derived from Tour: unlisted, code-addressed, revocable, expiring, and with no
+// progress/unlock chain (ADR-0002 deliberately does not apply here).
+
+model PrivateTour {
+  id            String   @id @default(cuid())
+  /// 8 chars from an alphabet with no look-alike glyphs, for dictation by phone.
+  code          String   @unique
+  /// Second authorization factor, stored normalized (see normalizePhone).
+  customerPhone String
+  customerName  String?
+  status        PrivateTourStatus @default(DRAFT)
+  startsAt      DateTime?
+  /// null = never expires
+  expiresAt     DateTime?
+  maxSlots      Int      @default(10)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  translations PrivateTourTranslation[]
+  stops        PrivateTourStop[]
+  accesses     PrivateTourAccess[]
+  visits       PrivateTourVisit[]
+
+  @@index([status])
+}
+
+model PrivateTourTranslation {
+  id            String      @id @default(cuid())
+  privateTourId String
+  privateTour   PrivateTour @relation(fields: [privateTourId], references: [id], onDelete: Cascade)
+  locale        String
+  name          String
+  tagline       String
+  description   String
+  coverImageUrl String
+
+  @@unique([privateTourId, locale])
+}
+
+/// Mirror of TourCheckpoint: `order` is 1-based and the array order is the
+/// visit order (ADR-0004). Separate table because it is FK-bound to its tour.
+model PrivateTourStop {
+  id            String      @id @default(cuid())
+  privateTourId String
+  privateTour   PrivateTour @relation(fields: [privateTourId], references: [id], onDelete: Cascade)
+  checkpointId  String
+  checkpoint    Checkpoint  @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  order         Int
+
+  @@unique([privateTourId, checkpointId])
+  @@unique([privateTourId, order])
+}
+
+/// One row per successful unlock — the slot unit. Not a person: there is no
+/// customer login, so identity is only the opaque ctm_private cookie key.
+model PrivateTourAccess {
+  id            String      @id @default(cuid())
+  privateTourId String
+  privateTour   PrivateTour @relation(fields: [privateTourId], references: [id], onDelete: Cascade)
+  sessionKey    String
+  firstAccessAt DateTime    @default(now())
+
+  @@unique([privateTourId, sessionKey])
+}
+
+/// Proximity record from the "Tôi đã tới" action. Deliberately NOT a CheckIn
+/// or TourProgress: a private tour records that someone was nearby, nothing more.
+model PrivateTourVisit {
+  id            String      @id @default(cuid())
+  privateTourId String
+  privateTour   PrivateTour @relation(fields: [privateTourId], references: [id], onDelete: Cascade)
+  sessionKey    String
+  checkpointId  String
+  visitedAt     DateTime    @default(now())
+
+  @@unique([privateTourId, sessionKey, checkpointId])
 }

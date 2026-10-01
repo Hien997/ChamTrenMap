@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboardIcon, MapIcon, MapPinIcon } from "lucide-react";
+import {
+  LayoutDashboardIcon,
+  LockIcon,
+  MapIcon,
+  MapPinIcon,
+} from "lucide-react";
 
 const items = [
   { href: "/admin", label: "Overview", icon: LayoutDashboardIcon },
   { href: "/admin/tours", label: "Tours", icon: MapIcon },
+  { href: "/admin/private-tours", label: "Private tours", icon: LockIcon },
   { href: "/admin/checkpoints", label: "Checkpoints", icon: MapPinIcon },
 ] as const;
 
