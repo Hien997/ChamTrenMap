@@ -260,13 +260,17 @@ const numberField = (
   name: string,
 ): number | undefined => {
   const raw = read(name);
-  if (raw === null) return undefined;
+  if (raw === null) {
+    return undefined;
+  }
   return Number.parseFloat(String(raw));
 };
 
 const intField = (read: FormValueReader, name: string): number | undefined => {
   const raw = read(name);
-  if (raw === null) return undefined;
+  if (raw === null) {
+    return undefined;
+  }
   return Number.parseInt(String(raw), 10);
 };
 
@@ -298,7 +302,9 @@ const readGuidesFromForm = (
   for (const locale of ["vi", "en"] as const) {
     const existing = currentGuides.find((g) => g.locale === locale);
     const content = String(read(`guide.${locale}.content`) ?? "").trim();
-    if (!content) continue;
+    if (!content) {
+      continue;
+    }
     guides.push({
       id: existing?.id,
       locale,

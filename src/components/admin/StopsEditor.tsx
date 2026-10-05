@@ -131,10 +131,13 @@ const StopsEditor = ({
   // A stop already on the tour is always in `availableCheckpoints`, but falling
   // back to the caller's rows keeps it renderable if it ever is not.
   const stopInfo = new Map<string, CheckpointOption>();
-  for (const checkpoint of availableCheckpoints)
+  for (const checkpoint of availableCheckpoints) {
     stopInfo.set(checkpoint.id, checkpoint);
+  }
   for (const stop of extraOptions) {
-    if (!stopInfo.has(stop.id)) stopInfo.set(stop.id, stop);
+    if (!stopInfo.has(stop.id)) {
+      stopInfo.set(stop.id, stop);
+    }
   }
 
   const remainingCheckpoints = availableCheckpoints.filter(
@@ -155,10 +158,14 @@ const StopsEditor = ({
   // dnd-kit reports which id landed where; the array order *is* the visit
   // order, so one arrayMove here is the whole reorder.
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id) {
+      return;
+    }
     const from = value.indexOf(String(active.id));
     const to = value.indexOf(String(over.id));
-    if (from < 0 || to < 0) return;
+    if (from < 0 || to < 0) {
+      return;
+    }
     onChange(arrayMove(value, from, to));
   };
 
@@ -182,7 +189,9 @@ const StopsEditor = ({
             <ol className="flex flex-col gap-2">
               {value.map((id, index) => {
                 const stop = stopInfo.get(id);
-                if (!stop) return null;
+                if (!stop) {
+                  return null;
+                }
                 return (
                   <StopRow
                     key={id}
@@ -203,9 +212,12 @@ const StopsEditor = ({
           items={remainingCheckpoints}
           value={null}
           onValueChange={(checkpoint) => {
-            if (!checkpoint) return;
-            if (!value.includes(checkpoint.id))
+            if (!checkpoint) {
+              return;
+            }
+            if (!value.includes(checkpoint.id)) {
               onChange([...value, checkpoint.id]);
+            }
           }}
           itemToStringLabel={(checkpoint) => checkpoint?.name ?? ""}
           isItemEqualToValue={(a, b) => (a?.id ?? null) === (b?.id ?? null)}

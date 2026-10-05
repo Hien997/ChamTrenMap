@@ -19,7 +19,9 @@ export const getCheckpointDetail = async (
       guides: { orderBy: { sortOrder: "asc" } },
     },
   });
-  if (!checkpoint) return null;
+  if (!checkpoint) {
+    return null;
+  }
 
   return toCheckpointDetail(checkpoint, locale);
 };
@@ -46,7 +48,9 @@ export const getTourForCheckpoint = async (
     orderBy: { order: "asc" },
     include: { tour: { include: { translations: true } } },
   });
-  if (!link) return null;
+  if (!link) {
+    return null;
+  }
   const translation = pickLocalized(link.tour.translations, locale);
   return {
     slug: link.tour.slug,

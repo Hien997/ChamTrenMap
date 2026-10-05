@@ -15,7 +15,9 @@ export interface RateLimitResult {
 // arrives, so keys that never come back cannot grow the map without bound.
 const sweepExpired = (now: number): void => {
   for (const [key, bucket] of buckets) {
-    if (bucket.resetAtMs <= now) buckets.delete(key);
+    if (bucket.resetAtMs <= now) {
+      buckets.delete(key);
+    }
   }
 };
 

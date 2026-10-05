@@ -13,7 +13,9 @@ export const GET = async (
     // visitors who have not checked in yet (write-lazy, ADR-0001).
     const user = await getSessionVisitor();
     const progress = await buildProgressView(user?.id ?? "", slug);
-    if (!progress) return apiError("NOT_FOUND", "Tour not found", 404);
+    if (!progress) {
+      return apiError("NOT_FOUND", "Tour not found", 404);
+    }
     return apiOk(progress);
   } catch (error) {
     return handleApiError("GET /api/tours/[slug]/progress", error);

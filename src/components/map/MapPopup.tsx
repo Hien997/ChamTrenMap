@@ -31,7 +31,9 @@ export const MapPopup = ({
   const container = containerRef.current;
 
   useEffect(() => {
-    if (!container) return;
+    if (!container) {
+      return;
+    }
     const popup = new Popup({ closeButton: true, maxWidth })
       .setLngLat([longitude, latitude])
       .setDOMContent(container)

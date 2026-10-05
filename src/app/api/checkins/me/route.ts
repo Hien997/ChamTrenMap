@@ -8,7 +8,9 @@ export const GET = async (request: NextRequest) => {
     // Write-lazy: no visitor row yet means no check-ins — never create rows here.
     const user = await getSessionVisitor();
     const locale = parseLocale(request.nextUrl.searchParams);
-    if (!user) return apiOk([]);
+    if (!user) {
+      return apiOk([]);
+    }
     return apiOk(await listMyCheckIns(user.id, locale));
   } catch (error) {
     return handleApiError("GET /api/checkins/me", error);

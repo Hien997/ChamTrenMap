@@ -56,13 +56,17 @@ const AdminCheckpointsListPage = () => {
   const confirmDelete = useCallback(() => {
     const target = confirmTarget;
     setConfirmOpen(false);
-    if (!target) return;
+    if (!target) {
+      return;
+    }
     startTransition(async () => {
       const res = await fetch(`/api/admin/checkpoints/${target.slug}`, {
         method: "DELETE",
       });
       const json = await res.json();
-      if (json.ok) removeItem(target.id);
+      if (json.ok) {
+        removeItem(target.id);
+      }
     });
   }, [confirmTarget, removeItem]);
 

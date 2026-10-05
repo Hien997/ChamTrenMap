@@ -159,7 +159,9 @@ describe("guards", () => {
 
   it("requireAdminApi returns a 401 JSON envelope when unauthenticated (S9)", async () => {
     const res = await requireAdminApi();
-    if (!res) throw new Error("expected a 401 response");
+    if (!res) {
+      throw new Error("expected a 401 response");
+    }
     expect(res.status).toBe(401);
     const json = await res.json();
     expect(json).toMatchObject({
@@ -212,7 +214,9 @@ describe("checkLoginRate (S3)", () => {
     vi.useFakeTimers();
     const start = new Date("2026-09-23T10:00:00Z");
     vi.setSystemTime(start);
-    for (let i = 0; i < LOGIN_RATE_LIMIT.max; i++) checkLoginRate("9.9.9.9");
+    for (let i = 0; i < LOGIN_RATE_LIMIT.max; i++) {
+      checkLoginRate("9.9.9.9");
+    }
     expect(checkLoginRate("9.9.9.9").ok).toBe(false);
     vi.setSystemTime(
       new Date(start.getTime() + LOGIN_RATE_LIMIT.windowMs + 1_000),

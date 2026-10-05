@@ -43,7 +43,9 @@ export const POST = async (request: Request) => {
     }
 
     const parsed = parseBody(privateTourAccessSchema, await request.json());
-    if (!parsed.ok) return parsed.response;
+    if (!parsed.ok) {
+      return parsed.response;
+    }
 
     const locale =
       new URL(request.url).searchParams.get("locale") === "en" ? "en" : "vi";

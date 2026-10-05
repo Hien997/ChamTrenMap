@@ -113,7 +113,9 @@ const main = async () => {
     await prisma.tourCheckpoint.createMany({
       data: seedTour.checkpointSlugs.map((slug, index) => {
         const checkpoint = checkpoints.find((cp) => cp.slug === slug);
-        if (!checkpoint) throw new Error(`Seed checkpoint missing: ${slug}`);
+        if (!checkpoint) {
+          throw new Error(`Seed checkpoint missing: ${slug}`);
+        }
         return {
           tourId: tour.id,
           checkpointId: checkpoint.id,

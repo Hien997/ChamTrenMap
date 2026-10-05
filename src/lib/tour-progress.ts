@@ -7,7 +7,9 @@ export const distanceTo = (
   user: LatLng | null | undefined,
   checkpoint: LatLng | null | undefined,
 ): number | null => {
-  if (!user || !checkpoint) return null;
+  if (!user || !checkpoint) {
+    return null;
+  }
   return haversineMeters(user, checkpoint);
 };
 

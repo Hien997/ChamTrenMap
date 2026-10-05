@@ -40,7 +40,9 @@ describe("createCheckpointFormSchema", () => {
   it("turns registered form values into the API payload", () => {
     const result = createCheckpointFormSchema.safeParse(VALID_VALUES);
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    if (!result.success) {
+      return;
+    }
     expect(result.data.slug).toBe("chua-phu-dung");
     expect(result.data.latitude).toBe(10.3864);
     expect(result.data.radiusMeters).toBe(100);
@@ -58,7 +60,9 @@ describe("createCheckpointFormSchema", () => {
       vi: { ...VALID_VALUES.vi, name: "" },
     });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
 
     const messages = Object.fromEntries(
       result.error.issues.map((issue) => [issue.path.join("."), issue.message]),
@@ -85,7 +89,9 @@ describe("updateCheckpointFormSchema", () => {
     });
     const result = schema.safeParse(VALID_VALUES);
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    if (!result.success) {
+      return;
+    }
     expect(result.data.id).toBe("cabc123456");
     expect(result.data.slug).toBe("chua-phu-dung");
     expect(result.data.guides).toEqual([

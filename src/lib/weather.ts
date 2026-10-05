@@ -17,15 +17,33 @@ export type WeatherKind =
   | "snow";
 
 export const weatherKindForCode = (code: number): WeatherKind => {
-  if (!Number.isFinite(code)) return "overcast";
-  if (code === 0) return "clear";
-  if (code === 1 || code === 2) return "partly-cloudy";
-  if (code === 3) return "overcast";
-  if (code === 45 || code === 48) return "fog";
-  if (code >= 51 && code <= 57) return "drizzle";
-  if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return "rain";
-  if (code >= 95 && code <= 99) return "storm";
-  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "snow";
+  if (!Number.isFinite(code)) {
+    return "overcast";
+  }
+  if (code === 0) {
+    return "clear";
+  }
+  if (code === 1 || code === 2) {
+    return "partly-cloudy";
+  }
+  if (code === 3) {
+    return "overcast";
+  }
+  if (code === 45 || code === 48) {
+    return "fog";
+  }
+  if (code >= 51 && code <= 57) {
+    return "drizzle";
+  }
+  if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) {
+    return "rain";
+  }
+  if (code >= 95 && code <= 99) {
+    return "storm";
+  }
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) {
+    return "snow";
+  }
   return "overcast";
 };
 
@@ -60,9 +78,12 @@ const toFiniteNumber = (value: unknown): number | null => {
 };
 
 const toFiniteArray = (value: unknown): number[] | null => {
-  if (!Array.isArray(value)) return null;
-  if (!value.every((v) => typeof v === "number" && Number.isFinite(v)))
+  if (!Array.isArray(value)) {
     return null;
+  }
+  if (!value.every((v) => typeof v === "number" && Number.isFinite(v))) {
+    return null;
+  }
   return value as number[];
 };
 
@@ -70,7 +91,9 @@ export const parseHatienWeather = (
   payload: unknown,
   now: number = Date.now(),
 ): HatienWeather | null => {
-  if (typeof payload !== "object" || payload === null) return null;
+  if (typeof payload !== "object" || payload === null) {
+    return null;
+  }
   const data = payload as OpenMeteoResponse;
 
   const currentTempC = toFiniteNumber(data.current?.temperature_2m);
@@ -147,9 +170,13 @@ const readStoredPayload = (): {
   fetchedAt: number;
 } | null => {
   try {
-    if (typeof window === "undefined" || !window.localStorage) return null;
+    if (typeof window === "undefined" || !window.localStorage) {
+      return null;
+    }
     const raw = window.localStorage.getItem(WEATHER_CACHE_KEY);
-    if (!raw) return null;
+    if (!raw) {
+      return null;
+    }
     const json = JSON.parse(raw) as { fetchedAt?: unknown };
     const fetchedAt = toFiniteNumber(json.fetchedAt) ?? 0;
     const parsed = parseHatienWeather(json, fetchedAt);
@@ -161,7 +188,9 @@ const readStoredPayload = (): {
 
 const writeCache = (weather: HatienWeather): void => {
   try {
-    if (typeof window === "undefined" || !window.localStorage) return;
+    if (typeof window === "undefined" || !window.localStorage) {
+      return;
+    }
     window.localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(weather));
   } catch {
     // Private mode / quota — weather just refetches next mount.
@@ -178,9 +207,13 @@ export const fetchHatienWeather = async (
 
   try {
     const response = await fetch(buildWeatherUrl());
-    if (!response.ok) return stored?.parsed ?? null;
+    if (!response.ok) {
+      return stored?.parsed ?? null;
+    }
     const parsed = parseHatienWeather(await response.json(), now);
-    if (!parsed) return stored?.parsed ?? null;
+    if (!parsed) {
+      return stored?.parsed ?? null;
+    }
     writeCache(parsed);
     return parsed;
   } catch {

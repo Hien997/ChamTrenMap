@@ -24,7 +24,9 @@ export const POST = async (request: NextRequest) => {
   }
 
   const parsed = parseAdminBody(loginSchema, await request.json());
-  if (!parsed.ok) return parsed.response;
+  if (!parsed.ok) {
+    return parsed.response;
+  }
 
   const user = await prisma.user.findUnique({
     where: { email: parsed.data.email },

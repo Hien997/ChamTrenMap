@@ -111,9 +111,13 @@ describe("generatePrivateTourCode", () => {
     });
 
     it("refuses rather than overfilling when the last slot is taken", () => {
-      expect(unlock).toContain("if (others >= tour.maxSlots) return null");
-      expect(unlock).toContain(
-        'if (slotsUsedAfter === null) return { status: "denied" }',
+      // Matched as regexes rather than substrings, so a formatting-only change
+      // (curly braces, line breaks) cannot silently re-break these guards.
+      expect(unlock).toMatch(
+        /if \(others >= tour\.maxSlots\) \{\s*return null;\s*\}/,
+      );
+      expect(unlock).toMatch(
+        /if \(slotsUsedAfter === null\) \{\s*return \{ status: "denied" \};\s*\}/,
       );
     });
 

@@ -26,7 +26,9 @@ export const CheckpointStatusIcon = ({
   status: CheckpointStatus | null;
   className?: string;
 }) => {
-  if (!status) return null;
+  if (!status) {
+    return null;
+  }
   const Icon = ICONS[status];
   return (
     <span

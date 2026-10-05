@@ -24,7 +24,9 @@ export const usePanoramaStatus = (src: string): PanoramaStatus => {
     let cancelled = false;
     setStatus("probing");
     probePanoramaImage(src).then((probe) => {
-      if (!cancelled) setStatus(probe.status);
+      if (!cancelled) {
+        setStatus(probe.status);
+      }
     });
     return () => {
       cancelled = true;
@@ -70,8 +72,9 @@ export const PanoramaViewer = ({
     [autoRotate],
   );
 
-  if (status === "flat")
+  if (status === "flat") {
     return <FlatPhoto src={src} alt={alt} className={className} fit={fit} />;
+  }
 
   const loadingLabel = tCommon("loading");
 

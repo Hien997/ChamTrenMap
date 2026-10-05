@@ -60,10 +60,14 @@ export const createCheckIn = async (
       },
     },
   });
-  if (!checkpoint) return { status: "not_found" };
+  if (!checkpoint) {
+    return { status: "not_found" };
+  }
 
   const tourLink = checkpoint.tourLinks[0];
-  if (!tourLink) return { status: "no_tour_link" };
+  if (!tourLink) {
+    return { status: "no_tour_link" };
+  }
   const tour = tourLink.tour;
   const orderedIds = tour.checkpoints.map((tc) => tc.checkpointId);
 
@@ -94,9 +98,15 @@ export const createCheckIn = async (
       progress: await buildProgressView(userId, tour.slug),
     };
   }
-  if (decision.status === "locked") return { status: "locked" };
-  if (decision.status === "poor_accuracy") return decision;
-  if (decision.status === "too_far") return decision;
+  if (decision.status === "locked") {
+    return { status: "locked" };
+  }
+  if (decision.status === "poor_accuracy") {
+    return decision;
+  }
+  if (decision.status === "too_far") {
+    return decision;
+  }
 
   try {
     const checkIn = await prisma.$transaction(async (tx) => {
@@ -134,7 +144,9 @@ export const createCheckIn = async (
       pickLocalized(checkpoint.translations, locale)?.name ?? checkpoint.slug;
 
     const progress = await buildProgressView(userId, tour.slug);
-    if (!progress) throw new Error("Progress view missing after check-in");
+    if (!progress) {
+      throw new Error("Progress view missing after check-in");
+    }
 
     return {
       status: "ok",

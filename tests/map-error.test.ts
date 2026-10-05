@@ -83,8 +83,11 @@ describe("resolveMapLoadTimeoutMs", () => {
       process.env[ENV_KEY] = "0";
       expect(resolveMapLoadTimeoutMs()).toBe(MAP_LOAD_TIMEOUT_MS);
     } finally {
-      if (original === undefined) delete process.env[ENV_KEY];
-      else process.env[ENV_KEY] = original;
+      if (original === undefined) {
+        delete process.env[ENV_KEY];
+      } else {
+        process.env[ENV_KEY] = original;
+      }
     }
   });
 });
@@ -358,8 +361,11 @@ describe("built-in (key-free) map styles", () => {
         "https://prop.test/style.json",
       );
     } finally {
-      if (original === undefined) delete process.env[STYLE_URL_KEY];
-      else process.env[STYLE_URL_KEY] = original;
+      if (original === undefined) {
+        delete process.env[STYLE_URL_KEY];
+      } else {
+        process.env[STYLE_URL_KEY] = original;
+      }
     }
   });
 

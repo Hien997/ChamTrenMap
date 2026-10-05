@@ -52,7 +52,9 @@ const AdminTourEditPageRoute = async ({
     listCheckpointOptions(),
   ]);
 
-  if (!tour) notFound();
+  if (!tour) {
+    notFound();
+  }
 
   const vi = tour.translations.find((t) => t.locale === "vi");
   const en = tour.translations.find((t) => t.locale === "en");

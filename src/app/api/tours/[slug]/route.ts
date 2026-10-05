@@ -10,7 +10,9 @@ export const GET = async (
     const { slug } = await params;
     const locale = parseLocale(request.nextUrl.searchParams);
     const tour = await getTourDetail(slug, locale);
-    if (!tour) return apiError("NOT_FOUND", "Tour not found", 404);
+    if (!tour) {
+      return apiError("NOT_FOUND", "Tour not found", 404);
+    }
     return apiOk(tour);
   } catch (error) {
     return handleApiError("GET /api/tours/[slug]", error);

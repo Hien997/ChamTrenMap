@@ -23,19 +23,28 @@ type Props = {
 };
 
 const cellClass = (index: number, count: number): string => {
-  if (count === 1) return "col-span-2 aspect-[16/9] sm:col-span-12";
+  if (count === 1) {
+    return "col-span-2 aspect-[16/9] sm:col-span-12";
+  }
   if (index === 0) {
-    if (count === 2)
+    if (count === 2) {
       return "col-span-1 aspect-[4/3] sm:col-span-7 sm:aspect-[7/5]";
+    }
     return "col-span-2 aspect-[16/10] sm:col-span-8 sm:row-span-2 sm:aspect-auto";
   }
-  if (count === 2)
+  if (count === 2) {
     return "col-span-1 aspect-[4/3] sm:col-span-5 sm:aspect-square";
-  if (index < 3) return "col-span-1 aspect-[4/3] sm:col-span-4";
+  }
+  if (index < 3) {
+    return "col-span-1 aspect-[4/3] sm:col-span-4";
+  }
   const extras = count - 3;
-  if (extras === 1)
+  if (extras === 1) {
     return "col-span-1 aspect-[4/3] sm:col-span-12 sm:aspect-[21/9]";
-  if (extras === 2) return "col-span-1 aspect-[4/3] sm:col-span-6";
+  }
+  if (extras === 2) {
+    return "col-span-1 aspect-[4/3] sm:col-span-6";
+  }
   return "col-span-1 aspect-[4/3] sm:col-span-4";
 };
 
@@ -148,7 +157,9 @@ export const CheckpointGallery = ({ images, name }: Props) => {
   const current = index ?? 0;
 
   const requestClose = useCallback(() => {
-    if (index === null) return;
+    if (index === null) {
+      return;
+    }
     setClosing(true);
   }, [index]);
 
@@ -159,7 +170,9 @@ export const CheckpointGallery = ({ images, name }: Props) => {
   };
 
   useEffect(() => {
-    if (!closing) return;
+    if (!closing) {
+      return;
+    }
     const timer = setTimeout(() => {
       setIndex(null);
       setClosing(false);
@@ -169,7 +182,9 @@ export const CheckpointGallery = ({ images, name }: Props) => {
   }, [closing]);
 
   useEffect(() => {
-    if (!open || closing) return;
+    if (!open || closing) {
+      return;
+    }
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         requestClose();
@@ -184,7 +199,9 @@ export const CheckpointGallery = ({ images, name }: Props) => {
   }, [open, closing, count, requestClose]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
     const previousOverflow = document.body.style.overflow;
     const previousPadding = document.body.style.paddingRight;
     const scrollbar = window.innerWidth - document.documentElement.clientWidth;
@@ -199,10 +216,14 @@ export const CheckpointGallery = ({ images, name }: Props) => {
   }, [open]);
 
   useEffect(() => {
-    if (open) closeBtnRef.current?.focus();
+    if (open) {
+      closeBtnRef.current?.focus();
+    }
   }, [open]);
 
-  if (count === 0) return null;
+  if (count === 0) {
+    return null;
+  }
 
   return (
     <>

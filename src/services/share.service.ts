@@ -19,8 +19,12 @@ export const createShareLink = async (
     where: { id: checkInId },
     include: { shareLink: true },
   });
-  if (!checkIn) return { status: "not_found" };
-  if (checkIn.userId !== userId) return { status: "forbidden" };
+  if (!checkIn) {
+    return { status: "not_found" };
+  }
+  if (checkIn.userId !== userId) {
+    return { status: "forbidden" };
+  }
 
   const shareId = checkIn.shareLink?.id ?? nanoid(SHARE_ID_LENGTH);
   if (!checkIn.shareLink) {
@@ -58,7 +62,9 @@ export const getSharePageView = async (
       },
     },
   });
-  if (!shareLink) return null;
+  if (!shareLink) {
+    return null;
+  }
 
   const checkpoint = shareLink.checkIn.checkpoint;
   const cpTranslation = pickLocalized(checkpoint.translations, locale);

@@ -14,18 +14,26 @@ import {
 
 export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const query = parseAdminListQuery(request.nextUrl.searchParams);
-  if (!query.ok) return query.response;
+  if (!query.ok) {
+    return query.response;
+  }
   const { items, total } = await listCheckpointsForAdmin(query.data);
   return adminOk({ items, total });
 };
 
 export const POST = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const parsed = parseAdminBody(createCheckpointSchema, await request.json());
-  if (!parsed.ok) return parsed.response;
+  if (!parsed.ok) {
+    return parsed.response;
+  }
 
   try {
     const checkpoint = await createCheckpoint(parsed.data);

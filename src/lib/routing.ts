@@ -26,7 +26,9 @@ export const createOsrmRouteService = (baseUrl: string): RouteService => {
         `${start[0]},${start[1]};${destination[0]},${destination[1]}` +
         `?overview=full&geometries=geojson&steps=false`;
       const response = await fetch(url);
-      if (!response.ok) throw new Error(`OSRM_HTTP_${response.status}`);
+      if (!response.ok) {
+        throw new Error(`OSRM_HTTP_${response.status}`);
+      }
       const payload = (await response.json()) as OsrmResponse;
       const route = payload.routes?.[0];
       if (payload.code !== "Ok" || !route) {

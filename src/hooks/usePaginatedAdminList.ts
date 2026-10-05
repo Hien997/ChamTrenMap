@@ -106,7 +106,9 @@ export const usePaginatedAdminList = <T extends { id: string }>(
       const next = search.trim();
       // Ignore churn that doesn't change the query (e.g. a trailing space),
       // otherwise the list would clear with no fetch to refill it.
-      if (next === appliedRef.current) return;
+      if (next === appliedRef.current) {
+        return;
+      }
       resetPageState();
       setAppliedQuery(next);
     }, SEARCH_DEBOUNCE_MS);
@@ -130,7 +132,9 @@ export const usePaginatedAdminList = <T extends { id: string }>(
     fetch(`${endpoint}?${params.toString()}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((json: ListPageEnvelope<T>) => {
-        if (cancelled || epoch !== epochRef.current) return;
+        if (cancelled || epoch !== epochRef.current) {
+          return;
+        }
         if (!json.ok || !Array.isArray(json.items)) {
           throw new Error(json.error || "Failed to load");
         }
@@ -139,7 +143,9 @@ export const usePaginatedAdminList = <T extends { id: string }>(
         offsetRef.current = json.items.length;
       })
       .catch((err: Error) => {
-        if (cancelled || epoch !== epochRef.current) return;
+        if (cancelled || epoch !== epochRef.current) {
+          return;
+        }
         setError(err.message);
       });
     return () => {
@@ -149,11 +155,15 @@ export const usePaginatedAdminList = <T extends { id: string }>(
 
   const loadMore = useCallback(() => {
     const snapshot = stateRef.current;
-    if (snapshot.error !== null) return;
+    if (snapshot.error !== null) {
+      return;
+    }
     if (snapshot.items === null || snapshot.items.length >= snapshot.total) {
       return;
     }
-    if (loadingMoreRef.current) return;
+    if (loadingMoreRef.current) {
+      return;
+    }
     loadingMoreRef.current = true;
     setLoadingMore(true);
     setMoreError(null);
@@ -167,7 +177,9 @@ export const usePaginatedAdminList = <T extends { id: string }>(
     fetch(`${endpoint}?${params.toString()}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((json: ListPageEnvelope<T>) => {
-        if (epoch !== epochRef.current) return;
+        if (epoch !== epochRef.current) {
+          return;
+        }
         if (!json.ok || !Array.isArray(json.items)) {
           throw new Error(json.error || "Failed to load more");
         }
@@ -176,11 +188,15 @@ export const usePaginatedAdminList = <T extends { id: string }>(
         offsetRef.current += json.items!.length;
       })
       .catch((err: Error) => {
-        if (epoch !== epochRef.current) return;
+        if (epoch !== epochRef.current) {
+          return;
+        }
         setMoreError(err.message);
       })
       .finally(() => {
-        if (epoch !== epochRef.current) return;
+        if (epoch !== epochRef.current) {
+          return;
+        }
         loadingMoreRef.current = false;
         setLoadingMore(false);
       });
@@ -196,7 +212,9 @@ export const usePaginatedAdminList = <T extends { id: string }>(
   const removeItem = useCallback((id: string) => {
     const existed =
       stateRef.current.items?.some((item) => item.id === id) ?? false;
-    if (!existed) return;
+    if (!existed) {
+      return;
+    }
     setItems((prev) => (prev ? prev.filter((item) => item.id !== id) : prev));
     setTotal((prev) => Math.max(0, prev - 1));
     offsetRef.current = Math.max(0, offsetRef.current - 1);
@@ -206,7 +224,9 @@ export const usePaginatedAdminList = <T extends { id: string }>(
   // once in practice; listing it satisfies exhaustive-deps without churn.
   useEffect(() => {
     const el = sentinelRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") return;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {

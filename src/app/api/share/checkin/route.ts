@@ -7,11 +7,15 @@ import { createShareLink } from "@/services/share.service";
 export const POST = async (request: NextRequest) => {
   try {
     const parsed = parseBody(createShareLinkSchema, await request.json());
-    if (!parsed.ok) return parsed.response;
+    if (!parsed.ok) {
+      return parsed.response;
+    }
 
     // Read-only: sharing requires an existing visitor who owns the check-in.
     const user = await getSessionVisitor();
-    if (!user) return apiError("UNAUTHORIZED", "Not your check-in", 403);
+    if (!user) {
+      return apiError("UNAUTHORIZED", "Not your check-in", 403);
+    }
     const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
     const result = await createShareLink(
       user.id,

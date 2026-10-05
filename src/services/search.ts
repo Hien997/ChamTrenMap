@@ -10,7 +10,9 @@ import { normalizePhone } from "@/lib/private-tour-codes";
  * (Postgres `QueryMode`) against the slug OR either locale's name.
  */
 export const buildTourSearchWhere = (q: string): Prisma.TourWhereInput => {
-  if (!q) return {};
+  if (!q) {
+    return {};
+  }
   return {
     OR: [
       { slug: { contains: q, mode: "insensitive" } },
@@ -24,7 +26,9 @@ export const buildTourSearchWhere = (q: string): Prisma.TourWhereInput => {
 export const buildCheckpointSearchWhere = (
   q: string,
 ): Prisma.CheckpointWhereInput => {
-  if (!q) return {};
+  if (!q) {
+    return {};
+  }
   return {
     OR: [
       { slug: { contains: q, mode: "insensitive" } },
@@ -48,7 +52,9 @@ export const buildCheckpointSearchWhere = (
 export const buildPrivateTourSearchWhere = (
   q: string,
 ): Prisma.PrivateTourWhereInput => {
-  if (!q) return {};
+  if (!q) {
+    return {};
+  }
   const phone = normalizePhone(q);
   return {
     OR: [

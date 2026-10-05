@@ -46,7 +46,9 @@ export const generateMetadata = async ({
 }: Props): Promise<Metadata> => {
   const { locale, slug } = await params;
   const checkpoint = await getCheckpointDetail(slug, locale as Locale);
-  if (!checkpoint) return {};
+  if (!checkpoint) {
+    return {};
+  }
 
   const url = `${appUrl()}/${locale}/checkpoints/${slug}`;
   const title = `${checkpoint.name} — Hà Tiên`;
@@ -82,7 +84,9 @@ const CheckpointPage = async ({ params }: Props) => {
 
   const t = await getTranslations("Checkpoint");
   const checkpoint = await getCheckpointDetail(slug, locale as Locale);
-  if (!checkpoint) notFound();
+  if (!checkpoint) {
+    notFound();
+  }
 
   const tour = await getTourForCheckpoint(slug, locale as Locale);
 

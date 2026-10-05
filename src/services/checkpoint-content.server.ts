@@ -89,7 +89,11 @@ export const getCheckpointForEdit = async (
       tourLinks: { include: { tour: true } },
     },
   });
-  if (!cp) return null;
+
+  if (!cp) {
+    return null;
+  }
+
   return {
     id: cp.id,
     slug: cp.slug,
@@ -157,7 +161,9 @@ export const createCheckpoint = async (
     });
     return { id: checkpoint.id, slug: checkpoint.slug };
   } catch (error) {
-    if (error instanceof CheckpointWriteError) throw error;
+    if (error instanceof CheckpointWriteError) {
+      throw error;
+    }
     throw new CheckpointWriteError(
       "storage",
       "Checkpoint error or database error",
@@ -229,7 +235,9 @@ export const updateCheckpoint = async (
 
     return { id: checkpoint.id, slug: checkpoint.slug };
   } catch (error) {
-    if (error instanceof CheckpointWriteError) throw error;
+    if (error instanceof CheckpointWriteError) {
+      throw error;
+    }
     throw new CheckpointWriteError("storage", "Database error");
   }
 };

@@ -15,7 +15,9 @@ import {
 
 const formData = (entries: Record<string, string>): FormData => {
   const fd = new FormData();
-  for (const [key, value] of Object.entries(entries)) fd.set(key, value);
+  for (const [key, value] of Object.entries(entries)) {
+    fd.set(key, value);
+  }
   return fd;
 };
 
@@ -157,7 +159,9 @@ describe("parseCheckpointCreateForm", () => {
     );
     const result = createCheckpointSchema.safeParse(payload);
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
 
     const messages = Object.fromEntries(
       result.error.issues.map((issue) => [issue.path.join("."), issue.message]),
@@ -173,7 +177,9 @@ describe("parseCheckpointCreateForm", () => {
     );
     const result = createCheckpointSchema.safeParse(payload);
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
     expect(result.error.issues[0].message).toBe(
       "Latitude must be between -90 and 90.",
     );

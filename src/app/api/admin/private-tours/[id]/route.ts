@@ -11,12 +11,16 @@ import {
 
 export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const { pathname } = new URL(request.url);
   const id = pathname.split("/").pop() ?? "";
 
   const tour = await getPrivateTourForAdmin(id);
-  if (!tour) return adminError("Private tour not found", 404);
+  if (!tour) {
+    return adminError("Private tour not found", 404);
+  }
 
   return adminOk({
     tour: {
@@ -41,14 +45,20 @@ export const GET = async (request: NextRequest) => {
 
 export const PATCH = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const parsed = parseAdminBody(updatePrivateTourSchema, await request.json());
-  if (!parsed.ok) return parsed.response;
+  if (!parsed.ok) {
+    return parsed.response;
+  }
 
   const { pathname } = new URL(request.url);
   const id = pathname.split("/").pop() ?? "";
   const existing = await prisma.privateTour.findUnique({ where: { id } });
-  if (!existing) return adminError("Private tour not found", 404);
+  if (!existing) {
+    return adminError("Private tour not found", 404);
+  }
 
   const { checkpointIds, ...rest } = parsed.data;
 
@@ -74,12 +84,16 @@ export const PATCH = async (request: NextRequest) => {
 
 export const DELETE = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const { pathname } = new URL(request.url);
   const id = pathname.split("/").pop() ?? "";
 
   const tour = await prisma.privateTour.findUnique({ where: { id } });
-  if (!tour) return adminError("Private tour not found", 404);
+  if (!tour) {
+    return adminError("Private tour not found", 404);
+  }
 
   await deletePrivateTour(tour.id);
   return adminOk();

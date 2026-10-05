@@ -61,7 +61,9 @@ const weekdayFormatters = new Map<string, Intl.DateTimeFormat>();
 
 const shortWeekday = (dateIso: string, locale: string): string => {
   const date = new Date(`${dateIso}T12:00:00+07:00`);
-  if (Number.isNaN(date.getTime())) return dateIso;
+  if (Number.isNaN(date.getTime())) {
+    return dateIso;
+  }
   const tag = locale === "vi" ? "vi-VN" : "en-US";
   let formatter = weekdayFormatters.get(tag);
   if (!formatter) {
@@ -85,7 +87,9 @@ export const WeatherChip = () => {
   useEffect(() => {
     let cancelled = false;
     fetchHatienWeather().then((result) => {
-      if (cancelled) return;
+      if (cancelled) {
+        return;
+      }
       setWeather(result);
       setLoading(false);
     });
@@ -95,14 +99,18 @@ export const WeatherChip = () => {
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
     const onPointerDown = (event: PointerEvent) => {
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
     };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKey);
@@ -112,7 +120,9 @@ export const WeatherChip = () => {
     };
   }, [open]);
 
-  if (!loading && !weather) return null;
+  if (!loading && !weather) {
+    return null;
+  }
 
   const chipLabel = weather
     ? t("todayLabel", { temp: weather.currentTempC })

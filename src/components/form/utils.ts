@@ -12,10 +12,14 @@ export const peekErrors = (
 ): string | undefined => {
   let node: unknown = form.formState.errors;
   for (const key of name.split(".")) {
-    if (node == null || typeof node !== "object") return undefined;
+    if (node == null || typeof node !== "object") {
+      return undefined;
+    }
     node = (node as Record<string, unknown>)[key];
   }
-  if (node == null || typeof node !== "object") return undefined;
+  if (node == null || typeof node !== "object") {
+    return undefined;
+  }
   const message = (node as { message?: unknown }).message;
   return typeof message === "string" ? message : undefined;
 };

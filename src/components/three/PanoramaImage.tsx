@@ -38,7 +38,9 @@ export const useEquirectangularTexture = (
       },
       undefined,
       () => {
-        if (!cancelled) setTexture(null);
+        if (!cancelled) {
+          setTexture(null);
+        }
       },
     );
     configurePanoramaTexture(loaded);

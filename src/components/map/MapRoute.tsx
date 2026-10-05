@@ -17,7 +17,9 @@ export const EMPTY_ROUTE_GEOJSON: RouteFeatureCollection = {
 };
 
 const ensureLineSource = (map: MaplibreMap, sourceId: string): boolean => {
-  if (!map.isStyleLoaded()) return false;
+  if (!map.isStyleLoaded()) {
+    return false;
+  }
   if (!map.getSource(sourceId)) {
     try {
       map.addSource(sourceId, { type: "geojson", data: EMPTY_ROUTE_GEOJSON });
@@ -29,7 +31,9 @@ const ensureLineSource = (map: MaplibreMap, sourceId: string): boolean => {
 };
 
 export const ensurePathLayer = (map: MaplibreMap): boolean => {
-  if (!ensureLineSource(map, PATH_SOURCE_ID)) return false;
+  if (!ensureLineSource(map, PATH_SOURCE_ID)) {
+    return false;
+  }
   if (!map.getLayer("tour-path-line")) {
     try {
       map.addLayer({
@@ -56,7 +60,9 @@ export const setPathData = (
   coordinates: [number, number][] | null,
 ): void => {
   const source = map.getSource(PATH_SOURCE_ID);
-  if (!source || !("setData" in source)) return;
+  if (!source || !("setData" in source)) {
+    return;
+  }
   const data =
     coordinates && coordinates.length > 1
       ? lineStringFeatureCollection(coordinates)
@@ -65,7 +71,9 @@ export const setPathData = (
 };
 
 export const ensureRouteLayers = (map: MaplibreMap): boolean => {
-  if (!ensureLineSource(map, ROUTE_SOURCE_ID)) return false;
+  if (!ensureLineSource(map, ROUTE_SOURCE_ID)) {
+    return false;
+  }
   try {
     if (!map.getLayer("route-line-casing")) {
       map.addLayer({
@@ -104,7 +112,9 @@ export const setRouteData = (
   route: RouteFeatureCollection | null,
 ): void => {
   const source = map.getSource(ROUTE_SOURCE_ID);
-  if (!source || !("setData" in source)) return;
+  if (!source || !("setData" in source)) {
+    return;
+  }
   (source as GeoJSONSource).setData(route ?? EMPTY_ROUTE_GEOJSON);
 };
 
@@ -118,13 +128,21 @@ export const MapRoute = ({
   path?: [number, number][] | null;
 }) => {
   useEffect(() => {
-    if (!map || !map.isStyleLoaded()) return;
-    if (ensurePathLayer(map)) setPathData(map, path ?? null);
+    if (!map || !map.isStyleLoaded()) {
+      return;
+    }
+    if (ensurePathLayer(map)) {
+      setPathData(map, path ?? null);
+    }
   }, [map, path]);
 
   useEffect(() => {
-    if (!map || !map.isStyleLoaded()) return;
-    if (ensureRouteLayers(map)) setRouteData(map, route ?? null);
+    if (!map || !map.isStyleLoaded()) {
+      return;
+    }
+    if (ensureRouteLayers(map)) {
+      setRouteData(map, route ?? null);
+    }
   }, [map, route]);
 
   return null;

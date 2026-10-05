@@ -20,7 +20,9 @@ const slugFromRequest = (request: NextRequest): string => {
 
 export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const checkpoint = await getCheckpointForEdit(slugFromRequest(request));
   if (!checkpoint) {
     return adminError("Not found", 404);
@@ -30,9 +32,13 @@ export const GET = async (request: NextRequest) => {
 
 export const PATCH = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const parsed = parseAdminBody(updateCheckpointSchema, await request.json());
-  if (!parsed.ok) return parsed.response;
+  if (!parsed.ok) {
+    return parsed.response;
+  }
 
   try {
     const checkpoint = await updateCheckpoint(
@@ -47,7 +53,9 @@ export const PATCH = async (request: NextRequest) => {
 
 export const DELETE = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   try {
     await deleteCheckpoint(slugFromRequest(request));
     return adminOk();

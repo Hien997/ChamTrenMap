@@ -94,7 +94,9 @@ export const handleApiError = (
 /** Parse a request body against a schema; failure yields the public 400 shape. */
 export const parseBody = <T>(schema: ZodType<T>, raw: unknown): Parsed<T> => {
   const result = schema.safeParse(raw);
-  if (result.success) return { ok: true, data: result.data };
+  if (result.success) {
+    return { ok: true, data: result.data };
+  }
   return {
     ok: false,
     response: apiError("BAD_REQUEST", "Invalid request body", 400, {
@@ -144,7 +146,9 @@ export const parseAdminBody = <T>(
   raw: unknown,
 ): Parsed<T> => {
   const result = schema.safeParse(raw);
-  if (result.success) return { ok: true, data: result.data };
+  if (result.success) {
+    return { ok: true, data: result.data };
+  }
   return {
     ok: false,
     response: adminError("Invalid input", 400, {
@@ -162,7 +166,9 @@ export const parseAdminListQuery = (
     take: searchParams.get("take") ?? undefined,
     offset: searchParams.get("offset") ?? undefined,
   });
-  if (result.success) return { ok: true, data: result.data };
+  if (result.success) {
+    return { ok: true, data: result.data };
+  }
   return {
     ok: false,
     response: adminError("Invalid list query", 400, {

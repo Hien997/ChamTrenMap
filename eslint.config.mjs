@@ -100,9 +100,15 @@ const eslintConfig = defineConfig([
   {
     files: ["**/*.{ts,tsx}"],
     rules: {
+      // Curly braces are mandatory on every if/else/for/while body — a single
+      // unbraced line hides from review what the condition actually controls.
+      curly: ["error", "all"],
+      // A return must be followed by a blank line, so an early exit reads as an
+      // exit. Only ever matches when a statement sits directly after a return
+      // inside the same block (unreachable code), which is why it is quiet.
       "padding-line-between-statements": [
         "error",
-        { blankLine: "any", prev: ["return"], next: ["return"] },
+        { blankLine: "always", prev: "return", next: "*" },
       ],
       eqeqeq: ["error", "always", { null: "ignore" }],
       "no-console": "warn",

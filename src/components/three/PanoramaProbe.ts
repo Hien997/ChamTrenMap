@@ -21,10 +21,14 @@ const PROBE_CACHE_MAX = 100;
 const probeCache = new Map<string, Promise<PanoramaProbe>>();
 
 export const probePanoramaImage = (src: string): Promise<PanoramaProbe> => {
-  if (typeof window === "undefined") return Promise.resolve(UNPROBED);
+  if (typeof window === "undefined") {
+    return Promise.resolve(UNPROBED);
+  }
 
   const cached = probeCache.get(src);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
 
   const probe = new Promise<PanoramaProbe>((resolve) => {
     const image = new window.Image();
@@ -48,7 +52,9 @@ export const probePanoramaImage = (src: string): Promise<PanoramaProbe> => {
   probeCache.set(src, probe);
   if (probeCache.size > PROBE_CACHE_MAX) {
     const oldest = probeCache.keys().next();
-    if (!oldest.done) probeCache.delete(oldest.value);
+    if (!oldest.done) {
+      probeCache.delete(oldest.value);
+    }
   }
 
   return probe;

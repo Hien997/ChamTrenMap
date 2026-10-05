@@ -35,7 +35,9 @@ const firstMessagePerField = (
   const deduped: AdminFieldError[] = [];
   for (const detail of details) {
     const path = detail.path || "general";
-    if (seen.has(path)) continue;
+    if (seen.has(path)) {
+      continue;
+    }
     seen.add(path);
     deduped.push({ path, message: detail.message });
   }

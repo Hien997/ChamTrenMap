@@ -13,7 +13,9 @@ const AdminCheckpointEditPage = async ({
 
   const checkpoint = await getCheckpointForEdit(slug);
 
-  if (!checkpoint) notFound();
+  if (!checkpoint) {
+    notFound();
+  }
 
   return <CheckpointEditForm checkpoint={checkpoint} />;
 };

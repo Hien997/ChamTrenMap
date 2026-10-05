@@ -35,7 +35,9 @@ export const MapMarker = ({
   }, [onClick]);
 
   useEffect(() => {
-    if (!map || !container) return;
+    if (!map || !container) {
+      return;
+    }
     const marker = new Marker({ element: container, anchor });
     marker.addTo(map);
     markerRef.current = marker;

@@ -22,7 +22,9 @@ export const generateMetadata = async ({
 }: Props): Promise<Metadata> => {
   const { locale, slug } = await params;
   const tour = await getTourDetail(slug, locale as Locale);
-  if (!tour) return {};
+  if (!tour) {
+    return {};
+  }
   return {
     title: `${tour.name} — Chắm Trên Map`,
     description: tour.description,
@@ -46,7 +48,9 @@ const TourDetailPage = async ({ params }: Props) => {
     ? await getCompletedCheckpointIds(user.id, slug)
     : [];
   const tour = await getTourDetail(slug, locale as Locale, completedIds);
-  if (!tour) notFound();
+  if (!tour) {
+    notFound();
+  }
 
   const completedCount = tour.checkpoints.filter(
     (cp) => cp.status === "completed",

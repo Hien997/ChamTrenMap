@@ -25,7 +25,9 @@ export const POST = async (request: NextRequest) => {
     }
 
     const parsed = parseBody(createCheckInSchema, await request.json());
-    if (!parsed.ok) return parsed.response;
+    if (!parsed.ok) {
+      return parsed.response;
+    }
 
     // Write-lazy identity (ADR-0001): the visitor row appears here, on the
     // first check-in attempt — the rate limit above already bounds growth.

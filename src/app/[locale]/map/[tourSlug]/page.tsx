@@ -31,7 +31,9 @@ const TourMapPage = async ({ params }: Props) => {
     ? await getCompletedCheckpointIds(user.id, tourSlug)
     : [];
   const tour = await getTourDetail(tourSlug, locale as Locale, completedIds);
-  if (!tour) notFound();
+  if (!tour) {
+    notFound();
+  }
 
   const derived = deriveStatuses(
     tour.checkpoints.map((cp) => cp.id),

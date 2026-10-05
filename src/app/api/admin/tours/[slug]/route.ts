@@ -6,7 +6,9 @@ import { updateTourSchema } from "@/lib/validations/admin";
 
 export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const { pathname } = new URL(request.url);
   const slug = pathname.split("/").pop();
 
@@ -49,9 +51,13 @@ export const GET = async (request: NextRequest) => {
 
 export const PATCH = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const parsed = parseAdminBody(updateTourSchema, await request.json());
-  if (!parsed.ok) return parsed.response;
+  if (!parsed.ok) {
+    return parsed.response;
+  }
 
   const { id, vi, en, status, checkpointIds } = parsed.data;
 
@@ -141,7 +147,9 @@ export const PATCH = async (request: NextRequest) => {
 
 export const DELETE = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const { pathname } = new URL(request.url);
   const slug = pathname.split("/").pop();
 

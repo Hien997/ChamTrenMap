@@ -55,7 +55,9 @@ describe("public envelope (typed)", () => {
   it("parseBody failure yields the public 400 shape with raw issues", async () => {
     const schema = z.object({ a: z.number() });
     const parsed = parseBody(schema, { a: "x" });
-    if (parsed.ok) throw new Error("expected a validation failure");
+    if (parsed.ok) {
+      throw new Error("expected a validation failure");
+    }
     expect(parsed.response.status).toBe(400);
     const json = await parsed.response.json();
     expect(json.ok).toBe(false);
@@ -130,7 +132,9 @@ describe("admin envelope (flat adapter)", () => {
   it("parseAdminBody failure yields the flat 400 shape", async () => {
     const schema = z.object({ slug: z.string().min(1) });
     const parsed = parseAdminBody(schema, { slug: "" });
-    if (parsed.ok) throw new Error("expected a validation failure");
+    if (parsed.ok) {
+      throw new Error("expected a validation failure");
+    }
     expect(parsed.response.status).toBe(400);
     const json = await parsed.response.json();
     expect(json.ok).toBe(false);
@@ -143,7 +147,9 @@ describe("admin envelope (flat adapter)", () => {
   it("validationDetails joins nested zod paths with dots", () => {
     const schema = z.object({ vi: z.object({ name: z.string().min(1) }) });
     const result = schema.safeParse({ vi: { name: "" } });
-    if (result.success) throw new Error("expected a validation failure");
+    if (result.success) {
+      throw new Error("expected a validation failure");
+    }
     expect(validationDetails(result.error)).toEqual([
       { path: "vi.name", message: expect.any(String) },
     ]);

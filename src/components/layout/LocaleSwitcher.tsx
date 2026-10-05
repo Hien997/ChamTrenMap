@@ -31,7 +31,9 @@ export const LocaleSwitcher = () => {
             aria-pressed={active}
             aria-label={t(option.value)}
             onClick={() => {
-              if (!active) router.replace(pathname, { locale: option.value });
+              if (!active) {
+                router.replace(pathname, { locale: option.value });
+              }
             }}
             className={cn(
               "flex h-7 cursor-pointer items-center rounded-md px-2.5 text-sm whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/60",

@@ -29,7 +29,9 @@ describe("createTourSchema", () => {
   it("accepts a full payload and an empty cover image URL", () => {
     const result = createTourSchema.safeParse(VALID_CREATE);
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.status).toBe("DRAFT");
+    if (result.success) {
+      expect(result.data.status).toBe("DRAFT");
+    }
   });
 
   it("defaults a missing status to DRAFT rather than failing the enum", () => {
@@ -39,7 +41,9 @@ describe("createTourSchema", () => {
       en: VALID_CREATE.en,
     });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.status).toBe("DRAFT");
+    if (result.success) {
+      expect(result.data.status).toBe("DRAFT");
+    }
   });
 
   it("names each missing field instead of a generic 'Invalid input'", () => {
@@ -49,7 +53,9 @@ describe("createTourSchema", () => {
       vi: { ...VALID_CREATE.vi, name: "", tagline: "" },
     });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
 
     const messages = Object.fromEntries(
       result.error.issues.map((issue) => [issue.path.join("."), issue.message]),
@@ -65,7 +71,9 @@ describe("createTourSchema", () => {
       en: { ...VALID_CREATE.en, coverImageUrl: "not-a-url" },
     });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
     expect(result.error.issues[0].path.join(".")).toBe("en.coverImageUrl");
     expect(result.error.issues[0].message).toMatch(/full URL/);
   });
@@ -89,7 +97,9 @@ describe("createTourSchema checkpointIds", () => {
       checkpointIds: [],
     });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.checkpointIds).toEqual([]);
+    if (result.success) {
+      expect(result.data.checkpointIds).toEqual([]);
+    }
   });
 
   it("rejects duplicates instead of silently collapsing them", () => {
@@ -98,7 +108,9 @@ describe("createTourSchema checkpointIds", () => {
       checkpointIds: ["cp_1", "cp_1"],
     });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
     expect(result.error.issues[0].path.join(".")).toBe("checkpointIds");
     expect(result.error.issues[0].message).toBe(
       "A checkpoint can only appear once on a tour.",
@@ -112,7 +124,9 @@ describe("createTourSchema checkpointIds", () => {
       checkpointIds: tooMany,
     });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
     expect(result.error.issues[0].message).toBe(
       "A tour can have at most 100 stops.",
     );
@@ -121,7 +135,9 @@ describe("createTourSchema checkpointIds", () => {
   it("stays optional so a stops-less create payload still validates", () => {
     const result = createTourSchema.safeParse(VALID_CREATE);
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.checkpointIds).toBeUndefined();
+    if (result.success) {
+      expect(result.data.checkpointIds).toBeUndefined();
+    }
   });
 });
 
@@ -143,7 +159,9 @@ describe("updateTourSchema", () => {
   it("rejects an unknown status with a readable message", () => {
     const result = updateTourSchema.safeParse({ status: "ARCHIVED" });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
     expect(result.error.issues[0].message).toBe("Choose a status.");
   });
 });
@@ -221,7 +239,9 @@ describe("updateTourSchema checkpointIds", () => {
   it("accepts an empty list so the last stop can be removed", () => {
     const result = updateTourSchema.safeParse({ checkpointIds: [] });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.checkpointIds).toEqual([]);
+    if (result.success) {
+      expect(result.data.checkpointIds).toEqual([]);
+    }
   });
 
   it("rejects duplicates instead of silently collapsing them", () => {
@@ -229,7 +249,9 @@ describe("updateTourSchema checkpointIds", () => {
       checkpointIds: ["cp_1", "cp_1"],
     });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
     expect(result.error.issues[0].path.join(".")).toBe("checkpointIds");
     expect(result.error.issues[0].message).toBe(
       "A checkpoint can only appear once on a tour.",
@@ -240,7 +262,9 @@ describe("updateTourSchema checkpointIds", () => {
     const tooMany = Array.from({ length: 101 }, (_, i) => `cp_${i}`);
     const result = updateTourSchema.safeParse({ checkpointIds: tooMany });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
     expect(result.error.issues[0].message).toBe(
       "A tour can have at most 100 stops.",
     );
@@ -249,7 +273,9 @@ describe("updateTourSchema checkpointIds", () => {
   it("stays optional so a translations-only patch still validates", () => {
     const result = updateTourSchema.safeParse({ status: "PUBLISHED" });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.checkpointIds).toBeUndefined();
+    if (result.success) {
+      expect(result.data.checkpointIds).toBeUndefined();
+    }
   });
 });
 
@@ -264,7 +290,9 @@ describe("loginSchema", () => {
   it("names each missing field for inline display", () => {
     const result = loginSchema.safeParse({ email: "", password: "" });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
 
     // Both checks fire per field; `toFieldErrors` keeps the first.
     expect(
@@ -283,7 +311,9 @@ describe("loginSchema", () => {
   it("rejects a malformed email with a readable message", () => {
     const result = loginSchema.safeParse({ email: "nope", password: "secret" });
     expect(result.success).toBe(false);
-    if (result.success) return;
+    if (result.success) {
+      return;
+    }
     expect(result.error.issues[0].message).toBe("Enter a valid email address.");
   });
 });
@@ -292,20 +322,26 @@ describe("adminListQuerySchema", () => {
   it("defaults to an unfiltered first page: q '', take 10, offset 0", () => {
     const result = adminListQuerySchema.safeParse({});
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    if (!result.success) {
+      return;
+    }
     expect(result.data).toEqual({ q: "", take: 10, offset: 0 });
   });
 
   it("trims the search text so ' cafe ' and 'cafe' behave alike", () => {
     const result = adminListQuerySchema.safeParse({ q: "  cafe  " });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.q).toBe("cafe");
+    if (result.success) {
+      expect(result.data.q).toBe("cafe");
+    }
   });
 
   it("coerces numeric strings, as they arrive from the query string", () => {
     const result = adminListQuerySchema.safeParse({ take: "25", offset: "50" });
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    if (!result.success) {
+      return;
+    }
     expect(result.data).toEqual({ q: "", take: 25, offset: 50 });
   });
 

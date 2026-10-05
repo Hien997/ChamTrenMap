@@ -9,7 +9,9 @@ export const POST = async () => {
   const store = await cookies();
   const token = store.get(ADMIN_COOKIE_NAME)?.value ?? null;
   const user = await verifyAdminToken(token);
-  if (user) await revokeAdminSession(user.id);
+  if (user) {
+    await revokeAdminSession(user.id);
+  }
 
   const response = adminOk();
   response.cookies.set(ADMIN_COOKIE_NAME, "", { path: "/", maxAge: 0 });

@@ -14,12 +14,16 @@ export const useUserLocation = () => {
   const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !navigator.permissions) return;
+    if (typeof navigator === "undefined" || !navigator.permissions) {
+      return;
+    }
     let active = true;
     navigator.permissions
       .query({ name: "geolocation" })
       .then((status) => {
-        if (!active) return;
+        if (!active) {
+          return;
+        }
         setPermission(status.state as LocationPermissionState);
         status.onchange = () =>
           setPermission(status.state as LocationPermissionState);
@@ -37,7 +41,9 @@ export const useUserLocation = () => {
       setError("GEOLOCATION_UNSUPPORTED");
       return;
     }
-    if (watchIdRef.current !== null) return;
+    if (watchIdRef.current !== null) {
+      return;
+    }
     setLoading(true);
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {

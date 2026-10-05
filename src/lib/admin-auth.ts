@@ -56,11 +56,15 @@ export const issueAdminSession = async (userId: string): Promise<string> => {
 export const verifyAdminToken = async (
   token: string | null,
 ): Promise<User | null> => {
-  if (!token) return null;
+  if (!token) {
+    return null;
+  }
   const user = await prisma.user.findUnique({
     where: { adminSessionTokenHash: hashAdminToken(token) },
   });
-  if (!user) return null;
+  if (!user) {
+    return null;
+  }
   if (
     !user.adminSessionExpiresAt ||
     user.adminSessionExpiresAt.getTime() <= Date.now()
@@ -77,14 +81,18 @@ const readAdminToken = async (): Promise<string | null> => {
 
 export const getAdminUser = async (): Promise<User | null> => {
   const user = await verifyAdminToken(await readAdminToken());
-  if (!user || user.role !== "ADMIN") return null;
+  if (!user || user.role !== "ADMIN") {
+    return null;
+  }
   return user;
 };
 
 /** Page/layout guard: redirect to login (former `requireAdmin`). */
 export const requireAdminPage = async (): Promise<User> => {
   const user = await getAdminUser();
-  if (!user) redirect("/admin/login");
+  if (!user) {
+    redirect("/admin/login");
+  }
   return user;
 };
 

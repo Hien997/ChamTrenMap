@@ -12,9 +12,13 @@ import { createTourSchema } from "@/lib/validations/admin";
 
 export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const query = parseAdminListQuery(request.nextUrl.searchParams);
-  if (!query.ok) return query.response;
+  if (!query.ok) {
+    return query.response;
+  }
   const { q, take, offset } = query.data;
 
   const where = buildTourSearchWhere(q);
@@ -68,9 +72,13 @@ export const GET = async (request: NextRequest) => {
 
 export const POST = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const parsed = parseAdminBody(createTourSchema, await request.json());
-  if (!parsed.ok) return parsed.response;
+  if (!parsed.ok) {
+    return parsed.response;
+  }
   const data = parsed.data;
 
   // Reject unknown ids before creating anything, so a stale tab cannot create

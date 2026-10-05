@@ -25,7 +25,9 @@ export const readVisitorId = async (): Promise<string | null> => {
 };
 
 export const findVisitor = async (key: string | null): Promise<User | null> => {
-  if (!key) return null;
+  if (!key) {
+    return null;
+  }
   return prisma.user.findUnique({ where: { visitorKey: key } });
 };
 
@@ -37,7 +39,9 @@ export const getSessionVisitor = async (): Promise<User | null> => {
 /** Create-if-missing for a known key — the write half of write-lazy identity. */
 export const ensureVisitor = async (key: string): Promise<User> => {
   const existing = await prisma.user.findUnique({ where: { visitorKey: key } });
-  if (existing) return existing;
+  if (existing) {
+    return existing;
+  }
   return prisma.user.create({ data: { visitorKey: key } });
 };
 
@@ -52,7 +56,9 @@ export const ensureVisitorWithCookie = async (): Promise<User> => {
     const existing = await prisma.user.findUnique({
       where: { visitorKey: cookieKey },
     });
-    if (existing) return existing;
+    if (existing) {
+      return existing;
+    }
   }
 
   const key = cookieKey ?? newVisitorKey();

@@ -10,7 +10,9 @@ export const buildProgressView = async (
     where: { slug: tourSlug },
     include: { checkpoints: { orderBy: { order: "asc" } } },
   });
-  if (!tour) return null;
+  if (!tour) {
+    return null;
+  }
 
   const orderedIds = tour.checkpoints.map((tc) => tc.checkpointId);
   const checkIns = await prisma.checkIn.findMany({
@@ -60,7 +62,9 @@ export const getCompletedCheckpointIds = async (
     where: { slug: tourSlug },
     select: { checkpoints: { select: { checkpointId: true } } },
   });
-  if (!tour) return [];
+  if (!tour) {
+    return [];
+  }
   const checkIns = await prisma.checkIn.findMany({
     where: {
       userId,

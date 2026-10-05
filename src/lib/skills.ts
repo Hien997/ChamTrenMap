@@ -25,14 +25,20 @@ export interface Skill {
 export const parseFrontmatter = (
   raw: string,
 ): Record<string, string> | null => {
-  if (!raw.startsWith("---")) return null;
+  if (!raw.startsWith("---")) {
+    return null;
+  }
   const end = raw.indexOf("\n---", 3);
-  if (end === -1) return null;
+  if (end === -1) {
+    return null;
+  }
 
   const fields: Record<string, string> = {};
   for (const line of raw.slice(3, end).split("\n")) {
     const match = /^\s*([A-Za-z0-9_-]+):\s*(.*)$/.exec(line);
-    if (!match) continue;
+    if (!match) {
+      continue;
+    }
     const [, key, rest] = match;
     const value = rest.trim();
     fields[key] =
@@ -48,16 +54,22 @@ export const parseFrontmatter = (
 export const readSkillFile = (raw: string): Skill | null => {
   const fields = parseFrontmatter(raw);
   const name = fields?.name?.trim();
-  if (!fields || !name) return null;
+  if (!fields || !name) {
+    return null;
+  }
   return { name, description: fields.description?.trim() ?? "" };
 };
 
 /** Every skill in `.agents/skills`, sorted by name. */
 export const listSkills = (dir: string = SKILLS_DIR): Skill[] => {
-  if (!existsSync(dir)) return [];
+  if (!existsSync(dir)) {
+    return [];
+  }
   const skills: Skill[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
+    if (!entry.isDirectory()) {
+      continue;
+    }
     let raw: string;
     try {
       raw = readFileSync(path.join(dir, entry.name, "SKILL.md"), "utf8");
@@ -65,7 +77,9 @@ export const listSkills = (dir: string = SKILLS_DIR): Skill[] => {
       continue; // a directory without a SKILL.md is not a skill
     }
     const skill = readSkillFile(raw);
-    if (skill) skills.push(skill);
+    if (skill) {
+      skills.push(skill);
+    }
   }
   return skills.sort((a, b) => a.name.localeCompare(b.name));
 };
@@ -89,13 +103,17 @@ export const parseCommand = (argv: string[]): Command => {
   }
   const json = args.includes("--json");
   const name = args.find((a) => !a.startsWith("--"));
-  if (!name) return { kind: "list", json };
+  if (!name) {
+    return { kind: "list", json };
+  }
   return { kind: "dispatch", skill: { name, description: "" }, json };
 };
 
 /** Human-readable listing, one line per skill, with the leading `/`. */
 export const renderList = (skills: Skill[]): string => {
-  if (!skills.length) return "No skills found in .agents/skills\n";
+  if (!skills.length) {
+    return "No skills found in .agents/skills\n";
+  }
   const width = Math.max(...skills.map((s) => s.name.length));
   return `${skills
     .map((s) => `  /${s.name.padEnd(width)}  ${s.description}`)
@@ -121,9 +139,13 @@ export const buildDispatch = (skill: Skill, body: string): string => {
 
 /** Drop a leading `---` frontmatter block, leaving the markdown body. */
 export const stripFrontmatter = (raw: string): string => {
-  if (!raw.startsWith("---")) return raw;
+  if (!raw.startsWith("---")) {
+    return raw;
+  }
   const end = raw.indexOf("\n---", 3);
-  if (end === -1) return raw;
+  if (end === -1) {
+    return raw;
+  }
   const after = raw.indexOf("\n", end + 1);
   return after === -1 ? "" : raw.slice(after + 1);
 };

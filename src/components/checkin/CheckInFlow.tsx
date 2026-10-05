@@ -179,7 +179,9 @@ export const CheckInFlow = ({
       <Dialog
         open={phase === "explainer"}
         onOpenChange={(open) => {
-          if (!open && phase === "explainer") setPhase("idle");
+          if (!open && phase === "explainer") {
+            setPhase("idle");
+          }
         }}
       >
         <DialogContent className="sm:max-w-md">
@@ -203,7 +205,9 @@ export const CheckInFlow = ({
         <SuccessModal
           open={success !== null}
           onOpenChange={(open) => {
-            if (!open) setSuccess(null);
+            if (!open) {
+              setSuccess(null);
+            }
           }}
           checkIn={success.checkIn}
           progress={success.progress}
@@ -215,7 +219,9 @@ export const CheckInFlow = ({
       <Dialog
         open={alreadyProgress !== null}
         onOpenChange={(open) => {
-          if (!open) setAlreadyProgress(null);
+          if (!open) {
+            setAlreadyProgress(null);
+          }
         }}
       >
         <DialogContent className="sm:max-w-sm">

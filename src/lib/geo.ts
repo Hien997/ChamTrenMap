@@ -41,8 +41,12 @@ export interface EvaluateCheckInInput {
 export const evaluateCheckIn = (
   input: EvaluateCheckInInput,
 ): CheckInDecision => {
-  if (input.alreadyCheckedIn) return { status: "already_checked_in" };
-  if (input.isLocked) return { status: "locked" };
+  if (input.alreadyCheckedIn) {
+    return { status: "already_checked_in" };
+  }
+  if (input.isLocked) {
+    return { status: "locked" };
+  }
   if (
     input.accuracyMeters !== null &&
     input.accuracyMeters !== undefined &&

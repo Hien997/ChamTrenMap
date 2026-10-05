@@ -35,7 +35,9 @@ export const ComboBoxField = ({
   const selectedOption = options.find((o) => o.id === selectedId);
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return options;
+    if (!query.trim()) {
+      return options;
+    }
     const q = query.trim().toLowerCase();
     return options.filter(
       (opt) =>
@@ -61,7 +63,9 @@ export const ComboBoxField = ({
         setHighlighted(0);
         return;
       }
-      if (filtered.length === 0) return;
+      if (filtered.length === 0) {
+        return;
+      }
       setHighlighted((h) =>
         e.key === "ArrowDown"
           ? (h + 1) % filtered.length
@@ -71,7 +75,9 @@ export const ComboBoxField = ({
       if (open) {
         e.preventDefault();
         const option = filtered[activeIndex];
-        if (option) handleSelect(option);
+        if (option) {
+          handleSelect(option);
+        }
       }
     } else if (e.key === "Escape" && open) {
       e.preventDefault();

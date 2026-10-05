@@ -101,7 +101,9 @@ export const MapExperience = ({
 
   const fetchRoute = async () => {
     const cp = selectedCheckpoint;
-    if (!cp || !userPosition) return;
+    if (!cp || !userPosition) {
+      return;
+    }
     setRouteLoading(true);
     try {
       const service = getRouteService();

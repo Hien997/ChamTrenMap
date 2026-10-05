@@ -22,7 +22,9 @@ export const generateMetadata = async ({
 }: Props): Promise<Metadata> => {
   const { locale, shareId } = await params;
   const view = await getSharePageView(shareId, locale as Locale);
-  if (!view) return { title: "Chắm Trên Map" };
+  if (!view) {
+    return { title: "Chắm Trên Map" };
+  }
 
   const t = await getTranslations({ locale, namespace: "Share" });
   const title = `${t("checkedInAt")} ${view.checkpoint.name} — Hà Tiên`;
@@ -46,7 +48,9 @@ const SharePage = async ({ params }: Props) => {
 
   const t = await getTranslations("Share");
   const view = await getSharePageView(shareId, locale as Locale);
-  if (!view) notFound();
+  if (!view) {
+    notFound();
+  }
 
   const shareUrl = `${appUrl()}/${locale}/share/checkin/${view.shareId}`;
   const shareTitle = `${t("checkedInAt")} ${view.checkpoint.name} — Hà Tiên`;

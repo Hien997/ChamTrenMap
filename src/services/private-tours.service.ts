@@ -49,16 +49,21 @@ export const evaluatePrivateTourAccess = (input: {
   now: Date;
 }): { ok: true } | { ok: false; reason: DenialReason } => {
   const { tour } = input;
-  if (!tour) return { ok: false, reason: "not_found" };
+  if (!tour) {
+    return { ok: false, reason: "not_found" };
+  }
   if (normalizePhone(tour.customerPhone) !== input.phone) {
     return { ok: false, reason: "phone_mismatch" };
   }
-  if (tour.status !== "ACTIVE") return { ok: false, reason: "not_active" };
+  if (tour.status !== "ACTIVE") {
+    return { ok: false, reason: "not_active" };
+  }
   if (isExpired(tour.expiresAt, input.now)) {
     return { ok: false, reason: "expired" };
   }
-  if (input.slotsUsed >= tour.maxSlots)
+  if (input.slotsUsed >= tour.maxSlots) {
     return { ok: false, reason: "no_slots" };
+  }
   return { ok: true };
 };
 
@@ -152,7 +157,9 @@ export const unlockPrivateTour = async (input: {
     now,
   });
 
-  if (!decision.ok || !tour) return { status: "denied" };
+  if (!decision.ok || !tour) {
+    return { status: "denied" };
+  }
 
   // Charge the slot under a row lock. The check above read the count outside a
   // transaction, so two devices racing on the last slot would both see
@@ -191,7 +198,9 @@ export const unlockPrivateTour = async (input: {
           sessionKey: { not: input.sessionKey },
         },
       });
-      if (others >= tour.maxSlots) return null;
+      if (others >= tour.maxSlots) {
+        return null;
+      }
 
       if (!held) {
         await tx.privateTourAccess.create({
@@ -206,7 +215,9 @@ export const unlockPrivateTour = async (input: {
 
   // Lost the race for the last slot: report the same `denied` as any other
   // refusal, because the client cannot tell "full" from "wrong phone" anyway.
-  if (slotsUsedAfter === null) return { status: "denied" };
+  if (slotsUsedAfter === null) {
+    return { status: "denied" };
+  }
 
   const visits = await prisma.privateTourVisit.findMany({
     where: { privateTourId: tour.id, sessionKey: input.sessionKey },
@@ -283,15 +294,21 @@ export const visitPrivateTourStop = async (input: {
     },
     select: { id: true },
   });
-  if (!holdsSlot) return { status: "denied" };
+  if (!holdsSlot) {
+    return { status: "denied" };
+  }
 
   const stop = tour.stops.find((s) => s.checkpointId === input.checkpointId);
-  if (!stop) return { status: "not_in_itinerary" };
+  if (!stop) {
+    return { status: "not_in_itinerary" };
+  }
 
   const checkpoint = await prisma.checkpoint.findUnique({
     where: { id: input.checkpointId },
   });
-  if (!checkpoint) return { status: "not_in_itinerary" };
+  if (!checkpoint) {
+    return { status: "not_in_itinerary" };
+  }
 
   const distanceMeters = haversineMeters(
     { latitude: input.latitude, longitude: input.longitude },
@@ -317,8 +334,12 @@ export const visitPrivateTourStop = async (input: {
     isLocked: false, // no sequential unlock in private tours (ADR-0006)
   });
 
-  if (decision.status === "poor_accuracy") return decision;
-  if (decision.status === "too_far") return decision;
+  if (decision.status === "poor_accuracy") {
+    return decision;
+  }
+  if (decision.status === "too_far") {
+    return decision;
+  }
 
   if (!existing) {
     await prisma.privateTourVisit.create({
@@ -395,7 +416,9 @@ export const reserveUniqueCode = async (attempt = 5): Promise<string> => {
   for (let i = 0; i < attempt; i += 1) {
     const code = generatePrivateTourCode();
     const taken = await prisma.privateTour.findUnique({ where: { code } });
-    if (!taken) return code;
+    if (!taken) {
+      return code;
+    }
   }
   throw new Error("Could not allocate a unique private-tour code");
 };

@@ -15,7 +15,9 @@ import {
 
 export const GET = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
 
   // `parseAdminListQuery` is the one place `?q=&take=&offset=` is coerced and
   // bounded (ADR-0003). Hand-clamping was wrong here: `Number("2.5")` is
@@ -23,7 +25,9 @@ export const GET = async (request: NextRequest) => {
   // as a `take`/`skip` that is not an `Int` — a 500 for a typo, where the
   // sibling list routes answer 400.
   const query = parseAdminListQuery(request.nextUrl.searchParams);
-  if (!query.ok) return query.response;
+  if (!query.ok) {
+    return query.response;
+  }
   const { q, take, offset } = query.data;
 
   const { items, total } = await listPrivateTours({ q, take, offset });
@@ -33,9 +37,13 @@ export const GET = async (request: NextRequest) => {
 
 export const POST = async (request: NextRequest) => {
   const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
+  if (unauthorized) {
+    return unauthorized;
+  }
   const parsed = parseAdminBody(createPrivateTourSchema, await request.json());
-  if (!parsed.ok) return parsed.response;
+  if (!parsed.ok) {
+    return parsed.response;
+  }
 
   const { checkpointIds, ...rest } = parsed.data;
 

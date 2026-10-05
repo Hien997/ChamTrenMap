@@ -81,25 +81,35 @@ export const reduceMapLoad = (
     case "load":
       // Parity: maplibre can report "load" after an error screen; the old
       // handleLoad set "ready" unconditionally.
-      if (state.status === "ready" && state.loaded) return state;
+      if (state.status === "ready" && state.loaded) {
+        return state;
+      }
       return { ...state, loaded: true, status: "ready" };
 
     case "tileRendered":
-      if (state.anyTileRendered) return state;
+      if (state.anyTileRendered) {
+        return state;
+      }
       return { ...state, anyTileRendered: true };
 
     case "constructorFailed":
-      if (state.status === "error") return state;
+      if (state.status === "error") {
+        return state;
+      }
       return { ...state, status: "error" };
 
     case "styleError":
       // Only a pre-load style failure is fatal; noise after the map loaded
       // or after the error screen is absorbed (same reference, no render).
-      if (state.status !== "loading" || state.loaded) return state;
+      if (state.status !== "loading" || state.loaded) {
+        return state;
+      }
       return { ...state, status: "error" };
 
     case "tileError": {
-      if (state.status === "error") return state;
+      if (state.status === "error") {
+        return state;
+      }
       const tileErrorCount = state.tileErrorCount + 1;
       if (
         state.anyTileRendered ||
@@ -117,12 +127,16 @@ export const reduceMapLoad = (
     case "timeout": {
       // Terminal states absorb late timers (the old code clearTimeout'd;
       // absorption makes that ordering testable).
-      if (state.status === "error") return state;
+      if (state.status === "error") {
+        return state;
+      }
       // Healthy loads ignore the budget: already loaded and the style
       // either needs no tiles or at least one arrived.
       const healthy =
         state.loaded && (!event.styleHasTiles || state.anyTileRendered);
-      if (healthy) return state;
+      if (healthy) {
+        return state;
+      }
       if (state.styleMode === "fallback") {
         return { ...state, status: "error", timedOut: true };
       }

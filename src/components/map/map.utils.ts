@@ -40,7 +40,9 @@ export const fallbackMapStyle = (): StyleSpecification => {
 };
 
 const hasTilePayload = (event: unknown): boolean => {
-  if (typeof event !== "object" || event === null) return false;
+  if (typeof event !== "object" || event === null) {
+    return false;
+  }
   return "tile" in event && (event as { tile?: unknown }).tile != null;
 };
 
@@ -83,7 +85,9 @@ export const resolveMapLoadTimeoutMs = (override?: number): number => {
   }
   const raw = process.env.NEXT_PUBLIC_MAP_LOAD_TIMEOUT_MS;
   const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
-  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
   return MAP_LOAD_TIMEOUT_MS;
 };
 
@@ -92,7 +96,9 @@ export const fitLocationsBounds = (
   coordinates: [number, number][],
   options?: { padding?: number; maxZoom?: number },
 ): void => {
-  if (coordinates.length === 0) return;
+  if (coordinates.length === 0) {
+    return;
+  }
   const maxZoom = options?.maxZoom ?? 15;
   if (coordinates.length === 1) {
     map.flyTo({

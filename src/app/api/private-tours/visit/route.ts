@@ -35,7 +35,9 @@ export const POST = async (request: Request) => {
     }
 
     const parsed = parseBody(privateTourVisitSchema, await request.json());
-    if (!parsed.ok) return parsed.response;
+    if (!parsed.ok) {
+      return parsed.response;
+    }
 
     if (!sessionKey) {
       return apiError("UNAUTHORIZED", "Unlock this tour first.", 401);

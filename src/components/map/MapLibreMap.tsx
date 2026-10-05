@@ -138,16 +138,22 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
       },
       flyToCheckpoint: (id: string) => {
         const map = mapRef.current;
-        if (!map || load.status !== "ready") return;
+        if (!map || load.status !== "ready") {
+          return;
+        }
         const location = renderedLocationsRef.current.find(
           (item) => item.id === id,
         );
-        if (!location) return;
+        if (!location) {
+          return;
+        }
         flyToLocation(map, [location.longitude, location.latitude]);
       },
       fitToCheckpoints: () => {
         const map = mapRef.current;
-        if (!map || load.status !== "ready") return;
+        if (!map || load.status !== "ready") {
+          return;
+        }
         fitLocationsBounds(
           map,
           renderedLocationsRef.current.map(
@@ -183,7 +189,9 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {
+      return;
+    }
 
     const resolvedStyle =
       load.styleMode === "fallback"
@@ -209,7 +217,9 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
       active && latestConstructionKeyRef.current === constructionKey;
 
     const timeoutId = window.setTimeout(() => {
-      if (!isCurrentConstruction()) return;
+      if (!isCurrentConstruction()) {
+        return;
+      }
       dispatch({
         type: "timeout",
         styleHasTiles: readStyleHasTiles(map),
@@ -217,19 +227,29 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
     }, resolveMapLoadTimeoutMs(loadTimeoutMsRef.current));
 
     const handleLoad = () => {
-      if (!isCurrentConstruction()) return;
-      if (map.isStyleLoaded()) ensurePathLayer(map);
-      if (map.isStyleLoaded()) ensureRouteLayers(map);
+      if (!isCurrentConstruction()) {
+        return;
+      }
+      if (map.isStyleLoaded()) {
+        ensurePathLayer(map);
+      }
+      if (map.isStyleLoaded()) {
+        ensureRouteLayers(map);
+      }
       dispatch({ type: "load" });
     };
     const handleSourceData = (event: MapSourceDataEvent) => {
-      if (!isCurrentConstruction()) return;
+      if (!isCurrentConstruction()) {
+        return;
+      }
       if (isTileDataEvent(event)) {
         dispatch({ type: "tileRendered" });
       }
     };
     const handleError = (event: MapErrorEvent) => {
-      if (!isCurrentConstruction()) return;
+      if (!isCurrentConstruction()) {
+        return;
+      }
       if (isTileLevelMapError(event)) {
         dispatch({ type: "tileError" });
       } else {
@@ -237,7 +257,9 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
       }
     };
     const handleClick = (event: MapMouseEvent) => {
-      if (!isCurrentConstruction()) return;
+      if (!isCurrentConstruction()) {
+        return;
+      }
       onMapClickRef.current?.({
         latitude: event.lngLat.lat,
         longitude: event.lngLat.lng,
@@ -245,10 +267,16 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
     };
     map.on("load", handleLoad);
     const handleStyleData = () => {
-      if (!isCurrentConstruction()) return;
+      if (!isCurrentConstruction()) {
+        return;
+      }
       if (map.isStyleLoaded()) {
-        if (ensurePathLayer(map)) setPathData(map, pathRef.current ?? null);
-        if (ensureRouteLayers(map)) setRouteData(map, routeRef.current ?? null);
+        if (ensurePathLayer(map)) {
+          setPathData(map, pathRef.current ?? null);
+        }
+        if (ensureRouteLayers(map)) {
+          setRouteData(map, routeRef.current ?? null);
+        }
       }
     };
     map.on("styledata", handleStyleData);
@@ -265,7 +293,9 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
       map.off("error", handleError);
       map.off("click", handleClick);
       const markers = markersRef.current;
-      for (const marker of markers.values()) marker.remove();
+      for (const marker of markers.values()) {
+        marker.remove();
+      }
       markers.clear();
       rendersRef.current.clear();
       userMarkerRef.current?.remove();
@@ -277,7 +307,9 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || load.status !== "ready") return;
+    if (!map || load.status !== "ready") {
+      return;
+    }
     const markers = markersRef.current;
     const renders = rendersRef.current;
     const seen = new Set<string>();
@@ -321,7 +353,9 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
       }
     }
     for (const [id, marker] of markers) {
-      if (seen.has(id)) continue;
+      if (seen.has(id)) {
+        continue;
+      }
       marker.remove();
       markers.delete(id);
       renders.delete(id);
@@ -337,9 +371,12 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
   const didFitRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || load.status !== "ready" || didFitRef.current) return;
-    if (!fitToLocationsOnLoad || renderedLocationsRef.current.length === 0)
+    if (!map || load.status !== "ready" || didFitRef.current) {
       return;
+    }
+    if (!fitToLocationsOnLoad || renderedLocationsRef.current.length === 0) {
+      return;
+    }
     didFitRef.current = true;
     fitLocationsBounds(
       map,
@@ -355,21 +392,26 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
     const isFirst = prevSelectedRef.current === undefined;
     const changed = !isFirst && prevSelectedRef.current !== selectedLocationId;
     prevSelectedRef.current = selectedLocationId;
-    if (isFirst || !changed) return;
+    if (isFirst || !changed) {
+      return;
+    }
     const map = mapRef.current;
     const location = renderedLocationsRef.current.find(
       (item) => item.id === selectedLocationId,
     );
-    if (map && location)
+    if (map && location) {
       flyToLocation(map, [location.longitude, location.latitude] as [
         number,
         number,
       ]);
+    }
   }, [selectedLocationId, load.status]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || load.status !== "ready") return;
+    if (!map || load.status !== "ready") {
+      return;
+    }
     if (!userPosition) {
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
@@ -391,14 +433,22 @@ export const MapLibreMap = <T extends MapLocation = MapLocation>({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || load.status !== "ready") return;
-    if (ensurePathLayer(map)) setPathData(map, path ?? null);
+    if (!map || load.status !== "ready") {
+      return;
+    }
+    if (ensurePathLayer(map)) {
+      setPathData(map, path ?? null);
+    }
   }, [path, load.status]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || load.status !== "ready") return;
-    if (ensureRouteLayers(map)) setRouteData(map, route ?? null);
+    if (!map || load.status !== "ready") {
+      return;
+    }
+    if (ensureRouteLayers(map)) {
+      setRouteData(map, route ?? null);
+    }
   }, [route, load.status]);
 
   const selectedLocation = useMemo(

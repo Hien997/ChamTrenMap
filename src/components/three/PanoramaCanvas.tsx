@@ -53,7 +53,9 @@ const LookControls = ({ initialYaw, autoRotate }: LookControlsProps) => {
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (!dragging.current) return;
+      if (!dragging.current) {
+        return;
+      }
 
       const dx = event.clientX - pointer.current.x;
       const dy = event.clientY - pointer.current.y;
@@ -131,7 +133,9 @@ export const PanoramaCanvas = ({
   }, [onReady]);
 
   useEffect(() => {
-    if (texture) onReadyRef.current?.();
+    if (texture) {
+      onReadyRef.current?.();
+    }
   }, [texture]);
 
   return (

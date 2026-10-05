@@ -54,7 +54,9 @@ export const SuccessModal = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ checkInId: checkIn.id }),
       }).then((r) => r.json())) as ApiEnvelope<{ url: string }>;
-      if (json.ok && json.data) setShareUrl(json.data.url);
+      if (json.ok && json.data) {
+        setShareUrl(json.data.url);
+      }
     } catch {
       /* keep the modal; user can retry */
     } finally {

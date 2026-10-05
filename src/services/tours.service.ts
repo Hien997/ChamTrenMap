@@ -78,7 +78,9 @@ export const getTourDetail = async (
       },
     },
   });
-  if (!tour) return null;
+  if (!tour) {
+    return null;
+  }
 
   const translation = pickLocalized(tour.translations, locale);
 
