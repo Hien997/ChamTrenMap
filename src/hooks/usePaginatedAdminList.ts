@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Rows per page — the list asks for exactly this, then more on demand. */
@@ -13,6 +14,32 @@ interface ListPageEnvelope<T> {
   total?: number;
   error?: string;
 }
+
+/** Mirrors `requireAdminPage`'s target — the only exit from an expired session. */
+const ADMIN_LOGIN_PATH = "/admin/login";
+
+/**
+ * Fetch one admin list page, or `null` after handing an expired session to
+ * `onUnauthorized`.
+ *
+ * `requireAdminApi` answers 401 when the `ctm_admin` cookie is missing,
+ * expired or revoked. Painting that as a list error would tell the admin
+ * "load failed" when the real answer is "log in again", so the hook navigates
+ * instead of rendering it.
+ */
+const fetchListPage = async <T>(
+  url: string,
+  onUnauthorized: () => void,
+): Promise<ListPageEnvelope<T> | null> => {
+  const response = await fetch(url, { cache: "no-store" });
+  if (response.status === 401) {
+    onUnauthorized();
+
+    return null;
+  }
+
+  return (await response.json()) as ListPageEnvelope<T>;
+};
 
 export interface PaginatedAdminList<T> {
   /** `null` while the first page of the current query is loading. */
@@ -56,6 +83,7 @@ export interface PaginatedAdminList<T> {
 export const usePaginatedAdminList = <T extends { id: string }>(
   endpoint: string,
 ): PaginatedAdminList<T> => {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [appliedQuery, setAppliedQuery] = useState("");
   const [items, setItems] = useState<T[] | null>(null);
@@ -64,6 +92,11 @@ export const usePaginatedAdminList = <T extends { id: string }>(
   const [loadingMore, setLoadingMore] = useState(false);
   const [moreError, setMoreError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+
+  /** An expired session ends on the login screen, never as a list error. */
+  const goToLogin = useCallback(() => {
+    router.replace(ADMIN_LOGIN_PATH);
+  }, [router]);
 
   /** Next server offset for `loadMore`; reset whenever a first page starts. */
   const offsetRef = useRef(0);
@@ -129,10 +162,9 @@ export const usePaginatedAdminList = <T extends { id: string }>(
       take: String(PAGE_SIZE),
       offset: "0",
     });
-    fetch(`${endpoint}?${params.toString()}`, { cache: "no-store" })
-      .then((res) => res.json())
-      .then((json: ListPageEnvelope<T>) => {
-        if (cancelled || epoch !== epochRef.current) {
+    fetchListPage<T>(`${endpoint}?${params.toString()}`, goToLogin)
+      .then((json) => {
+        if (cancelled || epoch !== epochRef.current || json === null) {
           return;
         }
         if (!json.ok || !Array.isArray(json.items)) {
@@ -151,7 +183,7 @@ export const usePaginatedAdminList = <T extends { id: string }>(
     return () => {
       cancelled = true;
     };
-  }, [endpoint, appliedQuery, reloadKey]);
+  }, [endpoint, appliedQuery, goToLogin, reloadKey]);
 
   const loadMore = useCallback(() => {
     const snapshot = stateRef.current;
@@ -174,10 +206,9 @@ export const usePaginatedAdminList = <T extends { id: string }>(
       take: String(PAGE_SIZE),
       offset: String(offsetRef.current),
     });
-    fetch(`${endpoint}?${params.toString()}`, { cache: "no-store" })
-      .then((res) => res.json())
-      .then((json: ListPageEnvelope<T>) => {
-        if (epoch !== epochRef.current) {
+    fetchListPage<T>(`${endpoint}?${params.toString()}`, goToLogin)
+      .then((json) => {
+        if (epoch !== epochRef.current || json === null) {
           return;
         }
         if (!json.ok || !Array.isArray(json.items)) {
@@ -200,7 +231,7 @@ export const usePaginatedAdminList = <T extends { id: string }>(
         loadingMoreRef.current = false;
         setLoadingMore(false);
       });
-  }, [endpoint]);
+  }, [endpoint, goToLogin]);
 
   const retry = useCallback(() => {
     resetPageState();

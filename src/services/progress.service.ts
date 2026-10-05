@@ -2,12 +2,28 @@ import { prisma } from "@/lib/prisma";
 import { deriveStatuses } from "@/services/progress-status";
 import type { TourProgressView } from "@/types";
 
+/** Optional constraint on the tour lookup performed by `buildProgressView`. */
+export interface BuildProgressViewOptions {
+  /**
+   * Resolve only `PUBLISHED` tours.
+   *
+   * The public progress read passes this so a DRAFT slug cannot leak its
+   * itinerary shape (docs/logic-map §9). The check-in service deliberately
+   * leaves it off: it already holds the tour row through the checkpoint link,
+   * and a null view there would fail a write it has just committed.
+   */
+  publishedOnly?: boolean;
+}
+
 export const buildProgressView = async (
   userId: string,
   tourSlug: string,
+  options: BuildProgressViewOptions = {},
 ): Promise<TourProgressView | null> => {
   const tour = await prisma.tour.findUnique({
-    where: { slug: tourSlug },
+    where: options.publishedOnly
+      ? { slug: tourSlug, status: "PUBLISHED" }
+      : { slug: tourSlug },
     include: { checkpoints: { orderBy: { order: "asc" } } },
   });
   if (!tour) {
@@ -41,17 +57,6 @@ export const buildProgressView = async (
       status: statuses.get(tc.checkpointId) ?? "locked",
     })),
   };
-};
-
-export const ensureTourStarted = async (
-  userId: string,
-  tourId: string,
-): Promise<void> => {
-  await prisma.tourProgress.upsert({
-    where: { userId_tourId: { userId, tourId } },
-    create: { userId, tourId },
-    update: {},
-  });
 };
 
 export const getCompletedCheckpointIds = async (

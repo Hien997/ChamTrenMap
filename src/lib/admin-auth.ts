@@ -9,7 +9,7 @@ import {
   ADMIN_SESSION_MAX_AGE_SECONDS,
   LOGIN_RATE_LIMIT,
 } from "@/config/constants";
-import { apiError } from "@/lib/api";
+import { adminError } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, type RateLimitResult } from "@/lib/rate-limit";
 
@@ -96,12 +96,16 @@ export const requireAdminPage = async (): Promise<User> => {
   return user;
 };
 
-/** Route-handler guard: `null` when authenticated, else a 401 JSON response. */
+/** Route-handler guard: `null` when authenticated, else a 401 admin-envelope response. */
 export const requireAdminApi = async (): Promise<NextResponse | null> => {
   const user = await getAdminUser();
   if (!user) {
-    return apiError("UNAUTHORIZED", "Admin session required", 401);
+    // Every other admin route answers with the flat admin envelope; a 401 in
+    // the public typed shape leaves the admin UI reading `error.code` off an
+    // object (docs/logic-map §9).
+    return adminError("Admin session required", 401);
   }
+
   return null;
 };
 

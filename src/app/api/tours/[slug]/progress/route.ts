@@ -12,7 +12,11 @@ export const GET = async (
     // Read-only lookup; an id that matches nothing yields a zeroed view for
     // visitors who have not checked in yet (write-lazy, ADR-0001).
     const user = await getSessionVisitor();
-    const progress = await buildProgressView(user?.id ?? "", slug);
+    // Public read: a DRAFT slug must not reveal its itinerary shape
+    // (docs/logic-map §9) — every other public tour read filters the same way.
+    const progress = await buildProgressView(user?.id ?? "", slug, {
+      publishedOnly: true,
+    });
     if (!progress) {
       return apiError("NOT_FOUND", "Tour not found", 404);
     }

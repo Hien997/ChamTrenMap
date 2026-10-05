@@ -166,7 +166,7 @@ describe("guards", () => {
     const json = await res.json();
     expect(json).toMatchObject({
       ok: false,
-      error: { code: "UNAUTHORIZED" },
+      error: "Admin session required",
     });
   });
 
