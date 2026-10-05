@@ -7,6 +7,7 @@
     "postinstall": "node scripts/copy-maplibre-worker.mjs",
     "build": "next build",
     "start": "next start",
+    "check": "npm run format:check && npm run lint && tsc --noEmit && npm test && npm run build",
     "lint": "eslint",
     "db:seed": "prisma db seed",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,mjs,json,css}\" \"tests/**/*.{ts,tsx,js,mjs,json,css}\" \"prisma/**/*.{ts,tsx,js,mjs,json,css}\" \"scripts/**/*.{ts,tsx,js,mjs,json,css}\" \"*.{ts,tsx,js,mjs,json}\"",
