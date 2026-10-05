@@ -22,6 +22,7 @@
 - **Solution:** `visitor-session` seam (stateless or write-lazy identity) + `admin-auth` seam (per-login token, `expiresAt`, rate-limited). Cookie store = adapter behind each.
 - **Benefits/locality:** rotation/expiry/throttle policy lives in exactly one module; fixes for S3/S6/S7 stop being cross-file surgery. The interface (issue session → validate session) becomes the test surface.
 - **Deletion test:** deleting the dual-purpose `session.ts` concentrates auth complexity — yes.
+- **✅ Implemented (2026-09-23):** ADR-0001 — `session.ts` and `admin.ts` deleted; `visitor-session.ts` (write-lazy identity) and `admin-auth.ts` (rotating, expiring token) took the two seams. S3/S6/S7/S9 were fixed inside them.
 
 ### C. Map load state machine — one escalation module — **Worth exploring**
 - **Files:** `src/components/map/map.utils.ts` (deciders exist), `MapLibreMap.tsx` (485 lines), `MapExperience.tsx` (421).
@@ -44,7 +45,7 @@
 
 ## Top recommendation
 
-**B — Split Visitor identity from Admin auth.** It is the seam where the most load-bearing security findings converge (S3 login throttle, S6 session flood, S7 token rotation), the deletion test passes cleanly, and it turns scattered cross-file security patches into changes inside one deep module. E is the fastest security win if you want a quick pass first; A is the highest-leverage cleanup if security waits.
+**B — Split Visitor identity from Admin auth** — ✅ *shipped as ADR-0001.* A, C and E are implemented as well, so **D — Admin write service for Tours** is the only candidate still open: it is the last place where admin writes have no tested seam (zero tour-write tests today).
 
 ---
 *HTML version (temp): `architecture-review-1790131071.html` in `$TMPDIR`.*

@@ -2,11 +2,11 @@
 
 **Your digital passport for discovering Hà Tiên.** Tourists follow the _Hà Tiên Discovery_ tour on an interactive map, visit 8 checkpoints, read VN/EN online guides, check in via server-validated GPS, track progress and share their achievement.
 
-> Phase 1 MVP per `Plan.md` — interactive map · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share links · VN/EN i18n, plus the Phase 2 admin CRUD. Remaining Phase 2 work (audio, badges/XP, PWA) is scaffolded for by the DB schema.
+> Phase 1 MVP — interactive map · Tours · Checkpoints · Online guides · GPS check-in · Progress · Share links · VN/EN i18n, plus the Phase 2 admin CRUD. Remaining Phase 2 work (audio guides · badges/XP · PWA) is **not** in the schema yet — each item needs its own migration and ADR.
 
 ## Tech Stack
 
-Next.js 16 (App Router) · TypeScript strict · Tailwind CSS 4 · shadcn/ui · framer-motion · TanStack Query · Zustand · Zod · next-intl · MapLibre GL · OpenStreetMap tiles (no API key) · Prisma 6 · Neon Postgres · Vitest · Vercel
+Next.js 16 (App Router) · TypeScript strict · Tailwind CSS 4 · shadcn/ui · framer-motion · react-hook-form · Zod · next-intl · MapLibre GL · OpenStreetMap tiles (no API key) · Prisma 6 · Neon Postgres · Vitest · Vercel
 
 ## Quick Start
 
@@ -76,14 +76,15 @@ NEXT_PUBLIC_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
 ## Testing
 
 ```bash
-npx vitest --run     # 64 tests: geo/haversine, check-in policy, progress, tour-progress,
+npm test             # geo/haversine, check-in policy, progress, tour-progress,
                      # checkpoint-content, map error & style policy, i18n parity, sanitize
-npm run build        # typecheck + production build
+npm run check        # every ship gate, cheapest first: prettier --check · eslint ·
+                     # tsc --noEmit · vitest · next build — CI runs exactly this
 ```
 
 Manual GPS testing: Chrome DevTools → Sensors → Location → _Custom location…_ set a checkpoint's coordinates to trigger a successful check-in; move the pin >100 m away to see the too-far flow.
 
-## Architecture (see `Plan.md` for the full design)
+## Architecture (see `docs/logic-map.md` for the full design)
 
 ```
 src/app/[locale]/…      home · tours · map/[tourSlug] · checkpoints/[slug] · share/checkin/[shareId]

@@ -213,7 +213,7 @@ Every response flows through the one envelope module `src/lib/api.ts` (architect
 | `tours.service.ts` | public tour list/detail views: folds translations + ordered stops + optional statuses |
 | `checkpoints.service.ts` | public detail/list; `getTourForCheckpoint` (first published tour link); `listCheckpointOptions` — **deliberately unbounded** picker data for the admin stop editor (bypasses the list endpoint's `take ≤ 50`, which would silently truncate it) |
 | `checkins.service.ts` | the atomic write: load → derive → decide → transaction → progress view; `CheckInResult` union mirrors the API error codes 1:1 |
-| `progress.service.ts` | `buildProgressView`, `getCompletedCheckpointIds` (reads); `ensureTourStarted` upsert helper (**defined but currently has no call sites**) |
+| `progress.service.ts` | `buildProgressView` (reads; the `publishedOnly` option constrains the public progress route to `PUBLISHED`) and `getCompletedCheckpointIds` (reads) |
 | `progress-status.ts` | pure `deriveStatuses` (ADR-0002) |
 | `share.service.ts` | idempotent share creation + share-page view assembly |
 | `localize.ts` | pure `pickLocalized` fallback chain (R6) |
@@ -226,7 +226,7 @@ Every response flows through the one envelope module `src/lib/api.ts` (architect
 
 ### 4.3 Auth & cross-cutting libs (`src/lib/`)
 
-- **`admin-auth.ts`** — ADR-0001 seam: `issueAdminSession` / `verifyAdminToken` (hash + expiry), `requireAdminPage` (redirect → `/admin/login`) for pages and layouts, `requireAdminApi` (401 JSON) for route handlers, `checkLoginRate`. *Note: the 401 it returns uses the **public** envelope shape — see §9.*
+- **`admin-auth.ts`** — ADR-0001 seam: `issueAdminSession` / `verifyAdminToken` (hash + expiry), `requireAdminPage` (redirect → `/admin/login`) for pages and layouts, `requireAdminApi` (401, flat admin envelope) for route handlers, `checkLoginRate`.
 - **`visitor-session.ts`** — ADR-0001 seam: `readVisitorId` / `findVisitor` / `getSessionVisitor` (never write); `ensureVisitorWithCookie` (write path only — mints/attaches `ctm_visitor`, 365 d).
 - **`rate-limit.ts`** — process-local `Map` with a lazy expiry sweep; trusts the first `x-forwarded-for` hop (documented trusted-proxy assumption; per-instance until a shared store exists — S5 accepted). `resetRateLimiter()` for tests.
 - **`api.ts`** — both envelopes + `parseBody` / `parseAdminBody` / `parseLocale` / `parseAdminListQuery` / `handleApiError` / `writeErrorResponse`.
@@ -348,7 +348,7 @@ form (RHF resolver = shared API schema)
 → client: details → setError(path) + toast fallback → navigate back / removeItem
 ```
 
-**Envelope asymmetry to remember:** admin routes answer with the flat envelope, *except* `requireAdminApi`'s 401, which uses the public typed envelope (§9) — an expired session surfaces as an opaque list-load error rather than a login prompt.
+**Expired admin session:** admin routes answer with the flat envelope on every path, `requireAdminApi`'s 401 included. The admin list hook reads that status and navigates to `/admin/login` instead of rendering a load error.
 ## 7. Golden flows
 
 ### Flow A — Discovery → interactive map
@@ -536,10 +536,7 @@ Commands: `npm test` (vitest run). Ship gates used so far: `tsc --noEmit` · `es
 
 **Observations recorded while mapping (fix only via a new decision):**
 
-- `GET /api/tours/[slug]/progress` does **not** filter `status = PUBLISHED`, unlike every other public tour read — knowing a DRAFT tour's slug yields its progress shape.
-- `requireAdminApi`'s 401 uses the public envelope, not `adminError` — an expired admin session surfaces as an opaque list-load error instead of a redirect/login prompt.
-- Tour admin writes have no service module and no tests (architecture candidate **D** open); map load orchestration is still inline rather than a reducer (candidate **C** open).
-- `ensureTourStarted` in `progress.service.ts` currently has no call sites.
+- Tour admin writes have no service module and no tests (architecture candidate **D** open).
 
 **Security-review carry-overs** (see `docs/security-review.md`): S8 CSP still open (baseline headers shipped); S10 password policy `.min(1)` accepted (env-provided password); S5 in-memory rate limiter is per-instance (accepted single-node assumption).
 
