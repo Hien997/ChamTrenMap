@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -10,6 +10,7 @@ import {
   parseFrontmatter,
   readSkillFile,
   renderList,
+  SKILLS_DIR,
   stripFrontmatter,
 } from "@/lib/skills";
 
@@ -94,7 +95,17 @@ describe("listSkills", () => {
     );
   });
 
-  it("finds the repo's real skills", () => {
+  it("defaults to the repo's .agents/skills, resolved from the module", () => {
+    expect(SKILLS_DIR).toBe(
+      path.resolve(import.meta.dirname, "../.agents/skills"),
+    );
+  });
+
+  // `.agents/` is gitignored: the skills are installed from skills-lock.json,
+  // never committed, so a clean checkout (and therefore CI) has none. Assert
+  // their contents only where they actually exist rather than making the gate
+  // depend on a machine-local directory.
+  it.runIf(existsSync(SKILLS_DIR))("finds the repo's real skills", () => {
     const names = listSkills().map((s) => s.name);
     expect(names).toContain("tdd");
     expect(names).toContain("implement");
