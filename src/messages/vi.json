@@ -151,7 +151,8 @@
     "back": "Quay lại",
     "notFoundTitle": "Không tìm thấy trang",
     "notFoundBody": "Trang bạn tìm kiếm không tồn tại hoặc đã bị di chuyển.",
-    "backHome": "Về trang chủ"
+    "backHome": "Về trang chủ",
+    "errorBody": "Đã có lỗi xảy ra khi tải trang này."
   },
   "LocaleSwitcher": {
     "label": "Ngôn ngữ",
@@ -191,5 +192,9 @@
     "mapEmpty": "Chưa có điểm nào để hiển thị.",
     "pinVisited": "Đã ghé",
     "pinPending": "Chưa ghé"
+  },
+  "Footer": {
+    "tagline": "Bản đồ check-in bản địa · Hà Tiên, An Giang",
+    "navLabel": "Chân trang"
   }
 }

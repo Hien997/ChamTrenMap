@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { adminError, adminOk, parseAdminBody } from "@/lib/api";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/admin-auth";
 import { updateTourSchema } from "@/lib/validations/admin";
@@ -142,6 +143,7 @@ export const PATCH = async (request: NextRequest) => {
     }
   });
 
+  revalidatePublicPages();
   return adminOk();
 };
 
@@ -159,5 +161,6 @@ export const DELETE = async (request: NextRequest) => {
   }
 
   await prisma.tour.delete({ where: { id: tour.id } });
+  revalidatePublicPages();
   return adminOk();
 };

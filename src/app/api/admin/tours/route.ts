@@ -6,6 +6,7 @@ import {
   parseAdminListQuery,
 } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 import { requireAdminApi } from "@/lib/admin-auth";
 import { buildTourSearchWhere } from "@/services/search";
 import { createTourSchema } from "@/lib/validations/admin";
@@ -137,6 +138,7 @@ export const POST = async (request: NextRequest) => {
       return created;
     });
 
+    revalidatePublicPages();
     return adminOk({ tour: { id: tour.id, slug: tour.slug } });
   } catch {
     return adminError("Tour already exists or database error", 409);

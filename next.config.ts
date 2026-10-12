@@ -21,6 +21,15 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Admin-entered cover/gallery photos, served through the image optimizer so
+  // the grid gets a responsive srcset + WebP instead of full-size downloads.
+  // Deliberately a tight allowlist rather than `hostname: "**"`: the public
+  // `/_next/image` route fetches its `url` parameter from the server, so an
+  // open pattern would turn it into an SSRF proxy. Every image in the DB today
+  // comes from picsum.photos — allowing one more host is a one-line change.
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "picsum.photos" }],
+  },
   headers: async () => {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

@@ -6,6 +6,7 @@ import {
   writeErrorResponse,
 } from "@/lib/api";
 import { requireAdminApi } from "@/lib/admin-auth";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 import { updateCheckpointSchema } from "@/services/checkpoint-content";
 import {
   deleteCheckpoint,
@@ -45,6 +46,7 @@ export const PATCH = async (request: NextRequest) => {
       slugFromRequest(request),
       parsed.data,
     );
+    revalidatePublicPages();
     return adminOk({ checkpoint });
   } catch (error) {
     return writeErrorResponse(error);
@@ -58,6 +60,7 @@ export const DELETE = async (request: NextRequest) => {
   }
   try {
     await deleteCheckpoint(slugFromRequest(request));
+    revalidatePublicPages();
     return adminOk();
   } catch (error) {
     return writeErrorResponse(error);

@@ -6,6 +6,7 @@ import {
   writeErrorResponse,
 } from "@/lib/api";
 import { requireAdminApi } from "@/lib/admin-auth";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 import { createCheckpointSchema } from "@/services/checkpoint-content";
 import {
   createCheckpoint,
@@ -37,6 +38,7 @@ export const POST = async (request: NextRequest) => {
 
   try {
     const checkpoint = await createCheckpoint(parsed.data);
+    revalidatePublicPages();
     return adminOk({ checkpoint });
   } catch (error) {
     return writeErrorResponse(error);

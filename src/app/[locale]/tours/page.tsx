@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { TourCard } from "@/components/tour/TourCard";
 import type { Locale } from "@/config/constants";
 import { listTours } from "@/services/tours.service";
 
-export const dynamic = "force-dynamic";
+// ISR: the tour listing has nothing visitor-specific, so 5 minutes of cache
+// replaces a query on every request. Admin edits purge it via revalidatePath.
+export const revalidate = 300;
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -44,6 +47,8 @@ const ToursPage = async ({ params }: Props) => {
             ))}
           </div>
         )}
+
+        <SiteFooter />
       </main>
     </div>
   );

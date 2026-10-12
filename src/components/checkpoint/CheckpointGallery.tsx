@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import {
   ChevronLeftIcon,
@@ -76,12 +77,14 @@ const GalleryCell = ({
       onClick={onOpen}
       className={`group relative overflow-hidden rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${cellClassName}`}
     >
-      <img
+      <Image
         src={image.url}
         alt={alt}
+        fill
+        sizes="(min-width: 640px) 66vw, 50vw"
         loading={eager ? "eager" : "lazy"}
         draggable={false}
-        className="h-full w-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
       />
       {status === "panorama" && (
         <span className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -105,6 +108,10 @@ const LightboxBody = ({
   const alt = image.alt ?? fallbackAlt;
 
   if (status === "flat") {
+    // Kept as a plain <img>: the lightbox sizes itself to the photo's natural
+    // aspect (max-h/max-w + object-contain), which needs intrinsic dimensions
+    // next/image would have to guess. One full-size image per lightbox — the
+    // grid above is where the bandwidth actually goes.
     return (
       <img
         src={image.url}

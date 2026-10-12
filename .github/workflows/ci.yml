@@ -14,6 +14,27 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
+    # `next build` prerenders the ISR routes (`/`, `/tours`, `/sitemap`) at
+    # build time, so it needs a real database to query. No production data is
+    # required — those pages render a perfectly good empty state — so the
+    # runner gets a throwaway Postgres whose credentials already match
+    # `.env.example` (postgres:postgres@localhost:5432/cham_tren_map).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cham_tren_map
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,10 +43,8 @@ jobs:
           node-version: 22
           cache: npm
 
-      # `.env` is gitignored, so CI builds from the template. The build only
-      # needs the variables to exist — every route is dynamic, so nothing
-      # queries the database at build time (verified: `next build` exits 0
-      # against an unreachable DATABASE_URL).
+      # `.env` is gitignored, so CI builds from the template — and the template
+      # already points at the service container above.
       - name: Provide build env
         run: cp .env.example .env
 
@@ -34,6 +53,11 @@ jobs:
 
       - name: Generate Prisma client
         run: npx prisma generate
+
+      # Empty schema, zero rows: exactly what the prerender needs to reach its
+      # empty state instead of a PrismaClientInitializationError.
+      - name: Create schema
+        run: npx prisma db push
 
       - name: Check
         run: npm run check

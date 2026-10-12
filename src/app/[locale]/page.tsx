@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { HomeMap } from "@/components/map/HomeMap";
 import { buttonVariants } from "@/components/ui/button";
@@ -8,7 +9,10 @@ import { Link } from "@/i18n/navigation";
 import { listCheckpoints } from "@/services/checkpoints.service";
 import { listTours } from "@/services/tours.service";
 
-export const dynamic = "force-dynamic";
+// ISR: the home page is read-only for every visitor (no session, no progress),
+// so it is cached for 5 minutes instead of re-querying two tables per hit.
+// Admin edits purge it immediately via revalidatePath in the admin API routes.
+export const revalidate = 300;
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -149,9 +153,7 @@ const HomePage = async ({ params }: Props) => {
         )}
       </main>
 
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        Chắm Trên Map — Hà Tiên, An Giang
-      </footer>
+      <SiteFooter />
     </div>
   );
 };

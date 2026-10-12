@@ -3,7 +3,9 @@ import { SUPPORTED_LOCALES } from "@/config/constants";
 import { listCheckpoints } from "@/services/checkpoints.service";
 import { listTours } from "@/services/tours.service";
 
-export const dynamic = "force-dynamic";
+// ISR: the URL list has nothing visitor-specific, so it is rebuilt every 5
+// minutes instead of re-querying four tables on every crawler hit.
+export const revalidate = 300;
 
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const base = (

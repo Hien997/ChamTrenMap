@@ -151,7 +151,8 @@
     "back": "Back",
     "notFoundTitle": "Page not found",
     "notFoundBody": "The page you are looking for does not exist or has moved.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "errorBody": "Something went wrong while loading this page."
   },
   "LocaleSwitcher": {
     "label": "Language",
@@ -191,5 +192,9 @@
     "mapEmpty": "No stops to show yet.",
     "pinVisited": "Visited",
     "pinPending": "Not visited"
+  },
+  "Footer": {
+    "tagline": "Local check-in map · Hà Tiên, An Giang",
+    "navLabel": "Footer"
   }
 }
