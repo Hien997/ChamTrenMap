@@ -65,16 +65,20 @@ const HomePage = async ({ params }: Props) => {
                 >
                   {t("ctaStartTour")}
                 </Link>
-                <Link
-                  href="/tours"
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "lg",
-                    className: "text-base sm:hidden",
-                  })}
-                >
-                  {t("viewAllTours")}
-                </Link>
+                {/* Only when there are featured tours to scroll to — an anchor
+                    to a section that did not render is a dead control. */}
+                {tours.length > 0 && (
+                  <Link
+                    href="#explore"
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "lg",
+                      className: "text-base",
+                    })}
+                  >
+                    {t("seeFeatured")}
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -126,7 +130,10 @@ const HomePage = async ({ params }: Props) => {
 
         {/* Featured tours */}
         {tours.length > 0 && (
-          <section className="mx-auto w-full max-w-6xl px-4 pb-16">
+          <section
+            id="explore"
+            className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-16"
+          >
             <div className="flex items-end justify-between">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight">

@@ -36,7 +36,8 @@
     "step5Desc": "Complete the tour and show off your achievement.",
     "exploreTitle": "Featured tours",
     "exploreDesc": "Pick a journey and start exploring.",
-    "viewAllTours": "View all tours"
+    "viewAllTours": "View all tours",
+    "seeFeatured": "Featured tours"
   },
   "Tours": {
     "title": "Hà Tiên Tours",
@@ -99,7 +100,11 @@
     "permissionDenied": "Location permission was denied. Enable it in your browser settings and try again.",
     "errorTitle": "Check-in failed",
     "errorBody": "Something went wrong. Please try again in a few minutes.",
-    "tourComplete": "Congratulations! You completed the entire tour!"
+    "tourComplete": "Congratulations! You completed the entire tour!",
+    "queuedTitle": "You are offline",
+    "queuedBody": "We saved this check-in and will send it as soon as you are back online.",
+    "syncedTitle": "Back online",
+    "syncedBody": "Your saved check-ins have been sent."
   },
   "Map": {
     "progress": "Progress",

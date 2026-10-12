@@ -1,6 +1,7 @@
 name: CI
 
-# The five ship gates, cheapest first — exactly `npm run check`.
+# `npm run check` runs the unit gates (format, lint, types, tests, build); the
+# browser gate below it is separate because it needs Chromium and a live server.
 on:
   push:
     branches: [main]
@@ -61,3 +62,12 @@ jobs:
 
       - name: Check
         run: npm run check
+
+      # The `.next` build from the step above is already valid, so `webServer`
+      # just runs `next start` against the same container. Covers what a unit
+      # test cannot: hydration, CSP violations in a real browser, and contrast.
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end + accessibility
+        run: npm run test:e2e

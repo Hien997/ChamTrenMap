@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getCurrentPositionOnce } from "@/lib/geolocation-client";
+import { enqueueCheckIn, isNetworkError } from "@/lib/checkin-queue";
 import type { ApiEnvelope } from "@/lib/api-client";
 import { formatDistance } from "@/lib/format";
 import type { CheckInView, TourProgressView } from "@/types";
@@ -126,7 +127,26 @@ export const CheckInFlow = ({
         default:
           showError();
       }
-    } catch {
+    } catch (error) {
+      // No route to the server: save the payload instead of losing the walk.
+      // `CheckInQueueSync` replays it on the next `online` event or page load.
+      if (isNetworkError(error)) {
+        try {
+          enqueueCheckIn(window.localStorage, {
+            checkpointId,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: Number.isFinite(position.coords.accuracy)
+              ? position.coords.accuracy
+              : null,
+            locale,
+          });
+          toast.info(t("queuedTitle"), { description: t("queuedBody") });
+          return;
+        } catch {
+          // storage unavailable (private mode) — fall through to the error
+        }
+      }
       showError();
     }
   };

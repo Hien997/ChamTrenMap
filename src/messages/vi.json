@@ -36,7 +36,8 @@
     "step5Desc": "Hoàn thành tour và khoe thành tích với bạn bè.",
     "exploreTitle": "Tours nổi bật",
     "exploreDesc": "Chọn một hành trình và bắt đầu khám phá.",
-    "viewAllTours": "Xem tất cả tours"
+    "viewAllTours": "Xem tất cả tours",
+    "seeFeatured": "Tour nổi bật"
   },
   "Tours": {
     "title": "Tours Hà Tiên",
@@ -99,7 +100,11 @@
     "permissionDenied": "Quyền truy cập vị trí bị từ chối. Hãy bật vị trí trong cài đặt trình duyệt rồi thử lại.",
     "errorTitle": "Không thể check-in",
     "errorBody": "Đã xảy ra lỗi. Vui lòng thử lại sau ít phút.",
-    "tourComplete": "Chúc mừng! Bạn đã hoàn thành toàn bộ tour!"
+    "tourComplete": "Chúc mừng! Bạn đã hoàn thành toàn bộ tour!",
+    "queuedTitle": "Mất kết nối",
+    "queuedBody": "Đã lưu lượt check-in này, sẽ gửi ngay khi có mạng trở lại.",
+    "syncedTitle": "Đã có kết nối",
+    "syncedBody": "Các lượt check-in đã lưu đã được gửi."
   },
   "Map": {
     "progress": "Tiến độ",
