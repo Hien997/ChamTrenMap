@@ -13,7 +13,11 @@ concurrency:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Pinned rather than `ubuntu-latest`: GitHub migrates that alias to
+    # Ubuntu 26.04 on 2026-10-19, which would swap the runner image — and with
+    # it the preinstalled Node, Chromium and system libs — underneath a green
+    # build. Bump this deliberately instead of being moved by surprise.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     # `next build` prerenders the ISR routes (`/`, `/tours`, `/sitemap`) at
@@ -37,9 +41,9 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
