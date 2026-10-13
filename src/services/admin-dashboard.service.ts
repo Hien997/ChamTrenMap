@@ -51,12 +51,64 @@ export interface AdminRecentActivityRow {
   distanceFromCheckpoint: number;
 }
 
+/** One daily bar in the check-ins trend chart. */
+export interface AdminTrendBucket {
+  /** Local calendar day as `YYYY-MM-DD`, stable for keys and sorting. */
+  day: string;
+  /** Short weekday label (e.g. "Mon") for the chart axis. */
+  label: string;
+  count: number;
+}
+
 export interface AdminDashboardView {
   generatedAt: string;
   counts: AdminDashboardCounts;
   tourProgress: AdminTourProgressRow[];
   recentActivity: AdminRecentActivityRow[];
+  checkInsTrend: AdminTrendBucket[];
 }
+
+/**
+ * Bucket check-in timestamps into one count per local calendar day.
+ *
+ * Returns `days` buckets oldest-first ending today, so empty days stay visible
+ * as zero-height bars instead of collapsing (a gap in visits is information).
+ * Buckets are keyed by local day, matching how an operator reads a calendar;
+ * anything older than the window is ignored rather than rolled into today.
+ *
+ * Pure and clock-injectable so the chart can be unit-tested without a DB.
+ */
+export const bucketCheckInsByDay = (
+  timestamps: Date[],
+  now: Date,
+  days: number,
+): AdminTrendBucket[] => {
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const key = (date: Date): string =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+      date.getDate(),
+    ).padStart(2, "0")}`;
+
+  const counts = new Map<string, number>();
+  for (const date of timestamps) {
+    const bucketKey = key(date);
+    counts.set(bucketKey, (counts.get(bucketKey) ?? 0) + 1);
+  }
+
+  const buckets: AdminTrendBucket[] = [];
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const day = new Date(startOfToday);
+    day.setDate(day.getDate() - offset);
+    buckets.push({
+      day: key(day),
+      label: day.toLocaleDateString("en-GB", { weekday: "short" }),
+      count: counts.get(key(day)) ?? 0,
+    });
+  }
+  return buckets;
+};
 
 /**
  * Everything the admin overview page renders, in one read.
@@ -79,6 +131,7 @@ export const getAdminDashboard = async (): Promise<AdminDashboardView> => {
     checkInsLast7Days,
     distinctVisitors,
     recent,
+    trendTimestamps,
     tours,
     completions,
   ] = await Promise.all([
@@ -111,6 +164,10 @@ export const getAdminDashboard = async (): Promise<AdminDashboardView> => {
           },
         },
       },
+    }),
+    prisma.checkIn.findMany({
+      where: { checkedInAt: { gte: windowStart } },
+      select: { checkedInAt: true },
     }),
     prisma.tour.findMany({
       where: { status: "PUBLISHED" },
@@ -208,5 +265,10 @@ export const getAdminDashboard = async (): Promise<AdminDashboardView> => {
     },
     tourProgress,
     recentActivity,
+    checkInsTrend: bucketCheckInsByDay(
+      trendTimestamps.map((row) => row.checkedInAt),
+      new Date(),
+      ACTIVITY_WINDOW_DAYS,
+    ),
   };
 };

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import {
   ADMIN_RECENT_ACTIVITY_LIMIT,
+  bucketCheckInsByDay,
   getAdminDashboard,
 } from "@/services/admin-dashboard.service";
 
@@ -332,5 +333,52 @@ describe("getAdminDashboard", () => {
     expect(dashboard.counts.toursTotal).toBe(11);
     expect(dashboard.counts.toursPublished).toBe(4);
     expect(dashboard.counts.toursDrafts).toBe(7);
+  });
+});
+
+describe("bucketCheckInsByDay", () => {
+  // A fixed Wednesday so day-labels and gaps are deterministic. The helper keys
+  // buckets by local calendar day, so these are built in local time on purpose.
+  const now = new Date(2026, 0, 7, 12, 0, 0); // Wed 7 Jan 2026
+
+  const daysAgo = (n: number, hour = 9): Date => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - n);
+    d.setHours(hour, 0, 0, 0);
+    return d;
+  };
+
+  it("returns one bucket per day, oldest first, ending on today", () => {
+    const buckets = bucketCheckInsByDay([], now, 7);
+
+    expect(buckets).toHaveLength(7);
+    // Last bucket is today; earlier ones step back one day each.
+    expect(buckets[6]?.count).toBe(0);
+    expect(buckets[0]?.count).toBe(0);
+  });
+
+  it("counts check-ins into their local calendar day", () => {
+    const buckets = bucketCheckInsByDay(
+      [daysAgo(0, 8), daysAgo(0, 14), daysAgo(2, 10)],
+      now,
+      7,
+    );
+
+    expect(buckets[6]?.count).toBe(2); // today
+    expect(buckets[4]?.count).toBe(1); // two days ago
+  });
+
+  it("emits a stable ISO day key and a short weekday label per bucket", () => {
+    const buckets = bucketCheckInsByDay([], now, 7);
+
+    expect(buckets[0]?.day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(buckets[6]?.day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(buckets[6]?.label.length).toBeGreaterThan(0);
+  });
+
+  it("ignores check-ins older than the window", () => {
+    const buckets = bucketCheckInsByDay([daysAgo(30)], now, 7);
+
+    expect(buckets.every((bucket) => bucket.count === 0)).toBe(true);
   });
 });

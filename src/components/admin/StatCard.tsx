@@ -34,7 +34,7 @@ export const StatCard = ({
   );
 
   const shell =
-    "block rounded-lg border bg-card px-5 py-4 transition-colors duration-200";
+    "block rounded-xl border bg-card px-5 py-4 ring-1 ring-foreground/5 transition-colors duration-200";
 
   return href ? (
     <Link href={href} className={`${shell} hover:bg-accent/40`}>
