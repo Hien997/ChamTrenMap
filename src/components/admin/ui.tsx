@@ -49,20 +49,23 @@ export const BackLink = ({
 
 export const Panel = ({
   title,
+  action,
   children,
   className = "",
 }: {
   title?: ReactNode;
+  action?: ReactNode;
   children: ReactNode;
   className?: string;
 }) => {
   return (
     <section
-      className={`overflow-hidden rounded-lg border bg-card ${className}`}
+      className={`overflow-hidden rounded-xl border bg-card ring-1 ring-foreground/5 ${className}`}
     >
       {title ? (
-        <div className="border-b px-5 py-3">
+        <div className="flex items-center justify-between gap-3 border-b px-5 py-3">
           <h2 className="text-sm font-medium">{title}</h2>
+          {action}
         </div>
       ) : null}
       <div className="p-5">{children}</div>

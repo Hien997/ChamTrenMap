@@ -43,8 +43,8 @@ export const AdminNav = ({
               vertical ? "" : "justify-center"
             } ${
               active
-                ? "bg-white/10 text-white"
-                : "text-white/60 hover:bg-white/5 hover:text-white"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent/60 hover:text-accent-foreground"
             }`}
           >
             <Icon aria-hidden className="size-4 shrink-0" />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ActivityIcon,
+  ArrowUpRightIcon,
   FootprintsIcon,
   MapIcon,
   MapPinIcon,
@@ -8,15 +9,14 @@ import {
 import { getAdminDashboard } from "@/services/admin-dashboard.service";
 import { PageHeader, Panel } from "@/components/admin/ui";
 import { StatCard } from "@/components/admin/StatCard";
+import { CheckInsTrend } from "@/components/admin/CheckInsTrend";
 import { Progress } from "@/components/ui/progress";
+import { formatRelativeTime } from "@/lib/relative-time";
 
 export const dynamic = "force-dynamic";
 
 const plural = (count: number, word: string): string =>
   `${count} ${word}${count === 1 ? "" : "s"}`;
-
-const timeOf = (date: Date): string =>
-  date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
 const AdminDashboard = async () => {
   const dashboard = await getAdminDashboard();
@@ -68,12 +68,32 @@ const AdminDashboard = async () => {
         />
       </div>
 
+      <div className="mt-6">
+        <Panel
+          title="Check-ins trend"
+          action={
+            <span className="text-xs text-muted-foreground">
+              last {dashboard.checkInsTrend.length} days
+            </span>
+          }
+        >
+          <CheckInsTrend buckets={dashboard.checkInsTrend} />
+        </Panel>
+      </div>
+
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Panel title="Per-tour progress">
           {dashboard.tourProgress.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No published tours yet. Create one, then add its checkpoints.
-            </p>
+            <div className="text-sm text-muted-foreground">
+              <p>No published tours yet.</p>
+              <Link
+                href="/admin/tours/new"
+                className="mt-2 inline-flex text-sm font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                Create the first tour
+              </Link>{" "}
+              <span>then add its checkpoints.</span>
+            </div>
           ) : (
             <ul className="space-y-5">
               {dashboard.tourProgress.map((tour) => (
@@ -110,24 +130,63 @@ const AdminDashboard = async () => {
               No check-ins yet. They will appear here as visitors arrive.
             </p>
           ) : (
-            <ul className="divide-y divide-border">
-              {dashboard.recentActivity.map((row) => (
-                <li key={row.id} className="py-2.5 first:pt-0 last:pb-0">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="truncate font-medium">
-                      {row.checkpointName}
-                    </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {timeOf(row.checkedInAt)}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {row.visitor} · ±{Math.round(row.accuracy)} m ·{" "}
-                    {Math.round(row.distanceFromCheckpoint)} m from stop
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div className="-mx-5 -my-5 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-xs text-muted-foreground">
+                    <th scope="col" className="px-5 py-2 text-left font-medium">
+                      Checkpoint
+                    </th>
+                    <th scope="col" className="px-5 py-2 text-left font-medium">
+                      Visitor
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-5 py-2 text-right font-medium whitespace-nowrap"
+                    >
+                      Accuracy
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-5 py-2 text-right font-medium whitespace-nowrap"
+                    >
+                      When
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {dashboard.recentActivity.map((row) => (
+                    <tr
+                      key={row.id}
+                      className="transition-colors duration-200 hover:bg-accent/40"
+                    >
+                      <td className="max-w-40 truncate px-5 py-2.5 font-medium">
+                        <Link
+                          href={`/admin/checkpoints/${row.checkpointSlug}`}
+                          className="underline-offset-4 hover:underline"
+                        >
+                          {row.checkpointName}
+                        </Link>
+                      </td>
+                      <td className="max-w-32 truncate px-5 py-2.5 text-muted-foreground">
+                        {row.visitor}
+                      </td>
+                      <td className="px-5 py-2.5 text-right text-muted-foreground tabular-nums whitespace-nowrap">
+                        ±{Math.round(row.accuracy)} m
+                      </td>
+                      <td className="px-5 py-2.5 text-right text-muted-foreground tabular-nums whitespace-nowrap">
+                        <time
+                          dateTime={row.checkedInAt.toISOString()}
+                          title={row.checkedInAt.toLocaleString("en-GB")}
+                        >
+                          {formatRelativeTime(row.checkedInAt)}
+                        </time>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Panel>
       </div>
